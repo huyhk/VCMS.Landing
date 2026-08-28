@@ -19,7 +19,8 @@ Yêu cầu .NET 8 SDK. Tại thư mục `LandingCms`, thiết lập tài khoản
 ### PowerShell
 
 ```powershell
-$env:LANDINGCMS_ADMIN_EMAIL="admin@example.com"
+$env:LANDINGCMS_ADMIN_USERNAME="sadmin"
+$env:LANDINGCMS_ADMIN_EMAIL="admin@example.com" # không bắt buộc
 $env:LANDINGCMS_ADMIN_PASSWORD="ThayMatKhau!2026"
 dotnet restore
 dotnet run
@@ -28,7 +29,8 @@ dotnet run
 ### Linux / macOS
 
 ```bash
-export LANDINGCMS_ADMIN_EMAIL="admin@example.com"
+export LANDINGCMS_ADMIN_USERNAME="sadmin"
+export LANDINGCMS_ADMIN_EMAIL="admin@example.com" # không bắt buộc
 export LANDINGCMS_ADMIN_PASSWORD="ThayMatKhau!2026"
 dotnet restore
 dotnet run

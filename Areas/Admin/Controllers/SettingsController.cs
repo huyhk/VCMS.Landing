@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LandingCms.Areas.Admin.Controllers;
-[Area("Admin"), Authorize(Roles = "Administrator")]
+[Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator")]
 public class SettingsController(ApplicationDbContext db) : Controller
 {
     public async Task<IActionResult> Index() => View(await db.SiteSettings.FirstAsync());

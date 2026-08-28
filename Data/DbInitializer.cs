@@ -6,6 +6,7 @@ namespace LandingCms.Data;
 
 public static class DbInitializer
 {
+    public const string SuperAdministrator = "SuperAdministrator";
     public const string Administrator = "Administrator";
     public const string Editor = "Editor";
 
@@ -18,7 +19,7 @@ public static class DbInitializer
         await db.Database.EnsureCreatedAsync();
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        foreach (var role in new[] { Administrator, Editor })
+        foreach (var role in new[] { SuperAdministrator, Administrator, Editor })
             if (!await roleManager.RoleExistsAsync(role))
                 await roleManager.CreateAsync(new IdentityRole(role));
 
@@ -37,16 +38,17 @@ public static class DbInitializer
         }
         await db.SaveChangesAsync();
 
+        var userName = config["InitialAdmin:UserName"] ?? Environment.GetEnvironmentVariable("LANDINGCMS_ADMIN_USERNAME");
         var email = config["InitialAdmin:Email"] ?? Environment.GetEnvironmentVariable("LANDINGCMS_ADMIN_EMAIL");
         var password = config["InitialAdmin:Password"] ?? Environment.GetEnvironmentVariable("LANDINGCMS_ADMIN_PASSWORD");
-        if (!string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(password))
+        if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
         {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            if (await users.FindByEmailAsync(email) is null)
+            if (await users.FindByNameAsync(userName) is null)
             {
-                var user = new ApplicationUser { UserName = email, Email = email, DisplayName = "Quản trị viên", EmailConfirmed = true };
+                var user = new ApplicationUser { UserName = userName, Email = string.IsNullOrWhiteSpace(email) ? null : email, DisplayName = "Super Admin", EmailConfirmed = !string.IsNullOrWhiteSpace(email) };
                 var result = await users.CreateAsync(user, password);
-                if (result.Succeeded) await users.AddToRoleAsync(user, Administrator);
+                if (result.Succeeded) await users.AddToRoleAsync(user, SuperAdministrator);
             }
         }
     }

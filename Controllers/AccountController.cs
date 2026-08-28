@@ -15,7 +15,7 @@ public class AccountController(SignInManager<ApplicationUser> signInManager, Use
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
-        var user = await userManager.FindByEmailAsync(model.Email);
+        var user = await userManager.FindByNameAsync(model.UserName);
         if (user is null || !user.IsActive)
         {
             ModelState.AddModelError("", "Thông tin đăng nhập không hợp lệ.");
