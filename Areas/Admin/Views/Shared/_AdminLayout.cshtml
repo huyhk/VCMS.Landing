@@ -23,5 +23,5 @@
     <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button class="link-button">Đăng xuất</button></form>
 </aside>
 <div class="admin-main"><header><button class="sidebar-toggle">☰</button><span>@User.Identity?.Name</span></header><main>@if(TempData["Message"] is string message){<div class="alert">@message</div>}@RenderBody()</main></div>
-<script src="~/js/admin.js"></script>@await RenderSectionAsync("Scripts",false)
+<script src="~/js/admin.js" asp-append-version="true"></script>@await RenderSectionAsync("Scripts",false)
 </body></html>
