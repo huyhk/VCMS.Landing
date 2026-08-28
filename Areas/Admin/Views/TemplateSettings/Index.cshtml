@@ -15,9 +15,10 @@
                     <small><code>@item.Key</code>@if(!string.IsNullOrWhiteSpace(item.Description)){<span> — @item.Description</span>}</small>
                     @if(item.ValueType == "Image")
                     {
-                        @if(!string.IsNullOrWhiteSpace(item.MediaUrl)){<img src="@item.MediaUrl" alt="@item.Name" style="max-width:260px;max-height:110px;object-fit:contain;background:#f2f4f7;padding:10px;border-radius:8px">
-                        }
-                        <input id="setting-@item.DefinitionId" name="images[@item.DefinitionId]" type="file" accept="image/png,image/jpeg,image/webp">
+                        <div id="setting-preview-@item.DefinitionId" class="single-image-preview">
+                            @if(!string.IsNullOrWhiteSpace(item.MediaUrl)){<img src="@item.MediaUrl" alt="@item.Name"><span>Ảnh hiện tại</span>}
+                        </div>
+                        <input id="setting-@item.DefinitionId" name="images[@item.DefinitionId]" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="setting-preview-@item.DefinitionId">
                         <span class="field-validation-error">@Html.ValidationMessage("images[" + item.DefinitionId + "]")</span>
                     }
                     else if(item.ValueType == "MultilineText")
