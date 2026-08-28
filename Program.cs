@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using LandingCms.Services;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +33,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<WebEncoderOptions>(options =>
+    options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddOptions<CloudflareTurnstileOptions>()
     .Bind(builder.Configuration.GetSection("CloudflareTurnstile"))

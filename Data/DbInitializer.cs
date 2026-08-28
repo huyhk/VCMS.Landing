@@ -1,4 +1,5 @@
 using LandingCms.Models;
+using LandingCms.Services;
 using LandingCms.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -126,7 +127,7 @@ public static class DbInitializer
                     db.SectionContents.Add(new SectionContent
                     {
                         SectionKey = section.SectionKey, SectionDefinitionId = definition.Id,
-                        ContentJson = JsonSerializer.Serialize(payload), IsPublished = section.IsPublished
+                        ContentJson = DatabaseJson.Serialize(payload), IsPublished = section.IsPublished
                     });
                 }
             }
@@ -165,7 +166,22 @@ public static class DbInitializer
             db.SiteTemplateSettings.Add(new SiteTemplateSetting { ActiveTemplateId = template.Id });
             await db.SaveChangesAsync();
         }
+        await NormalizeStoredJsonAsync(db);
         await SeedSettingsAsync(db);
+    }
+
+    private static async Task NormalizeStoredJsonAsync(ApplicationDbContext db)
+    {
+        var contents = await db.SectionContents.Where(x => x.ContentJson.Contains("\\u")).ToListAsync();
+        foreach (var content in contents)
+            content.ContentJson = DatabaseJson.Normalize(content.ContentJson);
+
+        var templateSections = await db.TemplateSections.Where(x => x.SettingsJson.Contains("\\u")).ToListAsync();
+        foreach (var templateSection in templateSections)
+            templateSection.SettingsJson = DatabaseJson.Normalize(templateSection.SettingsJson);
+
+        if (contents.Count > 0 || templateSections.Count > 0)
+            await db.SaveChangesAsync();
     }
 
     private static async Task SeedSettingsAsync(ApplicationDbContext db)

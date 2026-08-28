@@ -177,5 +177,5 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         if (!layout.Options.Any(x => x.Value == model.Layout)) ModelState.AddModelError(nameof(model.Layout), "Kiểu hiển thị không hợp lệ.");
     }
 
-    private static string SerializeSettings(string? layout) => string.IsNullOrWhiteSpace(layout) ? "{}" : JsonSerializer.Serialize(new { layout });
+    private static string SerializeSettings(string? layout) => string.IsNullOrWhiteSpace(layout) ? "{}" : DatabaseJson.Serialize(new { layout });
 }

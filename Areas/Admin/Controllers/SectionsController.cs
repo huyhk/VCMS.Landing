@@ -88,7 +88,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         }
         var content = await db.SectionContents.FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
         if (content is null) { content = new SectionContent { SectionKey = slot.SectionKey, SectionDefinitionId = slot.SectionDefinitionId }; db.SectionContents.Add(content); }
-        content.ContentJson = JsonSerializer.Serialize(new SectionContentPayload
+        content.ContentJson = DatabaseJson.Serialize(new SectionContentPayload
         {
             Eyebrow = model.Eyebrow, Title = model.Title, Subtitle = model.Subtitle, Content = model.Content,
             ImageUrl = model.ImageUrl, PrimaryButtonText = model.PrimaryButtonText, PrimaryButtonUrl = model.PrimaryButtonUrl,
