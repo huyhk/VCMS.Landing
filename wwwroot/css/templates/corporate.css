@@ -1,0 +1,28 @@
+/*
+ * Corporate template
+ * site.css contains the shared component structure. Corporate-only visual
+ * changes belong here so they do not leak into other templates.
+ */
+
+.site-header {
+    background: rgba(255, 255, 255, .82);
+    backdrop-filter: blur(18px);
+}
+
+.hero {
+    background: linear-gradient(135deg, #f8faff 0%, #fff 52%, #eef4ff 100%);
+}
+
+.service-card {
+    border-radius: 18px;
+}
+
+.stats {
+    background: #111827;
+    color: #fff;
+}
+
+.cta {
+    border-radius: 28px;
+    background: linear-gradient(135deg, var(--brand), #6d28d9);
+}

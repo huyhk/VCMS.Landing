@@ -1,5 +1,6 @@
 @model HomeViewModel
 @{
     Layout = "_Layout";
+    ViewData["TemplateStylesheet"] = "~/css/templates/corporate.css";
 }
 @await Html.PartialAsync("~/Views/Home/Index.cshtml", Model)

@@ -1,0 +1,62 @@
+/*
+ * Minimal template
+ * Loaded after the shared styles so only template-specific differences need
+ * to be declared here.
+ */
+
+:root {
+    --ink: #111;
+    --soft: #f7f7f5;
+}
+
+.site-header {
+    border-bottom: 2px solid #111;
+}
+
+.hero {
+    background: #f7f7f5;
+}
+
+.hero h1 {
+    max-width: 900px;
+}
+
+.hero-art {
+    display: none;
+}
+
+.hero-grid {
+    grid-template-columns: 1fr;
+}
+
+.service-card {
+    border-color: #111;
+    border-radius: 0;
+}
+
+.section-soft {
+    background: #f1f0eb;
+}
+
+.cta {
+    border-radius: 0;
+    background: #111;
+}
+
+.stats {
+    background: #e8ff47;
+    color: #111;
+}
+
+.stats h2,
+.stats-grid strong {
+    color: #111;
+}
+
+.stats-grid span {
+    color: #444;
+}
+
+.stats-grid div {
+    border-color: #111;
+}

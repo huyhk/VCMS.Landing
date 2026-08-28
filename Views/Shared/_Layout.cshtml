@@ -15,6 +15,11 @@
     <link rel="stylesheet" href="~/css/rich-content.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/mobile-navigation.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/content-variants.css" asp-append-version="true" />
+    @if (ViewData["TemplateStylesheet"] is string templateStylesheet &&
+         templateStylesheet.StartsWith("~/css/templates/", StringComparison.Ordinal))
+    {
+        <link rel="stylesheet" href="@templateStylesheet" asp-append-version="true" />
+    }
 </head>
 <body>@RenderBody()<script src="~/js/site.js" asp-append-version="true"></script>@await RenderSectionAsync("Scripts", required: false)</body>
 </html>
