@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using LandingCms.Services;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace LandingCms.Controllers;
-public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger, IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas) : Controller
+public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger,
+    IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas,
+    ICloudflareTurnstileValidator turnstileValidator, IOptions<CloudflareTurnstileOptions> turnstileOptions) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -75,7 +78,8 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted)
             .OrderBy(x => x.SortOrder).ToListAsync();
         var sectionMedia = sectionMediaRows.GroupBy(x => x.SectionKey).ToDictionary(x => x.Key, x => (IReadOnlyList<SectionMedia>)x.ToList());
-        return View(viewPath, new HomeViewModel(settings, sections, navigationItems, extendedSettings, brandingMedia, sectionMedia));
+        var turnstileSiteKey = turnstileOptions.Value.IsEnabled ? turnstileOptions.Value.SiteKey : null;
+        return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings, brandingMedia, sectionMedia));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]
@@ -83,6 +87,12 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
     {
         if (!string.IsNullOrWhiteSpace(model.Website)) return Redirect("/#contact");
         if (!ModelState.IsValid) { TempData["ContactError"] = "Vui lòng kiểm tra lại thông tin liên hệ."; return Redirect("/#contact"); }
+        var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+        if (!await turnstileValidator.ValidateAsync(turnstileToken, HttpContext.RequestAborted))
+        {
+            TempData["ContactError"] = "Không thể xác minh yêu cầu. Vui lòng thử lại.";
+            return Redirect("/#contact");
+        }
         var submission = new ContactSubmission
         {
             Name = model.Name.Trim(), Email = model.Email.Trim(), Phone = model.Phone?.Trim(), Message = model.Message.Trim(),

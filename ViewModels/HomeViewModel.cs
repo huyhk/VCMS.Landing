@@ -7,6 +7,7 @@ public record HomeViewModel(
     SiteSetting Settings,
     IReadOnlyList<LandingSection> Sections,
     IReadOnlyList<NavigationItem> NavigationItems,
+    string? TurnstileSiteKey,
     IReadOnlyDictionary<string, string> ExtendedSettings,
     IReadOnlyDictionary<string, MediaAsset> BrandingMedia,
     IReadOnlyDictionary<string, IReadOnlyList<SectionMedia>> SectionMedia);

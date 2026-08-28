@@ -47,7 +47,16 @@
                 <label>Nội dung cần trao đổi</label>
                 <textarea name="Message" rows="5" minlength="10" maxlength="4000" required></textarea>
             </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Page.TurnstileSiteKey))
+            {
+                <div class="cf-turnstile" data-sitekey="@Model.Page.TurnstileSiteKey"></div>
+            }
             <button class="btn" type="submit">Gửi liên hệ →</button>
         </form>
     </div>
 </section>
+
+@if (!string.IsNullOrWhiteSpace(Model.Page.TurnstileSiteKey))
+{
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+}

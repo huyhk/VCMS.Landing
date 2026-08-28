@@ -31,7 +31,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddOptions<CloudflareTurnstileOptions>()
+    .Bind(builder.Configuration.GetSection("CloudflareTurnstile"))
+    .Validate(options => options.HasSiteKey == options.HasSecretKey,
+        "Cloudflare Turnstile requires both SiteKey and SecretKey.")
+    .ValidateOnStart();
 builder.Services.AddScoped<IContactEmailSender, ContactEmailSender>();
+builder.Services.AddHttpClient<ICloudflareTurnstileValidator, CloudflareTurnstileValidator>(client =>
+    client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddScoped<IMediaStorageService, MediaStorageService>();
 builder.Services.AddSingleton<IContentHtmlSanitizer, ContentHtmlSanitizer>();
 builder.Services.AddSingleton<ISectionSchemaService, SectionSchemaService>();
