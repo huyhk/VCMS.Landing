@@ -6,7 +6,9 @@
 
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "LANDINGCMS_ADMIN_EMAIL": "sa@viennam.com",
+        "LANDINGCMS_ADMIN_USERNAME": "sadmin",
+        "LANDINGCMS_ADMIN_EMAIL": "sadmin@viennam.com",
+
         "LANDINGCMS_ADMIN_PASSWORD": "Admin@123456"
       },
       "applicationUrl": "https://localhost:54131;http://localhost:54132"
