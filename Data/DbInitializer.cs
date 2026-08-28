@@ -18,8 +18,8 @@ public static class DbInitializer
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var environment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
         Directory.CreateDirectory(Path.Combine(environment.ContentRootPath, "App_Data"));
-        await db.Database.EnsureCreatedAsync();
-        await EnsureTemplateSchemaAsync(db);
+        await db.Database.MigrateAsync();
+        //await EnsureTemplateSchemaAsync(db);
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         foreach (var role in new[] { SuperAdministrator, Administrator, Editor })
@@ -27,7 +27,7 @@ public static class DbInitializer
                 await roleManager.CreateAsync(new IdentityRole(role));
 
         if (!await db.SiteSettings.AnyAsync())
-            db.SiteSettings.Add(new SiteSetting { SiteName = "Nova Studio", LogoText = "NOVA", SeoTitle = "Nova Studio — Biến ý tưởng thành tăng trưởng", SeoDescription = "Giải pháp số tinh gọn cho doanh nghiệp hiện đại.", Phone = "0900 000 000", Email = "hello@example.com", Address = "TP. Hồ Chí Minh", FooterText = "© 2026 Nova Studio. All rights reserved." });
+            db.SiteSettings.Add(new SiteSetting { SiteName = "VCMS Landing Studio", LogoText = "VCMS", SeoTitle = "VCMS Landing Studio — Biến ý tưởng thành tăng trưởng", SeoDescription = "Giải pháp số tinh gọn cho doanh nghiệp hiện đại.", Phone = "0900 000 000", Email = "hello@example.com", Address = "TP. Hồ Chí Minh", FooterText = "© 2026 Nova Studio. All rights reserved." });
 
         if (!await db.LandingSections.AnyAsync())
         {
