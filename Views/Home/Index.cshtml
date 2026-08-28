@@ -1,0 +1,33 @@
+@model HomeViewModel
+@{ ViewData["Title"] = Model.Settings.SeoTitle ?? Model.Settings.SiteName; ViewData["Description"] = Model.Settings.SeoDescription; }
+<style>:root{--brand:@Model.Settings.PrimaryColor}</style>
+<header class="site-header">
+  <div class="container nav"><a class="brand" href="#top">@(Model.Settings.LogoText ?? Model.Settings.SiteName)</a><nav><a href="#services">Dịch vụ</a><a href="#about">Về chúng tôi</a><a href="#contact">Liên hệ</a></nav><a class="btn btn-small" href="#contact">Trao đổi dự án</a><button class="menu-button" aria-label="Mở menu">☰</button></div>
+</header>
+<main id="top">
+@foreach (var contentSection in Model.Sections)
+{
+    var lines = (contentSection.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+    if (contentSection.SectionType == "Hero")
+    {
+      <section id="@contentSection.SectionKey" class="hero"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="container hero-grid"><div><p class="eyebrow">@contentSection.Eyebrow</p><h1>@contentSection.Title</h1><p class="lead">@contentSection.Subtitle</p><div class="actions"><a class="btn" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText <span>→</span></a><a class="text-link" href="@contentSection.SecondaryButtonUrl">@contentSection.SecondaryButtonText</a></div></div><div class="hero-art"><div class="art-card"><span class="art-label">Tăng trưởng bền vững</span><strong>+42%</strong><div class="chart"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="mini-card">✦ <span>Thiết kế có mục tiêu</span></div></div></div></section>
+    }
+    else if (contentSection.SectionType == "Cards")
+    {
+      <section id="@contentSection.SectionKey" class="section"><div class="container"><div class="section-heading"><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p></div><div class="card-grid">@for(var i=0;i<lines.Length;i++){var p=lines[i].Split('|',2);<article class="service-card"><span class="card-number">0@(i+1)</span><h3>@p[0]</h3><p>@(p.Length>1?p[1]:"")</p><span class="card-arrow">↗</span></article>}</div></div></section>
+    }
+    else if (contentSection.SectionType == "Content")
+    {
+      <section id="@contentSection.SectionKey" class="section section-soft"><div class="container split"><div class="image-wrap"><img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="lazy" /><div class="image-badge"><strong>8+</strong><span>năm kinh nghiệm</span></div></div><div><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p class="body-copy">@contentSection.Content</p><a class="text-link" href="#contact">Cùng làm việc với chúng tôi →</a></div></div></section>
+    }
+    else if (contentSection.SectionType == "Stats")
+    {
+      <section id="@contentSection.SectionKey" class="stats"><div class="container"><h2>@contentSection.Title</h2><div class="stats-grid">@foreach(var line in lines){var p=line.Split('|',2);<div><strong>@p[0]</strong><span>@(p.Length>1?p[1]:"")</span></div>}</div></div></section>
+    }
+    else if (contentSection.SectionType == "Cta")
+    {
+      <section id="@contentSection.SectionKey" class="section"><div class="container cta"><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p><a class="btn btn-light" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText →</a></div></section>
+    }
+}
+</main>
+<footer><div class="container footer-grid"><div><a class="brand" href="#top">@(Model.Settings.LogoText ?? Model.Settings.SiteName)</a><p>@Model.Settings.FooterText</p></div><div><strong>Liên hệ</strong><a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a><a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a><span>@Model.Settings.Address</span></div><a class="admin-link" href="/admin">Quản trị</a></div></footer>

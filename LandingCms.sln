@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36623.8 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VCMS.Landing", "VCMS.Landing.csproj", "{A950D285-AFF1-48D4-7991-55020C20CBAA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A950D285-AFF1-48D4-7991-55020C20CBAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A950D285-AFF1-48D4-7991-55020C20CBAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A950D285-AFF1-48D4-7991-55020C20CBAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A950D285-AFF1-48D4-7991-55020C20CBAA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C0513ED9-5D28-4012-AF42-A4C47AD30812}
+	EndGlobalSection
+EndGlobal

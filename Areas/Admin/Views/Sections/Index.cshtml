@@ -1,0 +1,3 @@
+@model IReadOnlyList<LandingSection>
+@{ ViewData["Title"] = "Nội dung landing page"; }
+<div class="page-title"><div><h1>Nội dung landing page</h1><p>Chỉnh sửa, bật/tắt hoặc thêm section mới.</p></div><a class="button" asp-action="Create">+ Thêm section</a></div><section class="panel"><table><thead><tr><th>Thứ tự</th><th>Section</th><th>Loại</th><th>Trạng thái</th><th></th></tr></thead><tbody>@foreach(var item in Model){<tr><td>@item.SortOrder</td><td><strong>@item.Title</strong><small>#@item.SectionKey</small></td><td>@item.SectionType</td><td><span class="status @(item.IsPublished?"on":"off")">@(item.IsPublished?"Đang hiện":"Đang ẩn")</span></td><td><a asp-action="Edit" asp-route-id="@item.Id">Chỉnh sửa</a></td></tr>}</tbody></table></section>
