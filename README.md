@@ -17,6 +17,7 @@ Landing page một trang viết bằng ASP.NET Core MVC (.NET 8), SQLite và ASP
 - Form liên hệ có chống spam cơ bản, lưu SQLite và gửi email SMTP tới email trong cấu hình website.
 - Setting keys do developer đồng bộ; Administrator/SuperAdmin cập nhật values theo template đang sử dụng.
 - Upload logo, ảnh chính của section và nhiều background cho Hero (PNG/JPEG/WebP, tối đa 5 MB mỗi file).
+- Ảnh upload được kiểm tra tối đa 30 triệu pixel, tự sửa chiều EXIF, resize theo mục đích sử dụng và tối ưu thành WebP; PNG của logo/favicon được giữ để bảo toàn nền trong suốt.
 - Schema SQLite được quản lý bằng EF Core migrations; ứng dụng tự migrate và nạp dữ liệu mẫu khi khởi động.
 
 ## Chạy dự án

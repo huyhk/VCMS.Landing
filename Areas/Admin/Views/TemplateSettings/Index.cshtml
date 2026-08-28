@@ -19,6 +19,7 @@
                             @if(!string.IsNullOrWhiteSpace(item.MediaUrl)){<img src="@item.MediaUrl" alt="@item.Name"><span>Ảnh hiện tại</span>}
                         </div>
                         <input id="setting-@item.DefinitionId" name="images[@item.DefinitionId]" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="setting-preview-@item.DefinitionId">
+                        <small>Ảnh được tự resize và tối ưu khi lưu; logo PNG vẫn giữ nền trong suốt.</small>
                         <span class="field-validation-error">@Html.ValidationMessage("images[" + item.DefinitionId + "]")</span>
                     }
                     else if(item.ValueType == "MultilineText")

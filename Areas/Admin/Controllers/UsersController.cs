@@ -11,7 +11,17 @@ namespace LandingCms.Areas.Admin.Controllers;
 [Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator")]
 public class UsersController(UserManager<ApplicationUser> users) : Controller
 {
-    public async Task<IActionResult> Index() => View(await users.Users.OrderBy(x => x.DisplayName).ToListAsync());
+    public async Task<IActionResult> Index()
+    {
+        var query = users.Users.AsNoTracking();
+        if (!User.IsInRole(DbInitializer.SuperAdministrator))
+        {
+            var superAdminIds = (await users.GetUsersInRoleAsync(DbInitializer.SuperAdministrator))
+                .Select(x => x.Id).ToArray();
+            query = query.Where(x => !superAdminIds.Contains(x.Id));
+        }
+        return View(await query.OrderBy(x => x.DisplayName).ToListAsync());
+    }
     public IActionResult Create() => View("Edit", new UserEditViewModel { IsActive = true });
     public async Task<IActionResult> Edit(string id)
     {

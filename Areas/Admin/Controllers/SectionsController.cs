@@ -70,13 +70,13 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (model.ImageFile is { Length: > 0 })
-                model.ImageUrl = (await mediaStorage.SaveImageAsync(model.ImageFile, userId, HttpContext.RequestAborted)).RelativeUrl;
+                model.ImageUrl = (await mediaStorage.SaveImageAsync(model.ImageFile, userId, ImageUploadProfile.SectionImage, HttpContext.RequestAborted)).RelativeUrl;
             if (slot.SectionDefinition.SectionType == "Hero" && model.BackgroundFiles.Count > 0)
             {
                 var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Background").MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
                 foreach (var file in model.BackgroundFiles.Where(x => x.Length > 0))
                 {
-                    var asset = await mediaStorage.SaveImageAsync(file, userId, HttpContext.RequestAborted);
+                    var asset = await mediaStorage.SaveImageAsync(file, userId, ImageUploadProfile.HeroBackground, HttpContext.RequestAborted);
                     db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "Background", SortOrder = nextOrder });
                     nextOrder += 10;
                 }

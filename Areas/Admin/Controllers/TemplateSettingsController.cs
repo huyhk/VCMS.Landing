@@ -39,7 +39,8 @@ public partial class TemplateSettingsController(ApplicationDbContext db, IMediaS
             {
                 try
                 {
-                    var asset = await mediaStorage.SaveImageAsync(file, User.FindFirstValue(ClaimTypes.NameIdentifier), HttpContext.RequestAborted);
+                    var profile = definition.Key == "branding.favicon" ? ImageUploadProfile.Favicon : ImageUploadProfile.Logo;
+                    var asset = await mediaStorage.SaveImageAsync(file, User.FindFirstValue(ClaimTypes.NameIdentifier), profile, HttpContext.RequestAborted);
                     values[definition.Id] = asset.Id.ToString();
                 }
                 catch (InvalidOperationException ex)
