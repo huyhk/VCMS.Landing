@@ -17,11 +17,11 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             .Include(x => x.ActiveTemplate).FirstAsync();
         var slots = await db.TemplateSections.AsNoTracking()
             .Include(x => x.SectionDefinition)
-            .Where(x => x.TemplateId == templateSetting.ActiveTemplateId)
+            .Where(x => x.TemplateId == templateSetting.ActiveTemplateId && x.IsEnabled)
             .OrderBy(x => x.SortOrder).ToListAsync();
         var keys = slots.Select(x => x.SectionKey).ToArray();
         var contents = await db.SectionContents.AsNoTracking()
-            .Where(x => keys.Contains(x.SectionKey) && x.IsPublished)
+            .Where(x => keys.Contains(x.SectionKey))
             .ToDictionaryAsync(x => x.SectionKey);
         var sections = new List<LandingSection>();
         foreach (var slot in slots)

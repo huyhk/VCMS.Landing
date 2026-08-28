@@ -109,7 +109,7 @@ public static class DbInitializer
                 {
                     TemplateId = template.Id, SectionDefinitionId = definition.Id, SectionKey = section.SectionKey,
                     DisplayName = section.Title, SortOrder = section.SortOrder, IsRequired = section.SectionType is "Hero" or "Cta",
-                    IsEnabledByDefault = section.IsPublished
+                    IsEnabledByDefault = section.IsPublished, IsEnabled = section.IsPublished
                 });
                 if (!await db.SectionContents.AnyAsync(x => x.SectionKey == section.SectionKey))
                 {
@@ -150,10 +150,23 @@ public static class DbInitializer
                     TemplateId = minimalTemplate.Id, SectionDefinitionId = slot.SectionDefinitionId,
                     SectionKey = slot.SectionKey, DisplayName = slot.DisplayName, SortOrder = slot.SortOrder,
                     IsRequired = slot.IsRequired, IsEnabledByDefault = slot.IsEnabledByDefault,
+                    IsEnabled = slot.IsEnabled,
                     ViewPath = slot.ViewPath, SettingsJson = slot.SettingsJson
                 });
             await db.SaveChangesAsync();
         }
+
+        var sectionLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["hero"] = "Hero", ["services"] = "Dịch vụ", ["about"] = "Giới thiệu",
+            ["stats"] = "Số liệu", ["contact"] = "Liên hệ"
+        };
+        var sampleTemplateIds = new[] { template.Id, minimalTemplate.Id };
+        var sampleSlots = await db.TemplateSections.Where(x => sampleTemplateIds.Contains(x.TemplateId)).ToListAsync();
+        foreach (var slot in sampleSlots)
+            if (sectionLabels.TryGetValue(slot.SectionKey, out var displayName))
+                slot.DisplayName = displayName;
+        await db.SaveChangesAsync();
 
         if (!await db.SiteTemplateSettings.AnyAsync())
         {

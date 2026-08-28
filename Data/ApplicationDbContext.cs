@@ -27,6 +27,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<PageTemplate>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<SectionDefinition>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<TemplateSection>().HasIndex(x => new { x.TemplateId, x.SectionKey }).IsUnique();
+        builder.Entity<TemplateSection>().Property(x => x.IsEnabled).HasDefaultValue(true);
         builder.Entity<SectionContent>().HasIndex(x => x.SectionKey).IsUnique();
         builder.Entity<SettingDefinition>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<SettingValue>().HasIndex(x => x.SettingDefinitionId).IsUnique();

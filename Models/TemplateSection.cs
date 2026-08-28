@@ -14,6 +14,7 @@ public class TemplateSection
     public int SortOrder { get; set; }
     public bool IsRequired { get; set; }
     public bool IsEnabledByDefault { get; set; } = true;
+    public bool IsEnabled { get; set; } = true;
     [StringLength(300)] public string? ViewPath { get; set; }
     public string SettingsJson { get; set; } = "{}";
 }

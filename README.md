@@ -96,6 +96,8 @@ Developer định nghĩa editor cho từng field trong `SectionDefinition.Schema
 
 Các editor hiện hỗ trợ cho field `content` gồm `textarea`, `structured-list` và `html`. HTML policy (`BasicContent`, `RichContent`, `InlineOnly`) cùng danh sách tag/attribute an toàn được developer quản lý trong `ContentHtmlSanitizer`; Admin và Editor không thể thay đổi policy.
 
+Trạng thái hiển thị của section được lưu tại `TemplateSection.IsEnabled`, vì vậy bật/tắt một section chỉ ảnh hưởng template tương ứng. Chỉ SuperAdministrator được thay đổi trạng thái này; Administrator và Editor chỉ cập nhật nội dung. `SectionDefinition.IsEnabled` là trạng thái available toàn hệ thống do developer quản lý; `SectionContent.IsPublished` được dành riêng cho quy trình draft/publish nội dung sau này.
+
 ## Triển khai IIS
 
 1. Cài .NET 8 Hosting Bundle trên Windows Server.

@@ -44,7 +44,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             Eyebrow = payload.Eyebrow, Title = payload.Title, Subtitle = payload.Subtitle, Content = payload.Content,
             ImageUrl = payload.ImageUrl, PrimaryButtonText = payload.PrimaryButtonText, PrimaryButtonUrl = payload.PrimaryButtonUrl,
             SecondaryButtonText = payload.SecondaryButtonText, SecondaryButtonUrl = payload.SecondaryButtonUrl,
-            IsPublished = content?.IsPublished ?? slot.IsEnabledByDefault
+            IsEnabled = slot.IsEnabled
         };
         model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
         return View(model);
@@ -62,7 +62,9 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
         if (contentField.Editor == "html")
             model.Content = htmlSanitizer.Sanitize(model.Content, contentField.HtmlPolicy);
-        if (slot.IsRequired && !model.IsPublished) ModelState.AddModelError(nameof(model.IsPublished), "Section bắt buộc không thể bị ẩn.");
+        var canManageVisibility = User.IsInRole(DbInitializer.SuperAdministrator);
+        if (!canManageVisibility) model.IsEnabled = slot.IsEnabled;
+        if (canManageVisibility && slot.IsRequired && !model.IsEnabled) ModelState.AddModelError(nameof(model.IsEnabled), "Section bắt buộc không thể bị ẩn.");
         if (!ModelState.IsValid) { await PrepareForViewAsync(model, slot); return View("Edit", model); }
         try
         {
@@ -92,7 +94,8 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             ImageUrl = model.ImageUrl, PrimaryButtonText = model.PrimaryButtonText, PrimaryButtonUrl = model.PrimaryButtonUrl,
             SecondaryButtonText = model.SecondaryButtonText, SecondaryButtonUrl = model.SecondaryButtonUrl
         });
-        content.IsPublished = model.IsPublished; content.UpdatedAtUtc = DateTime.UtcNow;
+        if (canManageVisibility) slot.IsEnabled = model.IsEnabled;
+        content.UpdatedAtUtc = DateTime.UtcNow;
         content.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã lưu {slot.DisplayName}.";

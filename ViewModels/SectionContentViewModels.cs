@@ -27,7 +27,7 @@ public class SectionContentEditViewModel
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }
     [StringLength(80)] public string? SecondaryButtonText { get; set; }
     [StringLength(300)] public string? SecondaryButtonUrl { get; set; }
-    public bool IsPublished { get; set; } = true;
+    public bool IsEnabled { get; set; } = true;
 }
 
 public class SectionContentPayload

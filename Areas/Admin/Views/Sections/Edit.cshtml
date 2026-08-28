@@ -41,7 +41,14 @@
         }
         <div><label asp-for="PrimaryButtonText">Nút chính</label><input asp-for="PrimaryButtonText"></div><div><label asp-for="PrimaryButtonUrl">Liên kết nút chính</label><input asp-for="PrimaryButtonUrl"></div>
         <div><label asp-for="SecondaryButtonText">Nút phụ</label><input asp-for="SecondaryButtonText"></div><div><label asp-for="SecondaryButtonUrl">Liên kết nút phụ</label><input asp-for="SecondaryButtonUrl"></div>
-        <div class="check-row"><label><input asp-for="IsPublished"> Hiển thị section này</label><span asp-validation-for="IsPublished"></span></div>
+        @if(User.IsInRole("SuperAdministrator"))
+        {
+            <div class="check-row"><label><input asp-for="IsEnabled"> Hiển thị section trong template đang sử dụng</label><span asp-validation-for="IsEnabled"></span></div>
+        }
+        else
+        {
+            <div class="check-row"><label>Trạng thái: @(Model.IsEnabled ? "Đang hiển thị" : "Đang ẩn")</label></div>
+        }
     </div>
     <div class="form-actions"><button class="button" type="submit">Lưu thay đổi</button></div>
 </form>
