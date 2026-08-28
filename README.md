@@ -7,9 +7,12 @@ Landing page một trang viết bằng ASP.NET Core MVC (.NET 8), SQLite và ASP
 - Landing page responsive với nội dung mẫu.
 - Quản trị từng section: thêm, sửa, xóa, bật/tắt và sắp xếp.
 - Cấu hình tên website, SEO, liên hệ, màu thương hiệu và footer.
-- Nhiều tài khoản, hai vai trò:
-  - `Administrator`: toàn quyền, quản lý cấu hình và tài khoản.
+- Nhiều tài khoản, ba vai trò:
+  - `SuperAdministrator`: chọn template và quản trị toàn hệ thống.
+  - `Administrator`: quản lý cấu hình, tài khoản và nội dung.
   - `Editor`: quản lý nội dung landing page.
+- Template engine quan hệ: `PageTemplate`, `SectionDefinition`, `TemplateSection`, `SectionContent`.
+- Hai template mẫu `Corporate` và `Minimal`; nội dung dùng chung theo `SectionKey` khi đổi template.
 - SQLite được tự động tạo và nạp dữ liệu mẫu trong lần chạy đầu tiên.
 
 ## Chạy dự án
@@ -37,6 +40,8 @@ dotnet run
 ```
 
 Mở URL được hiển thị trong terminal. Khu vực quản trị ở `/admin`.
+
+Khi nâng cấp từ phiên bản cũ, ứng dụng tự tạo các bảng template còn thiếu và chuyển dữ liệu `LandingSections` hiện tại sang `SectionContents`; không cần xóa file SQLite.
 
 ## Triển khai IIS
 
