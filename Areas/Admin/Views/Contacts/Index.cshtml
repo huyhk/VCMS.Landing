@@ -1,0 +1,3 @@
+@model IReadOnlyList<ContactSubmission>
+@{ ViewData["Title"] = "Liên hệ khách hàng"; }
+<div class="page-title"><div><h1>Liên hệ khách hàng</h1><p>Tối đa 500 liên hệ mới nhất đã nhận từ landing page.</p></div></div><section class="panel"><table><thead><tr><th>Thời gian</th><th>Khách hàng</th><th>Email</th><th>Điện thoại</th><th>Gửi email</th><th></th></tr></thead><tbody>@foreach(var item in Model){<tr><td>@item.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td><strong>@item.Name</strong></td><td>@item.Email</td><td>@item.Phone</td><td><span class="status @(item.Status=="Sent"?"on":"off")">@(item.Status=="Sent"?"Đã gửi":"Chưa gửi")</span></td><td><a asp-action="Detail" asp-route-id="@item.Id">Xem</a></td></tr>}</tbody></table></section>

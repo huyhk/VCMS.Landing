@@ -14,6 +14,8 @@
         <a asp-area="Admin" asp-controller="Sections" asp-action="Index">Nội dung landing page</a>
         @if(User.IsInRole("SuperAdministrator")){<a asp-area="Admin" asp-controller="Templates" asp-action="Index">Giao diện</a>}
         @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="Settings" asp-action="Index">Cấu hình website</a><a asp-area="Admin" asp-controller="Users" asp-action="Index">Tài khoản & phân quyền</a>}
+        @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="Contacts" asp-action="Index">Liên hệ khách hàng</a>}
+        <a asp-area="" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
         <a href="/" target="_blank">Xem website ↗</a>
     </nav>
     <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button class="link-button">Đăng xuất</button></form>

@@ -30,6 +30,22 @@ public class AccountController(SignInManager<ApplicationUser> signInManager, Use
     [Authorize, ValidateAntiForgeryToken, HttpPost("logout")]
     public async Task<IActionResult> Logout() { await signInManager.SignOutAsync(); return RedirectToAction("Index", "Home"); }
 
+    [Authorize, HttpGet("change-password")]
+    public IActionResult ChangePassword() => View(new ChangePasswordViewModel());
+
+    [Authorize, ValidateAntiForgeryToken, HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+    {
+        if (!ModelState.IsValid) return View(model);
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Challenge();
+        var result = await userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        if (!result.Succeeded) { foreach (var error in result.Errors) ModelState.AddModelError("", error.Description); return View(model); }
+        await signInManager.RefreshSignInAsync(user);
+        TempData["Message"] = "Đã thay đổi mật khẩu.";
+        return Redirect("/admin");
+    }
+
     [AllowAnonymous, HttpGet("access-denied")]
     public IActionResult AccessDenied() => View();
 }

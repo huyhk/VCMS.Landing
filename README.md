@@ -13,6 +13,8 @@ Landing page một trang viết bằng ASP.NET Core MVC (.NET 8), SQLite và ASP
   - `Editor`: quản lý nội dung landing page.
 - Template engine quan hệ: `PageTemplate`, `SectionDefinition`, `TemplateSection`, `SectionContent`.
 - Hai template mẫu `Corporate` và `Minimal`; nội dung dùng chung theo `SectionKey` khi đổi template.
+- Mỗi tài khoản tự đổi mật khẩu; SuperAdmin có thể reset Administrator/Editor, Administrator có thể reset Editor.
+- Form liên hệ có chống spam cơ bản, lưu SQLite và gửi email SMTP tới email trong cấu hình website.
 - SQLite được tự động tạo và nạp dữ liệu mẫu trong lần chạy đầu tiên.
 
 ## Chạy dự án
@@ -42,6 +44,22 @@ dotnet run
 Mở URL được hiển thị trong terminal. Khu vực quản trị ở `/admin`.
 
 Khi nâng cấp từ phiên bản cũ, ứng dụng tự tạo các bảng template còn thiếu và chuyển dữ liệu `LandingSections` hiện tại sang `SectionContents`; không cần xóa file SQLite.
+
+## Cấu hình gửi email liên hệ
+
+Email nhận liên hệ được lấy từ `Cấu hình website > Email`. Thông tin SMTP nên đặt bằng biến môi trường:
+
+```text
+Smtp__Host=smtp.example.com
+Smtp__Port=587
+Smtp__EnableSsl=true
+Smtp__UserName=mailer@example.com
+Smtp__Password=your-smtp-password
+Smtp__FromEmail=mailer@example.com
+Smtp__FromName=Website Contact
+```
+
+Không commit mật khẩu SMTP vào `appsettings.json`. Nếu gửi email thất bại, nội dung vẫn được lưu và có thể xem trong `Quản trị > Liên hệ khách hàng`.
 
 ## Triển khai IIS
 

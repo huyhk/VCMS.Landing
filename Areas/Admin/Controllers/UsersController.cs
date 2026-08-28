@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LandingCms.Areas.Admin.Controllers;
 [Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator")]
@@ -45,10 +46,41 @@ public class UsersController(UserManager<ApplicationUser> users) : Controller
             user.EmailConfirmed = !string.IsNullOrWhiteSpace(model.Email);
             user.DisplayName = model.DisplayName; user.IsActive = model.IsActive;
             result = await users.UpdateAsync(user);
-            if (result.Succeeded && !string.IsNullOrWhiteSpace(model.Password)) { var token = await users.GeneratePasswordResetTokenAsync(user); result = await users.ResetPasswordAsync(user, token, model.Password); }
         }
         if (!result.Succeeded) { foreach (var e in result.Errors) ModelState.AddModelError("", e.Description); return View("Edit", model); }
         var oldRoles = await users.GetRolesAsync(user); await users.RemoveFromRolesAsync(user, oldRoles); await users.AddToRoleAsync(user, model.Role);
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ResetPassword(string id)
+    {
+        var target = await users.FindByIdAsync(id);
+        if (target is null) return NotFound();
+        if (!await CanResetPasswordAsync(target)) return Forbid();
+        return View(new ResetPasswordViewModel { UserId = target.Id, UserName = target.UserName!, DisplayName = target.DisplayName });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    {
+        var target = await users.FindByIdAsync(model.UserId);
+        if (target is null) return NotFound();
+        if (!await CanResetPasswordAsync(target)) return Forbid();
+        model.UserName = target.UserName!; model.DisplayName = target.DisplayName;
+        if (!ModelState.IsValid) return View(model);
+        var token = await users.GeneratePasswordResetTokenAsync(target);
+        var result = await users.ResetPasswordAsync(target, token, model.NewPassword);
+        if (!result.Succeeded) { foreach (var error in result.Errors) ModelState.AddModelError("", error.Description); return View(model); }
+        TempData["Message"] = $"Đã đặt lại mật khẩu cho {target.UserName}.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<bool> CanResetPasswordAsync(ApplicationUser target)
+    {
+        if (target.Id == User.FindFirstValue(ClaimTypes.NameIdentifier)) return false;
+        var roles = await users.GetRolesAsync(target);
+        if (User.IsInRole(DbInitializer.SuperAdministrator)) return !roles.Contains(DbInitializer.SuperAdministrator);
+        return User.IsInRole(DbInitializer.Administrator) && roles.Contains(DbInitializer.Editor);
     }
 }

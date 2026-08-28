@@ -52,7 +52,11 @@ public static class DbInitializer
             {
                 var user = new ApplicationUser { UserName = userName, Email = string.IsNullOrWhiteSpace(email) ? null : email, DisplayName = "Super Admin", EmailConfirmed = !string.IsNullOrWhiteSpace(email) };
                 var result = await users.CreateAsync(user, password);
-                if (result.Succeeded) await users.AddToRoleAsync(user, SuperAdministrator);
+                if (!result.Succeeded)
+                    throw new InvalidOperationException("Không thể tạo SuperAdmin: " + string.Join("; ", result.Errors.Select(x => x.Description)));
+                var roleResult = await users.AddToRoleAsync(user, SuperAdministrator);
+                if (!roleResult.Succeeded)
+                    throw new InvalidOperationException("Không thể gán quyền SuperAdmin: " + string.Join("; ", roleResult.Errors.Select(x => x.Description)));
             }
         }
     }
@@ -96,6 +100,11 @@ public static class DbInitializer
                 CONSTRAINT "FK_SiteTemplateSettings_PageTemplates_DraftTemplateId" FOREIGN KEY ("DraftTemplateId") REFERENCES "PageTemplates" ("Id") ON DELETE RESTRICT);
             CREATE INDEX IF NOT EXISTS "IX_SiteTemplateSettings_ActiveTemplateId" ON "SiteTemplateSettings" ("ActiveTemplateId");
             CREATE INDEX IF NOT EXISTS "IX_SiteTemplateSettings_DraftTemplateId" ON "SiteTemplateSettings" ("DraftTemplateId");
+            CREATE TABLE IF NOT EXISTS "ContactSubmissions" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_ContactSubmissions" PRIMARY KEY AUTOINCREMENT,
+                "Name" TEXT NOT NULL, "Email" TEXT NOT NULL, "Phone" TEXT NULL, "Message" TEXT NOT NULL,
+                "Status" TEXT NOT NULL, "ErrorMessage" TEXT NULL, "IpAddress" TEXT NULL, "UserAgent" TEXT NULL,
+                "CreatedAtUtc" TEXT NOT NULL, "SentAtUtc" TEXT NULL);
             """);
     }
 

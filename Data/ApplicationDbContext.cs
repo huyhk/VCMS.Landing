@@ -14,6 +14,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TemplateSection> TemplateSections => Set<TemplateSection>();
     public DbSet<SectionContent> SectionContents => Set<SectionContent>();
     public DbSet<SiteTemplateSetting> SiteTemplateSettings => Set<SiteTemplateSetting>();
+    public DbSet<ContactSubmission> ContactSubmissions => Set<ContactSubmission>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

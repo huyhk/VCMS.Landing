@@ -26,7 +26,14 @@
     }
     else if (contentSection.SectionType == "Cta")
     {
-      <section id="@contentSection.SectionKey" class="section"><div class="container cta"><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p><a class="btn btn-light" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText →</a></div></section>
+      if (contentSection.SectionKey == "contact")
+      {
+        <section id="contact" class="section contact-section"><div class="container contact-grid"><div><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p><div class="contact-details"><a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a><a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a><span>@Model.Settings.Address</span></div></div><form asp-controller="Home" asp-action="Contact" method="post" class="contact-form">@if(TempData["ContactSuccess"] is string success){<div class="form-message success">@success</div>}@if(TempData["ContactError"] is string error){<div class="form-message error">@error</div>}<div class="honeypot" aria-hidden="true"><label>Website</label><input name="Website" tabindex="-1" autocomplete="off"></div><div class="contact-row"><div><label>Họ và tên</label><input name="Name" maxlength="150" required></div><div><label>Email</label><input name="Email" type="email" maxlength="200" required></div></div><div><label>Điện thoại</label><input name="Phone" type="tel" maxlength="50"></div><div><label>Nội dung cần trao đổi</label><textarea name="Message" rows="5" minlength="10" maxlength="4000" required></textarea></div><button class="btn" type="submit">Gửi liên hệ →</button></form></div></section>
+      }
+      else
+      {
+        <section id="@contentSection.SectionKey" class="section"><div class="container cta"><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p><a class="btn btn-light" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText →</a></div></section>
+      }
     }
 }
 </main>
