@@ -23,6 +23,8 @@ public class SectionContentEditViewModel
     public IFormFile? ImageFile { get; set; }
     public List<IFormFile> BackgroundFiles { get; set; } = new();
     public IReadOnlyList<SectionMedia> Backgrounds { get; set; } = Array.Empty<SectionMedia>();
+    public List<IFormFile> GalleryFiles { get; set; } = new();
+    public IReadOnlyList<SectionMedia> GalleryImages { get; set; } = Array.Empty<SectionMedia>();
     [StringLength(80)] public string? PrimaryButtonText { get; set; }
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }
     [StringLength(80)] public string? SecondaryButtonText { get; set; }

@@ -47,6 +47,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             IsEnabled = slot.IsEnabled
         };
         model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
+        model.GalleryImages = await LoadMediaAsync(slot.SectionKey, "Gallery");
         return View(model);
     }
 
@@ -78,6 +79,16 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
                 {
                     var asset = await mediaStorage.SaveImageAsync(file, userId, ImageUploadProfile.HeroBackground, HttpContext.RequestAborted);
                     db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "Background", SortOrder = nextOrder });
+                    nextOrder += 10;
+                }
+            }
+            if (slot.SectionDefinition.SectionType == "Gallery" && model.GalleryFiles.Count > 0)
+            {
+                var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Gallery").MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
+                foreach (var file in model.GalleryFiles.Where(x => x.Length > 0))
+                {
+                    var asset = await mediaStorage.SaveImageAsync(file, userId, ImageUploadProfile.SectionImage, HttpContext.RequestAborted);
+                    db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "Gallery", SortOrder = nextOrder });
                     nextOrder += 10;
                 }
             }
@@ -115,6 +126,19 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         return RedirectToAction(nameof(Edit), new { id = slot.Id });
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteGalleryImage(long id)
+    {
+        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var media = await db.SectionMedia.FirstOrDefaultAsync(x => x.Id == id && x.Role == "Gallery");
+        if (media is null) return NotFound();
+        var slot = await db.TemplateSections.AsNoTracking().FirstOrDefaultAsync(x => x.TemplateId == setting.ActiveTemplateId && x.SectionKey == media.SectionKey);
+        if (slot is null) return NotFound();
+        db.SectionMedia.Remove(media); await db.SaveChangesAsync();
+        TempData["Message"] = "Đã gỡ ảnh khỏi thư viện. File vẫn được giữ trong Media Library.";
+        return RedirectToAction(nameof(Edit), new { id = slot.Id });
+    }
+
     private async Task PrepareForViewAsync(SectionContentEditViewModel model, TemplateSection slot)
     {
         model.SectionKey = slot.SectionKey; model.SectionType = slot.SectionDefinition.SectionType; model.DisplayName = slot.DisplayName;
@@ -122,9 +146,14 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         model.ContentEditor = contentField.Editor; model.ContentHtmlPolicy = contentField.HtmlPolicy;
         model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
         model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
+        model.GalleryImages = await LoadMediaAsync(slot.SectionKey, "Gallery");
     }
 
     private async Task<IReadOnlyList<SectionMedia>> LoadBackgroundsAsync(string sectionKey) => await db.SectionMedia.AsNoTracking()
         .Include(x => x.MediaAsset).Where(x => x.SectionKey == sectionKey && x.Role == "Background")
+        .OrderBy(x => x.SortOrder).ToListAsync();
+
+    private async Task<IReadOnlyList<SectionMedia>> LoadMediaAsync(string sectionKey, string role) => await db.SectionMedia.AsNoTracking()
+        .Include(x => x.MediaAsset).Where(x => x.SectionKey == sectionKey && x.Role == role)
         .OrderBy(x => x.SortOrder).ToListAsync();
 }

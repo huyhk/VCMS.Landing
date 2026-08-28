@@ -64,11 +64,12 @@ public static class DbInitializer
     {
         var developerSections = new[]
         {
-            new DeveloperSection("hero", "Hero", "Hero", TextContentSchema),
+            new DeveloperSection("hero", "Hero", "Hero", HeroContentSchema),
             new DeveloperSection("cards", "Danh sách thẻ", "Cards", StructuredContentSchema),
             new DeveloperSection("content", "Nội dung và hình ảnh", "Content", RichContentSchema),
             new DeveloperSection("stats", "Số liệu", "Stats", StructuredContentSchema),
-            new DeveloperSection("cta", "Kêu gọi hành động", "Cta", NavigableTextContentSchema)
+            new DeveloperSection("cta", "Kêu gọi hành động", "Cta", NavigableTextContentSchema),
+            new DeveloperSection("gallery", "Thư viện hình ảnh", "Gallery", GalleryContentSchema)
         };
         var existingDefinitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
         foreach (var item in developerSections)
@@ -205,6 +206,14 @@ public static class DbInitializer
 
     private const string TextContentSchema = """
         {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"navigation":{"allowed":false,"defaultVisible":false}}
+        """;
+
+    private const string HeroContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"default","options":[{"value":"default","label":"Mặc định"},{"value":"lead-form-right","label":"Form liên hệ bên phải"}]}},"navigation":{"allowed":false,"defaultVisible":false}}
+        """;
+
+    private const string GalleryContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"}},"settings":{"layout":{"editor":"select","default":"grid","options":[{"value":"grid","label":"Lưới hình ảnh"},{"value":"featured","label":"Một ảnh lớn, các ảnh nhỏ"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private const string StructuredContentSchema = """

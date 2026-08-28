@@ -39,6 +39,14 @@
                 <div class="full media-thumbs">@foreach(var media in Model.Backgrounds){<article><img src="@media.MediaAsset.RelativeUrl" alt=""><span>Thứ tự @media.SortOrder</span><button class="danger-link" type="submit" formaction="@Url.Action("DeleteBackground",new{id=media.Id})" onclick="return confirm('Gỡ ảnh này khỏi Hero?')">Gỡ ảnh</button></article>}</div>
             }
         }
+        @if(Model.SectionType == "Gallery")
+        {
+            <div class="full"><label>Hình ảnh trong thư viện</label><input asp-for="GalleryFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple data-images-preview="gallery-image-preview"><small>Có thể chọn nhiều ảnh. Ảnh được tự tối ưu và hiển thị theo thứ tự upload.</small><div id="gallery-image-preview" class="media-thumbs upload-selection-preview"></div></div>
+            @if(Model.GalleryImages.Count > 0)
+            {
+                <div class="full media-thumbs">@foreach(var media in Model.GalleryImages){<article><img src="@media.MediaAsset.RelativeUrl" alt=""><span>Thứ tự @media.SortOrder</span><button class="danger-link" type="submit" formaction="@Url.Action("DeleteGalleryImage",new{id=media.Id})" onclick="return confirm('Gỡ ảnh này khỏi thư viện?')">Gỡ ảnh</button></article>}</div>
+            }
+        }
         <div><label asp-for="PrimaryButtonText">Nút chính</label><input asp-for="PrimaryButtonText"></div><div><label asp-for="PrimaryButtonUrl">Liên kết nút chính</label><input asp-for="PrimaryButtonUrl"></div>
         <div><label asp-for="SecondaryButtonText">Nút phụ</label><input asp-for="SecondaryButtonText"></div><div><label asp-for="SecondaryButtonUrl">Liên kết nút phụ</label><input asp-for="SecondaryButtonUrl"></div>
         @if(User.IsInRole("SuperAdministrator"))

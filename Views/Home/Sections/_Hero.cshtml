@@ -23,7 +23,7 @@
     }
     <div class="orb orb-one"></div>
     <div class="orb orb-two"></div>
-    <div class="container hero-grid">
+    <div class="container hero-grid @contentSection.LayoutVariant">
         <div>
             <p class="eyebrow">@contentSection.Eyebrow</p>
             <h1>@contentSection.Title</h1>
@@ -33,6 +33,14 @@
                 <a class="text-link" href="@contentSection.SecondaryButtonUrl">@contentSection.SecondaryButtonText</a>
             </div>
         </div>
+        @if (contentSection.LayoutVariant == "lead-form-right")
+        {
+            <div class="hero-lead-form">
+                @await Html.PartialAsync("~/Views/Home/Sections/_ContactForm.cshtml", Model.Page)
+            </div>
+        }
+        else
+        {
         <div class="hero-art">
             <div class="art-card">
                 <span class="art-label">Tăng trưởng bền vững</span>
@@ -41,5 +49,6 @@
             </div>
             <div class="mini-card">✦ <span>Thiết kế có mục tiêu</span></div>
         </div>
+        }
     </div>
 </section>
