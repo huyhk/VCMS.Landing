@@ -1,15 +1,15 @@
 @model SectionRenderViewModel
 @{
-    var section = Model.Section;
-    var lines = (section.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+    var contentSection = Model.Section;
+    var lines = (contentSection.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
 }
 
-<section id="@section.SectionKey" class="section">
+<section id="@contentSection.SectionKey" class="section">
     <div class="container">
         <div class="section-heading">
-            <p class="eyebrow">@section.Eyebrow</p>
-            <h2>@section.Title</h2>
-            <p>@section.Subtitle</p>
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
         </div>
         <div class="card-grid">
             @for (var index = 0; index < lines.Length; index++)

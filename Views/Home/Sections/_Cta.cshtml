@@ -1,13 +1,13 @@
 @model SectionRenderViewModel
 @{
-    var section = Model.Section;
+    var contentSection = Model.Section;
 }
 
-<section id="@section.SectionKey" class="section">
+<section id="@contentSection.SectionKey" class="section">
     <div class="container cta">
-        <p class="eyebrow">@section.Eyebrow</p>
-        <h2>@section.Title</h2>
-        <p>@section.Subtitle</p>
-        <a class="btn btn-light" href="@section.PrimaryButtonUrl">@section.PrimaryButtonText →</a>
+        <p class="eyebrow">@contentSection.Eyebrow</p>
+        <h2>@contentSection.Title</h2>
+        <p>@contentSection.Subtitle</p>
+        <a class="btn btn-light" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText →</a>
     </div>
 </section>

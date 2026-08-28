@@ -1,15 +1,15 @@
 @model SectionRenderViewModel
 @{
-    var section = Model.Section;
+    var contentSection = Model.Section;
     var settings = Model.Page.Settings;
 }
 
-<section id="@section.SectionKey" class="section contact-section">
+<section id="@contentSection.SectionKey" class="section contact-section">
     <div class="container contact-grid">
         <div>
-            <p class="eyebrow">@section.Eyebrow</p>
-            <h2>@section.Title</h2>
-            <p>@section.Subtitle</p>
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
             <div class="contact-details">
                 <a href="mailto:@settings.Email">@settings.Email</a>
                 <a href="tel:@settings.Phone">@settings.Phone</a>

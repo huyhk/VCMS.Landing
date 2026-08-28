@@ -1,12 +1,12 @@
 @model SectionRenderViewModel
 @{
-    var section = Model.Section;
-    var lines = (section.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+    var contentSection = Model.Section;
+    var lines = (contentSection.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
 }
 
-<section id="@section.SectionKey" class="stats">
+<section id="@contentSection.SectionKey" class="stats">
     <div class="container">
-        <h2>@section.Title</h2>
+        <h2>@contentSection.Title</h2>
         <div class="stats-grid">
             @foreach (var line in lines)
             {

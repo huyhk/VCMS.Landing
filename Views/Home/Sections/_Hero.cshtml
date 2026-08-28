@@ -1,11 +1,11 @@
 @model SectionRenderViewModel
 @{
-    var section = Model.Section;
-    Model.Page.SectionMedia.TryGetValue(section.SectionKey, out var heroMedia);
+    var contentSection = Model.Section;
+    Model.Page.SectionMedia.TryGetValue(contentSection.SectionKey, out var heroMedia);
     var backgrounds = heroMedia?.Where(x => x.Role == "Background").ToList() ?? new List<SectionMedia>();
 }
 
-<section id="@section.SectionKey" class="hero @(backgrounds.Count > 0 ? "has-background" : "")">
+<section id="@contentSection.SectionKey" class="hero @(backgrounds.Count > 0 ? "has-background" : "")">
     @if (backgrounds.Count > 0)
     {
         <div class="hero-backgrounds">
@@ -25,12 +25,12 @@
     <div class="orb orb-two"></div>
     <div class="container hero-grid">
         <div>
-            <p class="eyebrow">@section.Eyebrow</p>
-            <h1>@section.Title</h1>
-            <p class="lead">@section.Subtitle</p>
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h1>@contentSection.Title</h1>
+            <p class="lead">@contentSection.Subtitle</p>
             <div class="actions">
-                <a class="btn" href="@section.PrimaryButtonUrl">@section.PrimaryButtonText <span>→</span></a>
-                <a class="text-link" href="@section.SecondaryButtonUrl">@section.SecondaryButtonText</a>
+                <a class="btn" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText <span>→</span></a>
+                <a class="text-link" href="@contentSection.SecondaryButtonUrl">@contentSection.SecondaryButtonText</a>
             </div>
         </div>
         <div class="hero-art">
