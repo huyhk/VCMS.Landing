@@ -8,7 +8,7 @@ using LandingCms.Services;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace LandingCms.Controllers;
-public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger, IContentHtmlSanitizer htmlSanitizer) : Controller
+public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger, IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -28,13 +28,15 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         {
             if (!contents.TryGetValue(slot.SectionKey, out var content)) continue;
             var payload = JsonSerializer.Deserialize<SectionContentPayload>(content.ContentJson) ?? new();
-            if (slot.SectionDefinition.SectionType == "Content")
-                payload.Content = htmlSanitizer.Sanitize(payload.Content);
+            var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
+            var contentIsHtml = contentField.Editor == "html";
+            if (contentIsHtml)
+                payload.Content = htmlSanitizer.Sanitize(payload.Content, contentField.HtmlPolicy);
             sections.Add(new LandingSection
             {
                 SectionKey = slot.SectionKey, SectionType = slot.SectionDefinition.SectionType,
                 Eyebrow = payload.Eyebrow, Title = payload.Title, Subtitle = payload.Subtitle,
-                Content = payload.Content, ImageUrl = payload.ImageUrl,
+                Content = payload.Content, ContentIsHtml = contentIsHtml, ImageUrl = payload.ImageUrl,
                 PrimaryButtonText = payload.PrimaryButtonText, PrimaryButtonUrl = payload.PrimaryButtonUrl,
                 SecondaryButtonText = payload.SecondaryButtonText, SecondaryButtonUrl = payload.SecondaryButtonUrl,
                 SortOrder = slot.SortOrder, IsPublished = true

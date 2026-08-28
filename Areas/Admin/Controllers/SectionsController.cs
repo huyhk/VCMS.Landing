@@ -11,7 +11,7 @@ using LandingCms.Services;
 namespace LandingCms.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator,Editor")]
-public class SectionsController(ApplicationDbContext db, IMediaStorageService mediaStorage, IContentHtmlSanitizer htmlSanitizer) : Controller
+public class SectionsController(ApplicationDbContext db, IMediaStorageService mediaStorage, IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -32,12 +32,15 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (slot is null) return NotFound();
         var content = await db.SectionContents.AsNoTracking().FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
         var payload = content is null ? new SectionContentPayload() : JsonSerializer.Deserialize<SectionContentPayload>(content.ContentJson) ?? new();
-        if (slot.SectionDefinition.SectionType == "Content")
-            payload.Content = htmlSanitizer.Sanitize(payload.Content);
+        var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
+        if (contentField.Editor == "html")
+            payload.Content = htmlSanitizer.Sanitize(payload.Content, contentField.HtmlPolicy);
         var model = new SectionContentEditViewModel
         {
             TemplateSectionId = slot.Id, ContentId = content?.Id, SectionKey = slot.SectionKey,
             SectionType = slot.SectionDefinition.SectionType, DisplayName = slot.DisplayName,
+            ContentEditor = contentField.Editor, ContentHtmlPolicy = contentField.HtmlPolicy,
+            AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy),
             Eyebrow = payload.Eyebrow, Title = payload.Title, Subtitle = payload.Subtitle, Content = payload.Content,
             ImageUrl = payload.ImageUrl, PrimaryButtonText = payload.PrimaryButtonText, PrimaryButtonUrl = payload.PrimaryButtonUrl,
             SecondaryButtonText = payload.SecondaryButtonText, SecondaryButtonUrl = payload.SecondaryButtonUrl,
@@ -54,8 +57,11 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         var slot = await db.TemplateSections.Include(x => x.SectionDefinition)
             .FirstOrDefaultAsync(x => x.Id == model.TemplateSectionId && x.TemplateId == setting.ActiveTemplateId);
         if (slot is null) return NotFound();
-        if (slot.SectionDefinition.SectionType == "Content")
-            model.Content = htmlSanitizer.Sanitize(model.Content);
+        var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
+        model.ContentEditor = contentField.Editor; model.ContentHtmlPolicy = contentField.HtmlPolicy;
+        model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
+        if (contentField.Editor == "html")
+            model.Content = htmlSanitizer.Sanitize(model.Content, contentField.HtmlPolicy);
         if (slot.IsRequired && !model.IsPublished) ModelState.AddModelError(nameof(model.IsPublished), "Section bắt buộc không thể bị ẩn.");
         if (!ModelState.IsValid) { await PrepareForViewAsync(model, slot); return View("Edit", model); }
         try
@@ -109,6 +115,9 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
     private async Task PrepareForViewAsync(SectionContentEditViewModel model, TemplateSection slot)
     {
         model.SectionKey = slot.SectionKey; model.SectionType = slot.SectionDefinition.SectionType; model.DisplayName = slot.DisplayName;
+        var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
+        model.ContentEditor = contentField.Editor; model.ContentHtmlPolicy = contentField.HtmlPolicy;
+        model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
         model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
     }
 

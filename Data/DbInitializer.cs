@@ -62,16 +62,29 @@ public static class DbInitializer
 
     private static async Task SeedTemplateEngineAsync(ApplicationDbContext db)
     {
-        if (!await db.SectionDefinitions.AnyAsync())
+        var developerSections = new[]
         {
-            db.SectionDefinitions.AddRange(
-                new SectionDefinition { Key = "hero", Name = "Hero", SectionType = "Hero", SchemaJson = DefaultSchema },
-                new SectionDefinition { Key = "cards", Name = "Danh sách thẻ", SectionType = "Cards", SchemaJson = DefaultSchema },
-                new SectionDefinition { Key = "content", Name = "Nội dung và hình ảnh", SectionType = "Content", SchemaJson = DefaultSchema },
-                new SectionDefinition { Key = "stats", Name = "Số liệu", SectionType = "Stats", SchemaJson = DefaultSchema },
-                new SectionDefinition { Key = "cta", Name = "Kêu gọi hành động", SectionType = "Cta", SchemaJson = DefaultSchema });
-            await db.SaveChangesAsync();
+            new DeveloperSection("hero", "Hero", "Hero", TextContentSchema),
+            new DeveloperSection("cards", "Danh sách thẻ", "Cards", StructuredContentSchema),
+            new DeveloperSection("content", "Nội dung và hình ảnh", "Content", RichContentSchema),
+            new DeveloperSection("stats", "Số liệu", "Stats", StructuredContentSchema),
+            new DeveloperSection("cta", "Kêu gọi hành động", "Cta", TextContentSchema)
+        };
+        var existingDefinitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
+        foreach (var item in developerSections)
+        {
+            if (!existingDefinitions.TryGetValue(item.Key, out var definition))
+            {
+                definition = new SectionDefinition { Key = item.Key };
+                db.SectionDefinitions.Add(definition);
+                existingDefinitions[item.Key] = definition;
+            }
+            definition.Name = item.Name;
+            definition.SectionType = item.SectionType;
+            definition.SchemaJson = item.SchemaJson;
+            definition.IsEnabled = true;
         }
+        await db.SaveChangesAsync();
 
         var template = await db.PageTemplates.FirstOrDefaultAsync(x => x.Key == "corporate");
         if (template is null)
@@ -185,9 +198,18 @@ public static class DbInitializer
         await db.SaveChangesAsync();
     }
 
-    private const string DefaultSchema = """
-        {"fields":["eyebrow","title","subtitle","content","imageUrl","primaryButtonText","primaryButtonUrl","secondaryButtonText","secondaryButtonUrl"]}
+    private const string TextContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}}}
         """;
 
+    private const string StructuredContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"structured-list"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}}}
+        """;
+
+    private const string RichContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"html","htmlPolicy":"RichContent"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}}}
+        """;
+
+    private sealed record DeveloperSection(string Key, string Name, string SectionType, string SchemaJson);
     private sealed record DeveloperSetting(string Key, string Name, string Group, string ValueType, string Description, int SortOrder);
 }

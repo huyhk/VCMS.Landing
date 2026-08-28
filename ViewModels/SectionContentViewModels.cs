@@ -12,6 +12,9 @@ public class SectionContentEditViewModel
     public string SectionKey { get; set; } = "";
     public string SectionType { get; set; } = "";
     public string DisplayName { get; set; } = "";
+    public string ContentEditor { get; set; } = "textarea";
+    public string? ContentHtmlPolicy { get; set; }
+    public IReadOnlySet<string> AllowedHtmlTags { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     [StringLength(100)] public string? Eyebrow { get; set; }
     [Required, StringLength(200)] public string Title { get; set; } = "";
     [StringLength(300)] public string? Subtitle { get; set; }

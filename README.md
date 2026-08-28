@@ -86,6 +86,16 @@ branding.favicon
 
 Admin không thể tạo, đổi tên hoặc xóa key. Tính năng custom key dành cho page builder tương lai chưa được bật.
 
+## Section schema và HTML Editor
+
+Developer định nghĩa editor cho từng field trong `SectionDefinition.SchemaJson`; ứng dụng đồng bộ các schema mẫu từ `DbInitializer`. Ví dụ:
+
+```json
+{"fields":{"content":{"editor":"html","htmlPolicy":"RichContent"}}}
+```
+
+Các editor hiện hỗ trợ cho field `content` gồm `textarea`, `structured-list` và `html`. HTML policy (`BasicContent`, `RichContent`, `InlineOnly`) cùng danh sách tag/attribute an toàn được developer quản lý trong `ContentHtmlSanitizer`; Admin và Editor không thể thay đổi policy.
+
 ## Triển khai IIS
 
 1. Cài .NET 8 Hosting Bundle trên Windows Server.
