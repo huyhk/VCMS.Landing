@@ -9,7 +9,9 @@
         "LANDINGCMS_ADMIN_USERNAME": "sadmin",
         "LANDINGCMS_ADMIN_EMAIL": "sadmin@viennam.com",
 
-        "LANDINGCMS_ADMIN_PASSWORD": "Admin@123456"
+        "LANDINGCMS_ADMIN_PASSWORD": "Admin@123456",
+        "CloudflareTurnstile__SiteKey": "1x00000000000000000000AA",
+        "CloudflareTurnstile__SecretKey": "1x0000000000000000000000000000000AA"
       },
       "applicationUrl": "https://localhost:54131;http://localhost:54132"
     }
