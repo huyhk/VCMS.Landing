@@ -100,15 +100,16 @@ public static class DbInitializer
 
         if (!await db.TemplateSections.AnyAsync(x => x.TemplateId == template.Id))
         {
-            var definitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.SectionType);
+            var definitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
             var legacySections = await db.LandingSections.OrderBy(x => x.SortOrder).ToListAsync();
             foreach (var section in legacySections)
             {
-                if (!definitions.TryGetValue(section.SectionType, out var definition)) continue;
+                var definitionKey = developerSections.FirstOrDefault(x => x.SectionType == section.SectionType)?.Key;
+                if (definitionKey is null || !definitions.TryGetValue(definitionKey, out var definition)) continue;
                 db.TemplateSections.Add(new TemplateSection
                 {
                     TemplateId = template.Id, SectionDefinitionId = definition.Id, SectionKey = section.SectionKey,
-                    DisplayName = section.Title, SortOrder = section.SortOrder, IsRequired = section.SectionType is "Hero" or "Cta",
+                    DisplayName = GetDefaultDisplayName(section.SectionKey, section.Title), SortOrder = section.SortOrder, IsRequired = section.SectionType is "Hero" or "Cta",
                     IsEnabledByDefault = section.IsPublished, IsEnabled = section.IsPublished
                 });
                 if (!await db.SectionContents.AnyAsync(x => x.SectionKey == section.SectionKey))
@@ -155,18 +156,6 @@ public static class DbInitializer
                 });
             await db.SaveChangesAsync();
         }
-
-        var sectionLabels = new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["hero"] = "Hero", ["services"] = "Dịch vụ", ["about"] = "Giới thiệu",
-            ["stats"] = "Số liệu", ["contact"] = "Liên hệ"
-        };
-        var sampleTemplateIds = new[] { template.Id, minimalTemplate.Id };
-        var sampleSlots = await db.TemplateSections.Where(x => sampleTemplateIds.Contains(x.TemplateId)).ToListAsync();
-        foreach (var slot in sampleSlots)
-            if (sectionLabels.TryGetValue(slot.SectionKey, out var displayName))
-                slot.DisplayName = displayName;
-        await db.SaveChangesAsync();
 
         if (!await db.SiteTemplateSettings.AnyAsync())
         {
@@ -220,8 +209,14 @@ public static class DbInitializer
         """;
 
     private const string RichContentSchema = """
-        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"html","htmlPolicy":"RichContent"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}}}
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"html","htmlPolicy":"RichContent"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"image-left","options":[{"value":"image-left","label":"Hình bên trái"},{"value":"image-right","label":"Hình bên phải"}]}}}
         """;
+
+    private static string GetDefaultDisplayName(string sectionKey, string fallback) => sectionKey switch
+    {
+        "hero" => "Hero", "services" => "Dịch vụ", "about" => "Giới thiệu",
+        "stats" => "Số liệu", "contact" => "Liên hệ", _ => fallback
+    };
 
     private sealed record DeveloperSection(string Key, string Name, string SectionType, string SchemaJson);
     private sealed record DeveloperSetting(string Key, string Name, string Group, string ValueType, string Description, int SortOrder);

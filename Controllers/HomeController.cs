@@ -37,6 +37,7 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
                 SectionKey = slot.SectionKey, SectionType = slot.SectionDefinition.SectionType,
                 Eyebrow = payload.Eyebrow, Title = payload.Title, Subtitle = payload.Subtitle,
                 Content = payload.Content, ContentIsHtml = contentIsHtml, ImageUrl = payload.ImageUrl,
+                LayoutVariant = sectionSchemas.ResolveSetting(slot.SectionDefinition.SchemaJson, slot.SettingsJson, "layout") ?? "image-left",
                 PrimaryButtonText = payload.PrimaryButtonText, PrimaryButtonUrl = payload.PrimaryButtonUrl,
                 SecondaryButtonText = payload.SecondaryButtonText, SecondaryButtonUrl = payload.SecondaryButtonUrl,
                 SortOrder = slot.SortOrder, IsPublished = true

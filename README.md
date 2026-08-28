@@ -99,6 +99,10 @@ Các editor hiện hỗ trợ cho field `content` gồm `textarea`, `structured-
 
 Trạng thái hiển thị của section được lưu tại `TemplateSection.IsEnabled`, vì vậy bật/tắt một section chỉ ảnh hưởng template tương ứng. Chỉ SuperAdministrator được thay đổi trạng thái này; Administrator và Editor chỉ cập nhật nội dung. `SectionDefinition.IsEnabled` là trạng thái available toàn hệ thống do developer quản lý; `SectionContent.IsPublished` được dành riêng cho quy trình draft/publish nội dung sau này.
 
+SuperAdministrator quản lý cấu trúc từng template tại `Giao diện > Cấu hình section`: thêm nhiều instance từ definition có sẵn, đổi tên quản trị, bật/tắt, sắp xếp và gỡ section không bắt buộc. `SectionKey` được hệ thống tự sinh; SuperAdmin không thể sửa schema, view path hoặc HTML policy.
+
+Developer có thể khai báo layout variant trong `SectionDefinition.SchemaJson`. Ví dụ definition `Content` cung cấp `image-left` và `image-right`; lựa chọn của từng instance được lưu trong `TemplateSection.SettingsJson` và chỉ được nhận các giá trị có trong schema.
+
 ## Triển khai IIS
 
 1. Cài .NET 8 Hosting Bundle trên Windows Server.

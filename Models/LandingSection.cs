@@ -13,6 +13,7 @@ public class LandingSection
     [StringLength(300)] public string? Subtitle { get; set; }
     [StringLength(4000)] public string? Content { get; set; }
     [NotMapped] public bool ContentIsHtml { get; set; }
+    [NotMapped] public string LayoutVariant { get; set; } = "image-left";
     [StringLength(200)] public string? ImageUrl { get; set; }
     [StringLength(80)] public string? PrimaryButtonText { get; set; }
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }

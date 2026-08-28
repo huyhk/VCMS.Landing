@@ -1,0 +1,10 @@
+@model TemplateComposerViewModel
+@{ ViewData["Title"] = "Cấu hình section — " + Model.Template.Name; }
+<div class="page-title"><div><h1>Cấu hình section</h1><p>Template <strong>@Model.Template.Name</strong>@if(Model.IsActive){<span> · đang sử dụng</span>}</p></div><div><a class="button button-secondary" asp-action="Index">Quay lại</a> <a class="button" asp-action="CreateSection" asp-route-templateId="@Model.Template.Id">+ Thêm section</a></div></div>
+<section class="panel"><table><thead><tr><th>Thứ tự</th><th>Section</th><th>Definition</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+@for(var i=0;i<Model.Sections.Count;i++)
+{
+    var item=Model.Sections[i];
+    <tr><td><div class="order-actions"><form asp-action="MoveSection" method="post"><input type="hidden" name="id" value="@item.Id"><input type="hidden" name="direction" value="-1"><button type="submit" title="Lên" disabled="@(i==0)">↑</button></form><span>@item.SortOrder</span><form asp-action="MoveSection" method="post"><input type="hidden" name="id" value="@item.Id"><input type="hidden" name="direction" value="1"><button type="submit" title="Xuống" disabled="@(i==Model.Sections.Count-1)">↓</button></form></div></td><td><strong>@item.DisplayName</strong><small>#@item.SectionKey</small></td><td>@item.SectionDefinition.Name<small>@item.SectionDefinition.SectionType</small></td><td><span class="status @(item.IsEnabled?"on":"off")">@(item.IsEnabled?"Đang hiện":"Đang ẩn")</span></td><td><div class="row-actions"><a asp-action="EditSection" asp-route-id="@item.Id">Thiết lập</a>@if(Model.IsActive){<a asp-controller="Sections" asp-action="Edit" asp-route-id="@item.Id">Nội dung</a>}@if(!item.IsRequired){<form asp-action="RemoveSection" method="post" onsubmit="return confirm('Gỡ section này khỏi template? Nội dung sẽ được giữ lại.')"><input type="hidden" name="id" value="@item.Id"><button class="danger-link" type="submit">Gỡ</button></form>}</div></td></tr>
+}
+</tbody></table></section>
