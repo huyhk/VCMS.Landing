@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>@ViewData["Title"] — Landing CMS</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>@ViewData["Title"] — VCMS Landing</title>
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/templates-admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/media-admin.css" asp-append-version="true">
@@ -11,17 +12,51 @@
 </head>
 <body>
 <aside>
-    <a class="admin-brand" href="/admin">Landing<span>CMS</span></a>
+    <a class="admin-brand" href="/admin">VCMS <span>Landing</span></a>
     <nav>
         <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Tổng quan</a>
         <a asp-area="Admin" asp-controller="Sections" asp-action="Index">Nội dung landing page</a>
-        @if(User.IsInRole("SuperAdministrator")){<a asp-area="Admin" asp-controller="Templates" asp-action="Index">Giao diện</a>}
-        @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="Settings" asp-action="Index">Cấu hình website</a><a asp-area="Admin" asp-controller="Users" asp-action="Index">Tài khoản & phân quyền</a>}
-        @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="TemplateSettings" asp-action="Index">Setting values</a>}
-        @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="Contacts" asp-action="Index">Liên hệ khách hàng</a>}
+        @if (User.IsInRole("SuperAdministrator"))
+        {
+            <a asp-area="Admin" asp-controller="Templates" asp-action="Index">Giao diện</a>
+        }
+        @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator"))
+        {
+            <a asp-area="Admin" asp-controller="Settings" asp-action="Index">Cấu hình website</a>
+            <a asp-area="Admin" asp-controller="Users" asp-action="Index">Tài khoản & phân quyền</a>
+            <a asp-area="Admin" asp-controller="TemplateSettings" asp-action="Index">Setting values</a>
+            <a asp-area="Admin" asp-controller="Contacts" asp-action="Index">Liên hệ khách hàng</a>
+        }
         <a href="/" target="_blank">Xem website ↗</a>
     </nav>
 </aside>
-<div class="admin-main"><header><button class="sidebar-toggle">☰</button><details class="user-menu"><summary>@User.Identity?.Name <span>⌄</span></summary><div class="user-menu-dropdown"><a asp-area="" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a><form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button type="submit">Đăng xuất</button></form></div></details></header><main>@if(TempData["Message"] is string message){<div class="alert">@message</div>}@RenderBody()</main></div>
-<script src="~/js/admin.js" asp-append-version="true"></script>@await RenderSectionAsync("Scripts",false)
-</body></html>
+<div class="admin-main">
+    <header>
+        <button class="sidebar-toggle" type="button" aria-label="Mở menu quản trị">☰</button>
+        <details class="user-menu">
+            <summary>
+                <svg class="user-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-5.33 0-8 2.67-8 5.5V22h16v-2.5C20 16.67 17.33 14 12 14Z" />
+                </svg>
+                <span>@User.Identity?.Name</span>
+            </summary>
+            <div class="user-menu-dropdown">
+                <a asp-area="" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit">Đăng xuất</button>
+                </form>
+            </div>
+        </details>
+    </header>
+    <main>
+        @if (TempData["Message"] is string message)
+        {
+            <div class="alert">@message</div>
+        }
+        @RenderBody()
+    </main>
+</div>
+<script src="~/js/admin.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", false)
+</body>
+</html>
