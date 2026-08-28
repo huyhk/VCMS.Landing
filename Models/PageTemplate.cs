@@ -14,4 +14,5 @@ public class PageTemplate
     public bool IsEnabled { get; set; } = true;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public ICollection<TemplateSection> Sections { get; set; } = new List<TemplateSection>();
+    public ICollection<TemplateSetting> Settings { get; set; } = new List<TemplateSetting>();
 }

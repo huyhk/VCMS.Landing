@@ -105,6 +105,25 @@ public static class DbInitializer
                 "Name" TEXT NOT NULL, "Email" TEXT NOT NULL, "Phone" TEXT NULL, "Message" TEXT NOT NULL,
                 "Status" TEXT NOT NULL, "ErrorMessage" TEXT NULL, "IpAddress" TEXT NULL, "UserAgent" TEXT NULL,
                 "CreatedAtUtc" TEXT NOT NULL, "SentAtUtc" TEXT NULL);
+            CREATE TABLE IF NOT EXISTS "SettingDefinitions" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_SettingDefinitions" PRIMARY KEY AUTOINCREMENT,
+                "Key" TEXT NOT NULL, "Name" TEXT NOT NULL, "Description" TEXT NULL, "Group" TEXT NOT NULL,
+                "ValueType" TEXT NOT NULL, "DefaultValue" TEXT NULL, "ValidationJson" TEXT NOT NULL,
+                "Source" TEXT NOT NULL, "IsRequired" INTEGER NOT NULL, "IsSystem" INTEGER NOT NULL,
+                "IsEnabled" INTEGER NOT NULL, "SortOrder" INTEGER NOT NULL);
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_SettingDefinitions_Key" ON "SettingDefinitions" ("Key");
+            CREATE TABLE IF NOT EXISTS "SettingValues" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_SettingValues" PRIMARY KEY AUTOINCREMENT,
+                "SettingDefinitionId" INTEGER NOT NULL, "Value" TEXT NULL, "UpdatedAtUtc" TEXT NOT NULL, "UpdatedById" TEXT NULL,
+                CONSTRAINT "FK_SettingValues_SettingDefinitions_SettingDefinitionId" FOREIGN KEY ("SettingDefinitionId") REFERENCES "SettingDefinitions" ("Id") ON DELETE CASCADE);
+            CREATE UNIQUE INDEX IF NOT EXISTS "IX_SettingValues_SettingDefinitionId" ON "SettingValues" ("SettingDefinitionId");
+            CREATE TABLE IF NOT EXISTS "TemplateSettings" (
+                "TemplateId" INTEGER NOT NULL, "SettingDefinitionId" INTEGER NOT NULL, "IsRequired" INTEGER NOT NULL,
+                "SortOrder" INTEGER NOT NULL, "OverrideLabel" TEXT NULL, "OverrideDefaultValue" TEXT NULL,
+                CONSTRAINT "PK_TemplateSettings" PRIMARY KEY ("TemplateId", "SettingDefinitionId"),
+                CONSTRAINT "FK_TemplateSettings_PageTemplates_TemplateId" FOREIGN KEY ("TemplateId") REFERENCES "PageTemplates" ("Id") ON DELETE CASCADE,
+                CONSTRAINT "FK_TemplateSettings_SettingDefinitions_SettingDefinitionId" FOREIGN KEY ("SettingDefinitionId") REFERENCES "SettingDefinitions" ("Id") ON DELETE CASCADE);
+            CREATE INDEX IF NOT EXISTS "IX_TemplateSettings_SettingDefinitionId" ON "TemplateSettings" ("SettingDefinitionId");
             """);
     }
 
@@ -195,9 +214,44 @@ public static class DbInitializer
             db.SiteTemplateSettings.Add(new SiteTemplateSetting { ActiveTemplateId = template.Id });
             await db.SaveChangesAsync();
         }
+        await SeedSettingsAsync(db);
+    }
+
+    private static async Task SeedSettingsAsync(ApplicationDbContext db)
+    {
+        var developerSettings = new[]
+        {
+            new DeveloperSetting("social.facebook_url", "Trang Facebook", "Mạng xã hội", "Url", "URL trang Facebook của doanh nghiệp.", 10),
+            new DeveloperSetting("social.zalo_url", "Tài khoản Zalo", "Mạng xã hội", "Url", "URL Zalo OA hoặc liên kết liên hệ Zalo.", 20),
+            new DeveloperSetting("analytics.ga_measurement_id", "Google Analytics Measurement ID", "Phân tích", "Text", "Ví dụ: G-ABC123XYZ.", 30),
+            new DeveloperSetting("analytics.gtm_container_id", "Google Tag Manager Container ID", "Phân tích", "Text", "Ví dụ: GTM-ABC1234.", 40)
+        };
+        var existing = await db.SettingDefinitions.ToDictionaryAsync(x => x.Key);
+        foreach (var item in developerSettings)
+        {
+            if (!existing.TryGetValue(item.Key, out var definition))
+            {
+                definition = new SettingDefinition { Key = item.Key, Source = "Template", IsSystem = true };
+                db.SettingDefinitions.Add(definition); existing[item.Key] = definition;
+            }
+            definition.Name = item.Name; definition.Group = item.Group; definition.ValueType = item.ValueType;
+            definition.Description = item.Description; definition.SortOrder = item.SortOrder; definition.IsEnabled = true;
+        }
+        await db.SaveChangesAsync();
+
+        var templates = await db.PageTemplates.Where(x => x.Key == "corporate" || x.Key == "minimal").ToListAsync();
+        var developerKeys = developerSettings.Select(x => x.Key).ToHashSet(StringComparer.Ordinal);
+        var links = await db.TemplateSettings.Where(x => templates.Select(t => t.Id).Contains(x.TemplateId)).ToListAsync();
+        foreach (var template in templates)
+            foreach (var definition in existing.Values.Where(x => developerKeys.Contains(x.Key)))
+                if (!links.Any(x => x.TemplateId == template.Id && x.SettingDefinitionId == definition.Id))
+                    db.TemplateSettings.Add(new TemplateSetting { TemplateId = template.Id, SettingDefinitionId = definition.Id, SortOrder = definition.SortOrder });
+        await db.SaveChangesAsync();
     }
 
     private const string DefaultSchema = """
         {"fields":["eyebrow","title","subtitle","content","imageUrl","primaryButtonText","primaryButtonUrl","secondaryButtonText","secondaryButtonUrl"]}
         """;
+
+    private sealed record DeveloperSetting(string Key, string Name, string Group, string ValueType, string Description, int SortOrder);
 }

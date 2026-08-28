@@ -42,7 +42,18 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         if (!viewPath.StartsWith("~/Views/Templates/", StringComparison.Ordinal) ||
             !viewPath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase) || viewPath.Contains(".."))
             return Problem("Template view path is invalid.");
-        return View(viewPath, new HomeViewModel(settings, sections));
+        var extendedSettings = await db.TemplateSettings.AsNoTracking()
+            .Where(x => x.TemplateId == templateSetting.ActiveTemplateId && x.SettingDefinition.IsEnabled)
+            .Select(x => new
+            {
+                x.SettingDefinition.Key,
+                Value = x.SettingDefinition.Value != null && x.SettingDefinition.Value.Value != null
+                    ? x.SettingDefinition.Value.Value
+                    : x.OverrideDefaultValue ?? x.SettingDefinition.DefaultValue
+            })
+            .Where(x => x.Value != null && x.Value != "")
+            .ToDictionaryAsync(x => x.Key, x => x.Value!);
+        return View(viewPath, new HomeViewModel(settings, sections, extendedSettings));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]

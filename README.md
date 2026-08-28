@@ -15,6 +15,7 @@ Landing page một trang viết bằng ASP.NET Core MVC (.NET 8), SQLite và ASP
 - Hai template mẫu `Corporate` và `Minimal`; nội dung dùng chung theo `SectionKey` khi đổi template.
 - Mỗi tài khoản tự đổi mật khẩu; SuperAdmin có thể reset Administrator/Editor, Administrator có thể reset Editor.
 - Form liên hệ có chống spam cơ bản, lưu SQLite và gửi email SMTP tới email trong cấu hình website.
+- Setting keys do developer đồng bộ; Administrator/SuperAdmin cập nhật values theo template đang sử dụng.
 - SQLite được tự động tạo và nạp dữ liệu mẫu trong lần chạy đầu tiên.
 
 ## Chạy dự án
@@ -60,6 +61,21 @@ Smtp__FromName=Website Contact
 ```
 
 Không commit mật khẩu SMTP vào `appsettings.json`. Nếu gửi email thất bại, nội dung vẫn được lưu và có thể xem trong `Quản trị > Liên hệ khách hàng`.
+
+## Template settings
+
+Các key được developer khai báo trong `DbInitializer.SeedSettingsAsync`. Ứng dụng chỉ bổ sung/cập nhật definition và không ghi đè value mà quản trị viên đã nhập. Mỗi template được liên kết với các key qua `TemplateSetting`.
+
+Administrator và SuperAdministrator cập nhật giá trị tại `Quản trị > Setting values`. Trang chủ tải một dictionary cho template đang kích hoạt. Các key mẫu:
+
+```text
+social.facebook_url
+social.zalo_url
+analytics.ga_measurement_id
+analytics.gtm_container_id
+```
+
+Admin không thể tạo, đổi tên hoặc xóa key. Tính năng custom key dành cho page builder tương lai chưa được bật.
 
 ## Triển khai IIS
 

@@ -1,0 +1,33 @@
+@model SettingsEditViewModel
+@{ ViewData["Title"] = "Setting values"; }
+<div class="page-title"><div><h1>Setting values</h1><p>Template đang sử dụng: <strong>@Model.TemplateName</strong>. Key do developer định nghĩa và không thể thay đổi tại đây.</p></div></div>
+<form asp-action="Save" method="post">
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+    @foreach(var group in Model.Items.GroupBy(x => x.Group))
+    {
+        <section class="panel form-panel" style="margin-bottom:22px">
+            <div class="panel-head" style="margin:-28px -28px 24px"><div><h2>@group.Key</h2></div></div>
+            <div class="form-grid">
+            @foreach(var item in group)
+            {
+                <div class="full">
+                    <label for="setting-@item.DefinitionId">@item.Name @if(item.IsRequired){<span class="validation">*</span>}</label>
+                    <small><code>@item.Key</code>@if(!string.IsNullOrWhiteSpace(item.Description)){<span> — @item.Description</span>}</small>
+                    @if(item.ValueType == "MultilineText")
+                    {
+                        <textarea id="setting-@item.DefinitionId" name="values[@item.DefinitionId]" rows="4">@item.Value</textarea>
+                    }
+                    else
+                    {
+                        <input id="setting-@item.DefinitionId" name="values[@item.DefinitionId]" value="@item.Value"
+                               type="@(item.ValueType == "Url" ? "url" : item.ValueType == "Email" ? "email" : "text")"
+                               placeholder="@item.DefaultValue" required="@(item.IsRequired ? "required" : null)">
+                    }
+                    <span class="field-validation-error">@Html.ValidationMessage("values[" + item.DefinitionId + "]")</span>
+                </div>
+            }
+            </div>
+        </section>
+    }
+    <button class="button" type="submit">Lưu setting values</button>
+</form>
