@@ -15,6 +15,8 @@ public class TemplateSection
     public bool IsRequired { get; set; }
     public bool IsEnabledByDefault { get; set; } = true;
     public bool IsEnabled { get; set; } = true;
+    public bool ShowInNavigation { get; set; }
+    [StringLength(50)] public string? NavigationLabel { get; set; }
     [StringLength(300)] public string? ViewPath { get; set; }
     public string SettingsJson { get; set; } = "{}";
 }

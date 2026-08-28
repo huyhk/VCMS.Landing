@@ -43,6 +43,12 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
                 SortOrder = slot.SortOrder, IsPublished = true
             });
         }
+        var renderedKeys = sections.Select(x => x.SectionKey).ToHashSet(StringComparer.Ordinal);
+        var navigationItems = slots
+            .Where(x => renderedKeys.Contains(x.SectionKey) && x.ShowInNavigation && sectionSchemas.GetNavigation(x.SectionDefinition.SchemaJson).Allowed)
+            .Select(x => new NavigationItem(x.SectionKey,
+                string.IsNullOrWhiteSpace(x.NavigationLabel) ? x.DisplayName : x.NavigationLabel))
+            .ToList();
         var viewPath = templateSetting.ActiveTemplate.ViewPath;
         if (!viewPath.StartsWith("~/Views/Templates/", StringComparison.Ordinal) ||
             !viewPath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase) || viewPath.Contains(".."))
@@ -69,7 +75,7 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted)
             .OrderBy(x => x.SortOrder).ToListAsync();
         var sectionMedia = sectionMediaRows.GroupBy(x => x.SectionKey).ToDictionary(x => x.Key, x => (IReadOnlyList<SectionMedia>)x.ToList());
-        return View(viewPath, new HomeViewModel(settings, sections, extendedSettings, brandingMedia, sectionMedia));
+        return View(viewPath, new HomeViewModel(settings, sections, navigationItems, extendedSettings, brandingMedia, sectionMedia));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]

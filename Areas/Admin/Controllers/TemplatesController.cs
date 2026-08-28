@@ -53,7 +53,8 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         if (selected is null) return Problem("Chưa có SectionDefinition khả dụng.");
         return View(await PrepareComposerModelAsync(new TemplateSectionComposerViewModel
         {
-            TemplateId = templateId, SectionDefinitionId = selected.Id, DisplayName = selected.Name
+            TemplateId = templateId, SectionDefinitionId = selected.Id, DisplayName = selected.Name,
+            ShowInNavigation = sectionSchemas.GetNavigation(selected.SchemaJson).DefaultVisible
         }, definitions));
     }
 
@@ -64,6 +65,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         var definition = await db.SectionDefinitions.FirstOrDefaultAsync(x => x.Id == model.SectionDefinitionId && x.IsEnabled);
         if (template is null || definition is null) return NotFound();
         ValidateLayout(definition, model);
+        ValidateNavigation(definition, model);
         if (!ModelState.IsValid) return View(await PrepareComposerModelAsync(model));
         var nextOrder = (await db.TemplateSections.Where(x => x.TemplateId == template.Id).MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
         var keyPrefix = definition.Key[..Math.Min(definition.Key.Length, 70)];
@@ -72,7 +74,8 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         {
             TemplateId = template.Id, SectionDefinitionId = definition.Id, SectionKey = sectionKey,
             DisplayName = model.DisplayName.Trim(), SortOrder = nextOrder, IsEnabled = model.IsEnabled,
-            IsEnabledByDefault = true, SettingsJson = SerializeSettings(model.Layout)
+            IsEnabledByDefault = true, ShowInNavigation = model.ShowInNavigation,
+            NavigationLabel = NormalizeNavigationLabel(model), SettingsJson = SerializeSettings(model.Layout)
         });
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã thêm section {model.DisplayName}.";
@@ -88,6 +91,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         {
             Id = section.Id, TemplateId = section.TemplateId, SectionDefinitionId = section.SectionDefinitionId,
             DisplayName = section.DisplayName, IsEnabled = section.IsEnabled,
+            ShowInNavigation = section.ShowInNavigation, NavigationLabel = section.NavigationLabel,
             Layout = sectionSchemas.ResolveSetting(section.SectionDefinition.SchemaJson, section.SettingsJson, "layout")
         }));
     }
@@ -98,9 +102,12 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         var section = await db.TemplateSections.Include(x => x.SectionDefinition).FirstOrDefaultAsync(x => x.Id == model.Id && x.TemplateId == model.TemplateId);
         if (section is null) return NotFound();
         ValidateLayout(section.SectionDefinition, model);
+        ValidateNavigation(section.SectionDefinition, model);
         if (section.IsRequired && !model.IsEnabled) ModelState.AddModelError(nameof(model.IsEnabled), "Section bắt buộc không thể bị ẩn.");
         if (!ModelState.IsValid) return View(await PrepareComposerModelAsync(model));
         section.DisplayName = model.DisplayName.Trim(); section.IsEnabled = model.IsEnabled;
+        section.ShowInNavigation = model.ShowInNavigation;
+        section.NavigationLabel = NormalizeNavigationLabel(model);
         section.SettingsJson = SerializeSettings(model.Layout);
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã cập nhật section {section.DisplayName}.";
@@ -144,9 +151,23 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
             var layout = sectionSchemas.GetSetting(definition.SchemaJson, "layout");
             model.LayoutOptions = (IReadOnlyList<SectionSettingOption>?)layout?.Options ?? Array.Empty<SectionSettingOption>();
             model.Layout ??= layout?.Default;
+            model.NavigationAllowed = sectionSchemas.GetNavigation(definition.SchemaJson).Allowed;
         }
         return model;
     }
+
+
+    private void ValidateNavigation(SectionDefinition definition, TemplateSectionComposerViewModel model)
+    {
+        model.NavigationAllowed = sectionSchemas.GetNavigation(definition.SchemaJson).Allowed;
+        if (model.NavigationAllowed) return;
+        model.ShowInNavigation = false;
+        model.NavigationLabel = null;
+        ModelState.Remove(nameof(model.NavigationLabel));
+    }
+
+    private static string? NormalizeNavigationLabel(TemplateSectionComposerViewModel model) =>
+        model.ShowInNavigation ? (string.IsNullOrWhiteSpace(model.NavigationLabel) ? model.DisplayName.Trim() : model.NavigationLabel.Trim()) : null;
 
     private void ValidateLayout(SectionDefinition definition, TemplateSectionComposerViewModel model)
     {

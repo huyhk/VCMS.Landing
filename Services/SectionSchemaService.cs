@@ -21,16 +21,24 @@ public sealed class SectionSettingSchema
     public List<SectionSettingOption> Options { get; set; } = new();
 }
 
+public sealed class SectionNavigationSchema
+{
+    public bool Allowed { get; set; }
+    public bool DefaultVisible { get; set; }
+}
+
 public sealed class SectionSchemaDocument
 {
     public Dictionary<string, SectionFieldSchema> Fields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, SectionSettingSchema> Settings { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public SectionNavigationSchema Navigation { get; set; } = new();
 }
 
 public interface ISectionSchemaService
 {
     SectionFieldSchema GetField(string? schemaJson, string fieldName);
     SectionSettingSchema? GetSetting(string? schemaJson, string settingName);
+    SectionNavigationSchema GetNavigation(string? schemaJson);
     string? ResolveSetting(string? schemaJson, string? settingsJson, string settingName);
 }
 
@@ -57,6 +65,8 @@ public sealed class SectionSchemaService : ISectionSchemaService
         var schema = ParseSchema(schemaJson);
         return schema?.Settings.FirstOrDefault(x => string.Equals(x.Key, settingName, StringComparison.OrdinalIgnoreCase)).Value;
     }
+
+    public SectionNavigationSchema GetNavigation(string? schemaJson) => ParseSchema(schemaJson)?.Navigation ?? new();
 
     public string? ResolveSetting(string? schemaJson, string? settingsJson, string settingName)
     {

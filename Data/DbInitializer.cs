@@ -68,7 +68,7 @@ public static class DbInitializer
             new DeveloperSection("cards", "Danh sách thẻ", "Cards", StructuredContentSchema),
             new DeveloperSection("content", "Nội dung và hình ảnh", "Content", RichContentSchema),
             new DeveloperSection("stats", "Số liệu", "Stats", StructuredContentSchema),
-            new DeveloperSection("cta", "Kêu gọi hành động", "Cta", TextContentSchema)
+            new DeveloperSection("cta", "Kêu gọi hành động", "Cta", NavigableTextContentSchema)
         };
         var existingDefinitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
         foreach (var item in developerSections)
@@ -110,7 +110,9 @@ public static class DbInitializer
                 {
                     TemplateId = template.Id, SectionDefinitionId = definition.Id, SectionKey = section.SectionKey,
                     DisplayName = GetDefaultDisplayName(section.SectionKey, section.Title), SortOrder = section.SortOrder, IsRequired = section.SectionType is "Hero" or "Cta",
-                    IsEnabledByDefault = section.IsPublished, IsEnabled = section.IsPublished
+                    IsEnabledByDefault = section.IsPublished, IsEnabled = section.IsPublished,
+                    ShowInNavigation = section.SectionKey is "services" or "about" or "contact",
+                    NavigationLabel = GetDefaultNavigationLabel(section.SectionKey)
                 });
                 if (!await db.SectionContents.AnyAsync(x => x.SectionKey == section.SectionKey))
                 {
@@ -152,6 +154,7 @@ public static class DbInitializer
                     SectionKey = slot.SectionKey, DisplayName = slot.DisplayName, SortOrder = slot.SortOrder,
                     IsRequired = slot.IsRequired, IsEnabledByDefault = slot.IsEnabledByDefault,
                     IsEnabled = slot.IsEnabled,
+                    ShowInNavigation = slot.ShowInNavigation, NavigationLabel = slot.NavigationLabel,
                     ViewPath = slot.ViewPath, SettingsJson = slot.SettingsJson
                 });
             await db.SaveChangesAsync();
@@ -201,21 +204,30 @@ public static class DbInitializer
     }
 
     private const string TextContentSchema = """
-        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}}}
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"navigation":{"allowed":false,"defaultVisible":false}}
         """;
 
     private const string StructuredContentSchema = """
-        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"structured-list"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}}}
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"structured-list"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string NavigableTextContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private const string RichContentSchema = """
-        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"html","htmlPolicy":"RichContent"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"image-left","options":[{"value":"image-left","label":"Hình bên trái"},{"value":"image-right","label":"Hình bên phải"}]}}}
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"html","htmlPolicy":"RichContent"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"image-left","options":[{"value":"image-left","label":"Hình bên trái"},{"value":"image-right","label":"Hình bên phải"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private static string GetDefaultDisplayName(string sectionKey, string fallback) => sectionKey switch
     {
         "hero" => "Hero", "services" => "Dịch vụ", "about" => "Giới thiệu",
         "stats" => "Số liệu", "contact" => "Liên hệ", _ => fallback
+    };
+
+    private static string? GetDefaultNavigationLabel(string sectionKey) => sectionKey switch
+    {
+        "services" => "Dịch vụ", "about" => "Về chúng tôi", "contact" => "Liên hệ", _ => null
     };
 
     private sealed record DeveloperSection(string Key, string Name, string SectionType, string SchemaJson);
