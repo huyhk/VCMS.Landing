@@ -26,7 +26,7 @@ public static class DbInitializer
                 await roleManager.CreateAsync(new IdentityRole(role));
 
         if (!await db.SiteSettings.AnyAsync())
-            db.SiteSettings.Add(new SiteSetting { SiteName = "VCMS Landing Studio", LogoText = "VCMS", SeoTitle = "VCMS Landing Studio — Biến ý tưởng thành tăng trưởng", SeoDescription = "Giải pháp số tinh gọn cho doanh nghiệp hiện đại.", Phone = "0900 000 000", Email = "hello@example.com", Address = "TP. Hồ Chí Minh", FooterText = "© 2026 Nova Studio. All rights reserved." });
+            db.SiteSettings.Add(new SiteSetting { SiteName = "VCMS Landing Studio", CompanyName = "Công ty TNHH Nova Studio", LogoText = "VCMS", SeoTitle = "VCMS Landing Studio — Biến ý tưởng thành tăng trưởng", SeoDescription = "Giải pháp số tinh gọn cho doanh nghiệp hiện đại.", Phone = "0900 000 000", Email = "hello@example.com", Address = "TP. Hồ Chí Minh", FooterText = "© 2026 Nova Studio. All rights reserved." });
 
         if (!await db.LandingSections.AnyAsync())
         {
