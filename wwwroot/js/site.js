@@ -1,1 +1,2 @@
 document.querySelector('.menu-button')?.addEventListener('click',()=>document.querySelector('.nav nav')?.classList.toggle('open'));
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.querySelectorAll('.hero-backgrounds').forEach(container=>{const images=[...container.querySelectorAll('img')];if(images.length<2)return;let index=0;setInterval(()=>{if(document.hidden)return;images[index].classList.remove('active');index=(index+1)%images.length;images[index].classList.add('active')},10000)})}

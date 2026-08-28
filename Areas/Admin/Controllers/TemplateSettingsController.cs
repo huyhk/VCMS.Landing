@@ -6,11 +6,12 @@ using LandingCms.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using LandingCms.Services;
 
 namespace LandingCms.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator")]
-public partial class TemplateSettingsController(ApplicationDbContext db) : Controller
+public partial class TemplateSettingsController(ApplicationDbContext db, IMediaStorageService mediaStorage) : Controller
 {
     public async Task<IActionResult> Index() => View(await LoadModelAsync());
 
@@ -31,6 +32,24 @@ public partial class TemplateSettingsController(ApplicationDbContext db) : Contr
         if (!ModelState.IsValid) return View("Index", await LoadModelAsync(values));
         var ids = definitions.Select(x => x.Id).ToArray();
         var stored = await db.SettingValues.Where(x => ids.Contains(x.SettingDefinitionId)).ToDictionaryAsync(x => x.SettingDefinitionId);
+        foreach (var definition in definitions.Where(x => x.ValueType == "Image"))
+        {
+            var file = Request.Form.Files.FirstOrDefault(x => x.Name == $"images[{definition.Id}]");
+            if (file is not null && file.Length > 0)
+            {
+                try
+                {
+                    var asset = await mediaStorage.SaveImageAsync(file, User.FindFirstValue(ClaimTypes.NameIdentifier), HttpContext.RequestAborted);
+                    values[definition.Id] = asset.Id.ToString();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError($"images[{definition.Id}]", ex.Message);
+                }
+            }
+            else if (stored.TryGetValue(definition.Id, out var current)) values[definition.Id] = current.Value;
+        }
+        if (!ModelState.IsValid) return View("Index", await LoadModelAsync(values));
         foreach (var definition in definitions)
         {
             values.TryGetValue(definition.Id, out var value); value = value?.Trim();
@@ -47,12 +66,16 @@ public partial class TemplateSettingsController(ApplicationDbContext db) : Contr
         var setting = await db.SiteTemplateSettings.AsNoTracking().Include(x => x.ActiveTemplate).FirstAsync();
         var links = await db.TemplateSettings.AsNoTracking().Include(x => x.SettingDefinition).ThenInclude(x => x.Value)
             .Where(x => x.TemplateId == setting.ActiveTemplateId && x.SettingDefinition.IsEnabled).OrderBy(x => x.SortOrder).ToListAsync();
+        var mediaIds = links.Where(x => x.SettingDefinition.ValueType == "Image")
+            .Select(x => long.TryParse(x.SettingDefinition.Value?.Value, out var id) ? id : 0).Where(x => x > 0).ToArray();
+        var media = await db.MediaAssets.AsNoTracking().Where(x => mediaIds.Contains(x.Id) && !x.IsDeleted).ToDictionaryAsync(x => x.Id);
         return new SettingsEditViewModel(setting.ActiveTemplate.Name, links.Select(x => new SettingEditItemViewModel(
             x.SettingDefinitionId, x.SettingDefinition.Key, x.OverrideLabel ?? x.SettingDefinition.Name,
             x.SettingDefinition.Description, x.SettingDefinition.Group, x.SettingDefinition.ValueType,
             x.IsRequired || x.SettingDefinition.IsRequired,
             posted is not null && posted.TryGetValue(x.SettingDefinitionId, out var postedValue) ? postedValue : x.SettingDefinition.Value?.Value,
-            x.OverrideDefaultValue ?? x.SettingDefinition.DefaultValue, x.SortOrder)).ToList());
+            x.OverrideDefaultValue ?? x.SettingDefinition.DefaultValue, x.SortOrder,
+            long.TryParse(x.SettingDefinition.Value?.Value, out var mediaId) && media.TryGetValue(mediaId, out var asset) ? asset.RelativeUrl : null)).ToList());
     }
 
     private static bool IsValid(SettingDefinition definition, string value) => definition.ValueType switch

@@ -19,7 +19,6 @@ public static class DbInitializer
         var environment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
         Directory.CreateDirectory(Path.Combine(environment.ContentRootPath, "App_Data"));
         await db.Database.MigrateAsync();
-        //await EnsureTemplateSchemaAsync(db);
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         foreach (var role in new[] { SuperAdministrator, Administrator, Editor })
@@ -59,72 +58,6 @@ public static class DbInitializer
                     throw new InvalidOperationException("Không thể gán quyền SuperAdmin: " + string.Join("; ", roleResult.Errors.Select(x => x.Description)));
             }
         }
-    }
-
-    private static async Task EnsureTemplateSchemaAsync(ApplicationDbContext db)
-    {
-        await db.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE IF NOT EXISTS "PageTemplates" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_PageTemplates" PRIMARY KEY AUTOINCREMENT,
-                "Key" TEXT NOT NULL, "Name" TEXT NOT NULL, "Description" TEXT NULL,
-                "ViewPath" TEXT NOT NULL, "PreviewImageUrl" TEXT NULL, "Version" TEXT NOT NULL,
-                "IsEnabled" INTEGER NOT NULL, "CreatedAtUtc" TEXT NOT NULL);
-            CREATE UNIQUE INDEX IF NOT EXISTS "IX_PageTemplates_Key" ON "PageTemplates" ("Key");
-            CREATE TABLE IF NOT EXISTS "SectionDefinitions" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_SectionDefinitions" PRIMARY KEY AUTOINCREMENT,
-                "Key" TEXT NOT NULL, "Name" TEXT NOT NULL, "SectionType" TEXT NOT NULL,
-                "SchemaJson" TEXT NOT NULL, "IsEnabled" INTEGER NOT NULL);
-            CREATE UNIQUE INDEX IF NOT EXISTS "IX_SectionDefinitions_Key" ON "SectionDefinitions" ("Key");
-            CREATE TABLE IF NOT EXISTS "TemplateSections" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_TemplateSections" PRIMARY KEY AUTOINCREMENT,
-                "TemplateId" INTEGER NOT NULL, "SectionDefinitionId" INTEGER NOT NULL,
-                "SectionKey" TEXT NOT NULL, "DisplayName" TEXT NOT NULL, "SortOrder" INTEGER NOT NULL,
-                "IsRequired" INTEGER NOT NULL, "IsEnabledByDefault" INTEGER NOT NULL,
-                "ViewPath" TEXT NULL, "SettingsJson" TEXT NOT NULL,
-                CONSTRAINT "FK_TemplateSections_PageTemplates_TemplateId" FOREIGN KEY ("TemplateId") REFERENCES "PageTemplates" ("Id") ON DELETE CASCADE,
-                CONSTRAINT "FK_TemplateSections_SectionDefinitions_SectionDefinitionId" FOREIGN KEY ("SectionDefinitionId") REFERENCES "SectionDefinitions" ("Id") ON DELETE CASCADE);
-            CREATE UNIQUE INDEX IF NOT EXISTS "IX_TemplateSections_TemplateId_SectionKey" ON "TemplateSections" ("TemplateId", "SectionKey");
-            CREATE INDEX IF NOT EXISTS "IX_TemplateSections_SectionDefinitionId" ON "TemplateSections" ("SectionDefinitionId");
-            CREATE TABLE IF NOT EXISTS "SectionContents" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_SectionContents" PRIMARY KEY AUTOINCREMENT,
-                "SectionKey" TEXT NOT NULL, "SectionDefinitionId" INTEGER NOT NULL,
-                "ContentJson" TEXT NOT NULL, "IsPublished" INTEGER NOT NULL,
-                "UpdatedAtUtc" TEXT NOT NULL, "UpdatedById" TEXT NULL,
-                CONSTRAINT "FK_SectionContents_SectionDefinitions_SectionDefinitionId" FOREIGN KEY ("SectionDefinitionId") REFERENCES "SectionDefinitions" ("Id") ON DELETE CASCADE);
-            CREATE UNIQUE INDEX IF NOT EXISTS "IX_SectionContents_SectionKey" ON "SectionContents" ("SectionKey");
-            CREATE INDEX IF NOT EXISTS "IX_SectionContents_SectionDefinitionId" ON "SectionContents" ("SectionDefinitionId");
-            CREATE TABLE IF NOT EXISTS "SiteTemplateSettings" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_SiteTemplateSettings" PRIMARY KEY AUTOINCREMENT,
-                "ActiveTemplateId" INTEGER NOT NULL, "DraftTemplateId" INTEGER NULL, "UpdatedAtUtc" TEXT NOT NULL,
-                CONSTRAINT "FK_SiteTemplateSettings_PageTemplates_ActiveTemplateId" FOREIGN KEY ("ActiveTemplateId") REFERENCES "PageTemplates" ("Id") ON DELETE RESTRICT,
-                CONSTRAINT "FK_SiteTemplateSettings_PageTemplates_DraftTemplateId" FOREIGN KEY ("DraftTemplateId") REFERENCES "PageTemplates" ("Id") ON DELETE RESTRICT);
-            CREATE INDEX IF NOT EXISTS "IX_SiteTemplateSettings_ActiveTemplateId" ON "SiteTemplateSettings" ("ActiveTemplateId");
-            CREATE INDEX IF NOT EXISTS "IX_SiteTemplateSettings_DraftTemplateId" ON "SiteTemplateSettings" ("DraftTemplateId");
-            CREATE TABLE IF NOT EXISTS "ContactSubmissions" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_ContactSubmissions" PRIMARY KEY AUTOINCREMENT,
-                "Name" TEXT NOT NULL, "Email" TEXT NOT NULL, "Phone" TEXT NULL, "Message" TEXT NOT NULL,
-                "Status" TEXT NOT NULL, "ErrorMessage" TEXT NULL, "IpAddress" TEXT NULL, "UserAgent" TEXT NULL,
-                "CreatedAtUtc" TEXT NOT NULL, "SentAtUtc" TEXT NULL);
-            CREATE TABLE IF NOT EXISTS "SettingDefinitions" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_SettingDefinitions" PRIMARY KEY AUTOINCREMENT,
-                "Key" TEXT NOT NULL, "Name" TEXT NOT NULL, "Description" TEXT NULL, "Group" TEXT NOT NULL,
-                "ValueType" TEXT NOT NULL, "DefaultValue" TEXT NULL, "ValidationJson" TEXT NOT NULL,
-                "Source" TEXT NOT NULL, "IsRequired" INTEGER NOT NULL, "IsSystem" INTEGER NOT NULL,
-                "IsEnabled" INTEGER NOT NULL, "SortOrder" INTEGER NOT NULL);
-            CREATE UNIQUE INDEX IF NOT EXISTS "IX_SettingDefinitions_Key" ON "SettingDefinitions" ("Key");
-            CREATE TABLE IF NOT EXISTS "SettingValues" (
-                "Id" INTEGER NOT NULL CONSTRAINT "PK_SettingValues" PRIMARY KEY AUTOINCREMENT,
-                "SettingDefinitionId" INTEGER NOT NULL, "Value" TEXT NULL, "UpdatedAtUtc" TEXT NOT NULL, "UpdatedById" TEXT NULL,
-                CONSTRAINT "FK_SettingValues_SettingDefinitions_SettingDefinitionId" FOREIGN KEY ("SettingDefinitionId") REFERENCES "SettingDefinitions" ("Id") ON DELETE CASCADE);
-            CREATE UNIQUE INDEX IF NOT EXISTS "IX_SettingValues_SettingDefinitionId" ON "SettingValues" ("SettingDefinitionId");
-            CREATE TABLE IF NOT EXISTS "TemplateSettings" (
-                "TemplateId" INTEGER NOT NULL, "SettingDefinitionId" INTEGER NOT NULL, "IsRequired" INTEGER NOT NULL,
-                "SortOrder" INTEGER NOT NULL, "OverrideLabel" TEXT NULL, "OverrideDefaultValue" TEXT NULL,
-                CONSTRAINT "PK_TemplateSettings" PRIMARY KEY ("TemplateId", "SettingDefinitionId"),
-                CONSTRAINT "FK_TemplateSettings_PageTemplates_TemplateId" FOREIGN KEY ("TemplateId") REFERENCES "PageTemplates" ("Id") ON DELETE CASCADE,
-                CONSTRAINT "FK_TemplateSettings_SettingDefinitions_SettingDefinitionId" FOREIGN KEY ("SettingDefinitionId") REFERENCES "SettingDefinitions" ("Id") ON DELETE CASCADE);
-            CREATE INDEX IF NOT EXISTS "IX_TemplateSettings_SettingDefinitionId" ON "TemplateSettings" ("SettingDefinitionId");
-            """);
     }
 
     private static async Task SeedTemplateEngineAsync(ApplicationDbContext db)
@@ -221,6 +154,9 @@ public static class DbInitializer
     {
         var developerSettings = new[]
         {
+            new DeveloperSetting("branding.logo_primary", "Logo chính", "Nhận diện thương hiệu", "Image", "Logo dùng trên nền sáng.", 1),
+            new DeveloperSetting("branding.logo_light", "Logo sáng", "Nhận diện thương hiệu", "Image", "Logo trắng/sáng dùng trên Hero hoặc nền tối.", 2),
+            new DeveloperSetting("branding.favicon", "Favicon", "Nhận diện thương hiệu", "Image", "Icon hiển thị trên tab trình duyệt.", 3),
             new DeveloperSetting("social.facebook_url", "Trang Facebook", "Mạng xã hội", "Url", "URL trang Facebook của doanh nghiệp.", 10),
             new DeveloperSetting("social.zalo_url", "Tài khoản Zalo", "Mạng xã hội", "Url", "URL Zalo OA hoặc liên kết liên hệ Zalo.", 20),
             new DeveloperSetting("analytics.ga_measurement_id", "Google Analytics Measurement ID", "Phân tích", "Text", "Ví dụ: G-ABC123XYZ.", 30),

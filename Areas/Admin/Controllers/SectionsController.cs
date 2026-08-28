@@ -6,11 +6,12 @@ using LandingCms.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using LandingCms.Services;
 
 namespace LandingCms.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator,Editor")]
-public class SectionsController(ApplicationDbContext db) : Controller
+public class SectionsController(ApplicationDbContext db, IMediaStorageService mediaStorage) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -31,7 +32,7 @@ public class SectionsController(ApplicationDbContext db) : Controller
         if (slot is null) return NotFound();
         var content = await db.SectionContents.AsNoTracking().FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
         var payload = content is null ? new SectionContentPayload() : JsonSerializer.Deserialize<SectionContentPayload>(content.ContentJson) ?? new();
-        return View(new SectionContentEditViewModel
+        var model = new SectionContentEditViewModel
         {
             TemplateSectionId = slot.Id, ContentId = content?.Id, SectionKey = slot.SectionKey,
             SectionType = slot.SectionDefinition.SectionType, DisplayName = slot.DisplayName,
@@ -39,7 +40,9 @@ public class SectionsController(ApplicationDbContext db) : Controller
             ImageUrl = payload.ImageUrl, PrimaryButtonText = payload.PrimaryButtonText, PrimaryButtonUrl = payload.PrimaryButtonUrl,
             SecondaryButtonText = payload.SecondaryButtonText, SecondaryButtonUrl = payload.SecondaryButtonUrl,
             IsPublished = content?.IsPublished ?? slot.IsEnabledByDefault
-        });
+        };
+        model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
+        return View(model);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -50,7 +53,27 @@ public class SectionsController(ApplicationDbContext db) : Controller
             .FirstOrDefaultAsync(x => x.Id == model.TemplateSectionId && x.TemplateId == setting.ActiveTemplateId);
         if (slot is null) return NotFound();
         if (slot.IsRequired && !model.IsPublished) ModelState.AddModelError(nameof(model.IsPublished), "Section bắt buộc không thể bị ẩn.");
-        if (!ModelState.IsValid) { model.SectionKey = slot.SectionKey; model.SectionType = slot.SectionDefinition.SectionType; model.DisplayName = slot.DisplayName; return View("Edit", model); }
+        if (!ModelState.IsValid) { await PrepareForViewAsync(model, slot); return View("Edit", model); }
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (model.ImageFile is { Length: > 0 })
+                model.ImageUrl = (await mediaStorage.SaveImageAsync(model.ImageFile, userId, HttpContext.RequestAborted)).RelativeUrl;
+            if (slot.SectionDefinition.SectionType == "Hero" && model.BackgroundFiles.Count > 0)
+            {
+                var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Background").MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
+                foreach (var file in model.BackgroundFiles.Where(x => x.Length > 0))
+                {
+                    var asset = await mediaStorage.SaveImageAsync(file, userId, HttpContext.RequestAborted);
+                    db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "Background", SortOrder = nextOrder });
+                    nextOrder += 10;
+                }
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError("", ex.Message); await PrepareForViewAsync(model, slot); return View("Edit", model);
+        }
         var content = await db.SectionContents.FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
         if (content is null) { content = new SectionContent { SectionKey = slot.SectionKey, SectionDefinitionId = slot.SectionDefinitionId }; db.SectionContents.Add(content); }
         content.ContentJson = JsonSerializer.Serialize(new SectionContentPayload
@@ -65,4 +88,27 @@ public class SectionsController(ApplicationDbContext db) : Controller
         TempData["Message"] = $"Đã lưu {slot.DisplayName}.";
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteBackground(long id)
+    {
+        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var media = await db.SectionMedia.FirstOrDefaultAsync(x => x.Id == id && x.Role == "Background");
+        if (media is null) return NotFound();
+        var slot = await db.TemplateSections.AsNoTracking().FirstOrDefaultAsync(x => x.TemplateId == setting.ActiveTemplateId && x.SectionKey == media.SectionKey);
+        if (slot is null) return NotFound();
+        db.SectionMedia.Remove(media); await db.SaveChangesAsync();
+        TempData["Message"] = "Đã gỡ ảnh khỏi Hero. File vẫn được giữ trong Media Library.";
+        return RedirectToAction(nameof(Edit), new { id = slot.Id });
+    }
+
+    private async Task PrepareForViewAsync(SectionContentEditViewModel model, TemplateSection slot)
+    {
+        model.SectionKey = slot.SectionKey; model.SectionType = slot.SectionDefinition.SectionType; model.DisplayName = slot.DisplayName;
+        model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
+    }
+
+    private async Task<IReadOnlyList<SectionMedia>> LoadBackgroundsAsync(string sectionKey) => await db.SectionMedia.AsNoTracking()
+        .Include(x => x.MediaAsset).Where(x => x.SectionKey == sectionKey && x.Role == "Background")
+        .OrderBy(x => x.SortOrder).ToListAsync();
 }

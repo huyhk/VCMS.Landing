@@ -1,4 +1,27 @@
 @model SectionContentEditViewModel
 @{ ViewData["Title"] = "Chỉnh sửa " + Model.DisplayName; }
 <div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Section <strong>#@Model.SectionKey</strong> · @Model.SectionType</p></div><a class="button button-secondary" asp-action="Index">Quay lại</a></div>
-<form asp-action="Save" method="post" class="panel form-panel"><div asp-validation-summary="ModelOnly" class="validation"></div><input asp-for="TemplateSectionId" type="hidden"><input asp-for="ContentId" type="hidden"><input asp-for="SectionKey" type="hidden"><input asp-for="SectionType" type="hidden"><input asp-for="DisplayName" type="hidden"><div class="form-grid"><div class="full"><label asp-for="Eyebrow">Nhãn nhỏ</label><input asp-for="Eyebrow"></div><div class="full"><label asp-for="Title">Tiêu đề</label><input asp-for="Title"><span asp-validation-for="Title"></span></div><div class="full"><label asp-for="Subtitle">Mô tả ngắn</label><textarea asp-for="Subtitle" rows="2"></textarea></div><div class="full"><label asp-for="Content">Nội dung</label><textarea asp-for="Content" rows="7"></textarea><small>Cards/Stats: mỗi dòng là một mục, phân cách tiêu đề và mô tả bằng ký tự |</small></div><div class="full"><label asp-for="ImageUrl">URL hình ảnh</label><input asp-for="ImageUrl"></div><div><label asp-for="PrimaryButtonText">Nút chính</label><input asp-for="PrimaryButtonText"></div><div><label asp-for="PrimaryButtonUrl">Liên kết nút chính</label><input asp-for="PrimaryButtonUrl"></div><div><label asp-for="SecondaryButtonText">Nút phụ</label><input asp-for="SecondaryButtonText"></div><div><label asp-for="SecondaryButtonUrl">Liên kết nút phụ</label><input asp-for="SecondaryButtonUrl"></div><div class="check-row"><label><input asp-for="IsPublished"> Hiển thị section này</label><span asp-validation-for="IsPublished"></span></div></div><div class="form-actions"><button class="button" type="submit">Lưu thay đổi</button></div></form>
+<form asp-action="Save" method="post" enctype="multipart/form-data" class="panel form-panel">
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+    <input asp-for="TemplateSectionId" type="hidden"><input asp-for="ContentId" type="hidden"><input asp-for="SectionKey" type="hidden"><input asp-for="SectionType" type="hidden"><input asp-for="DisplayName" type="hidden">
+    <div class="form-grid">
+        <div class="full"><label asp-for="Eyebrow">Nhãn nhỏ</label><input asp-for="Eyebrow"></div>
+        <div class="full"><label asp-for="Title">Tiêu đề</label><input asp-for="Title"><span asp-validation-for="Title"></span></div>
+        <div class="full"><label asp-for="Subtitle">Mô tả ngắn</label><textarea asp-for="Subtitle" rows="2"></textarea></div>
+        <div class="full"><label asp-for="Content">Nội dung</label><textarea asp-for="Content" rows="7"></textarea><small>Cards/Stats: mỗi dòng là một mục, phân cách tiêu đề và mô tả bằng ký tự |</small></div>
+        <div class="full"><label>Ảnh chính của section</label>@if(!string.IsNullOrWhiteSpace(Model.ImageUrl)){<img src="@Model.ImageUrl" alt="" class="section-image-preview">}<input asp-for="ImageFile" type="file" accept="image/png,image/jpeg,image/webp"><small>Có thể tiếp tục dùng URL ngoài ở trường bên dưới.</small></div>
+        <div class="full"><label asp-for="ImageUrl">URL hình ảnh</label><input asp-for="ImageUrl"></div>
+        @if(Model.SectionType == "Hero")
+        {
+            <div class="full"><label>Background Hero</label><input asp-for="BackgroundFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple><small>Chọn nhiều ảnh; ảnh sẽ tự chuyển chậm theo thứ tự upload.</small></div>
+            @if(Model.Backgrounds.Count > 0)
+            {
+                <div class="full media-thumbs">@foreach(var media in Model.Backgrounds){<article><img src="@media.MediaAsset.RelativeUrl" alt=""><span>Thứ tự @media.SortOrder</span><button class="danger-link" type="submit" formaction="@Url.Action("DeleteBackground",new{id=media.Id})" onclick="return confirm('Gỡ ảnh này khỏi Hero?')">Gỡ ảnh</button></article>}</div>
+            }
+        }
+        <div><label asp-for="PrimaryButtonText">Nút chính</label><input asp-for="PrimaryButtonText"></div><div><label asp-for="PrimaryButtonUrl">Liên kết nút chính</label><input asp-for="PrimaryButtonUrl"></div>
+        <div><label asp-for="SecondaryButtonText">Nút phụ</label><input asp-for="SecondaryButtonText"></div><div><label asp-for="SecondaryButtonUrl">Liên kết nút phụ</label><input asp-for="SecondaryButtonUrl"></div>
+        <div class="check-row"><label><input asp-for="IsPublished"> Hiển thị section này</label><span asp-validation-for="IsPublished"></span></div>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">Lưu thay đổi</button></div>
+</form>

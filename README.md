@@ -16,7 +16,8 @@ Landing page một trang viết bằng ASP.NET Core MVC (.NET 8), SQLite và ASP
 - Mỗi tài khoản tự đổi mật khẩu; SuperAdmin có thể reset Administrator/Editor, Administrator có thể reset Editor.
 - Form liên hệ có chống spam cơ bản, lưu SQLite và gửi email SMTP tới email trong cấu hình website.
 - Setting keys do developer đồng bộ; Administrator/SuperAdmin cập nhật values theo template đang sử dụng.
-- SQLite được tự động tạo và nạp dữ liệu mẫu trong lần chạy đầu tiên.
+- Upload logo, ảnh chính của section và nhiều background cho Hero (PNG/JPEG/WebP, tối đa 5 MB mỗi file).
+- Schema SQLite được quản lý bằng EF Core migrations; ứng dụng tự migrate và nạp dữ liệu mẫu khi khởi động.
 
 ## Chạy dự án
 
@@ -27,7 +28,7 @@ Yêu cầu .NET 8 SDK. Tại thư mục `LandingCms`, thiết lập tài khoản
 ```powershell
 $env:LANDINGCMS_ADMIN_USERNAME="sadmin"
 $env:LANDINGCMS_ADMIN_EMAIL="admin@example.com" # không bắt buộc
-$env:LANDINGCMS_ADMIN_PASSWORD="ThayMatKhau!2026"
+$env:LANDINGCMS_ADMIN_PASSWORD="<strong-password>"
 dotnet restore
 dotnet run
 ```
@@ -37,14 +38,19 @@ dotnet run
 ```bash
 export LANDINGCMS_ADMIN_USERNAME="sadmin"
 export LANDINGCMS_ADMIN_EMAIL="admin@example.com" # không bắt buộc
-export LANDINGCMS_ADMIN_PASSWORD="ThayMatKhau!2026"
+export LANDINGCMS_ADMIN_PASSWORD="<strong-password>"
 dotnet restore
 dotnet run
 ```
 
 Mở URL được hiển thị trong terminal. Khu vực quản trị ở `/admin`.
 
-Khi nâng cấp từ phiên bản cũ, ứng dụng tự tạo các bảng template còn thiếu và chuyển dữ liệu `LandingSections` hiện tại sang `SectionContents`; không cần xóa file SQLite.
+Khi model database thay đổi, developer tạo migration mới và commit cùng source. Không xóa file SQLite trên production.
+
+```bash
+dotnet ef migrations add TenMigration
+dotnet ef database update
+```
 
 ## Cấu hình gửi email liên hệ
 
@@ -73,6 +79,9 @@ social.facebook_url
 social.zalo_url
 analytics.ga_measurement_id
 analytics.gtm_container_id
+branding.logo_primary
+branding.logo_light
+branding.favicon
 ```
 
 Admin không thể tạo, đổi tên hoặc xóa key. Tính năng custom key dành cho page builder tương lai chưa được bật.
@@ -82,7 +91,7 @@ Admin không thể tạo, đổi tên hoặc xóa key. Tính năng custom key d�
 1. Cài .NET 8 Hosting Bundle trên Windows Server.
 2. Chạy `dotnet publish -c Release -o ./publish`.
 3. Tạo Application Pool với `.NET CLR Version = No Managed Code`.
-4. Cho tài khoản Application Pool quyền Modify trên thư mục `App_Data`.
+4. Cho tài khoản Application Pool quyền Modify trên hai thư mục `App_Data` và `wwwroot/uploads`.
 5. Cấu hình hai biến môi trường quản trị trước lần khởi động đầu tiên, sau đó có thể gỡ chúng.
 
 Không lưu mật khẩu quản trị trong `appsettings.json` hoặc commit vào Git.

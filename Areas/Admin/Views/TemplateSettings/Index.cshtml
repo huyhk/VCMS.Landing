@@ -1,7 +1,7 @@
 @model SettingsEditViewModel
 @{ ViewData["Title"] = "Setting values"; }
 <div class="page-title"><div><h1>Setting values</h1><p>Template đang sử dụng: <strong>@Model.TemplateName</strong>. Key do developer định nghĩa và không thể thay đổi tại đây.</p></div></div>
-<form asp-action="Save" method="post">
+<form asp-action="Save" method="post" enctype="multipart/form-data">
     <div asp-validation-summary="ModelOnly" class="validation"></div>
     @foreach(var group in Model.Items.GroupBy(x => x.Group))
     {
@@ -13,7 +13,14 @@
                 <div class="full">
                     <label for="setting-@item.DefinitionId">@item.Name @if(item.IsRequired){<span class="validation">*</span>}</label>
                     <small><code>@item.Key</code>@if(!string.IsNullOrWhiteSpace(item.Description)){<span> — @item.Description</span>}</small>
-                    @if(item.ValueType == "MultilineText")
+                    @if(item.ValueType == "Image")
+                    {
+                        @if(!string.IsNullOrWhiteSpace(item.MediaUrl)){<img src="@item.MediaUrl" alt="@item.Name" style="max-width:260px;max-height:110px;object-fit:contain;background:#f2f4f7;padding:10px;border-radius:8px">
+                        }
+                        <input id="setting-@item.DefinitionId" name="images[@item.DefinitionId]" type="file" accept="image/png,image/jpeg,image/webp">
+                        <span class="field-validation-error">@Html.ValidationMessage("images[" + item.DefinitionId + "]")</span>
+                    }
+                    else if(item.ValueType == "MultilineText")
                     {
                         <textarea id="setting-@item.DefinitionId" name="values[@item.DefinitionId]" rows="4">@item.Value</textarea>
                     }

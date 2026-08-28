@@ -17,6 +17,9 @@ public class SectionContentEditViewModel
     [StringLength(300)] public string? Subtitle { get; set; }
     [StringLength(4000)] public string? Content { get; set; }
     [StringLength(500)] public string? ImageUrl { get; set; }
+    public IFormFile? ImageFile { get; set; }
+    public List<IFormFile> BackgroundFiles { get; set; } = new();
+    public IReadOnlyList<SectionMedia> Backgrounds { get; set; } = Array.Empty<SectionMedia>();
     [StringLength(80)] public string? PrimaryButtonText { get; set; }
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }
     [StringLength(80)] public string? SecondaryButtonText { get; set; }

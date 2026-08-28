@@ -53,7 +53,18 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             })
             .Where(x => x.Value != null && x.Value != "")
             .ToDictionaryAsync(x => x.Key, x => x.Value!);
-        return View(viewPath, new HomeViewModel(settings, sections, extendedSettings));
+        var brandingIds = extendedSettings.Where(x => x.Key.StartsWith("branding.") && long.TryParse(x.Value, out _))
+            .ToDictionary(x => x.Key, x => long.Parse(x.Value));
+        var brandingAssetIds = brandingIds.Values.ToArray();
+        var brandingAssets = await db.MediaAssets.AsNoTracking().Where(x => brandingAssetIds.Contains(x.Id) && !x.IsDeleted).ToDictionaryAsync(x => x.Id);
+        var brandingMedia = brandingIds.Where(x => brandingAssets.ContainsKey(x.Value)).ToDictionary(x => x.Key, x => brandingAssets[x.Value]);
+        if (brandingMedia.TryGetValue("branding.favicon", out var favicon))
+            ViewData["FaviconUrl"] = favicon.RelativeUrl;
+        var sectionMediaRows = await db.SectionMedia.AsNoTracking().Include(x => x.MediaAsset)
+            .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted)
+            .OrderBy(x => x.SortOrder).ToListAsync();
+        var sectionMedia = sectionMediaRows.GroupBy(x => x.SectionKey).ToDictionary(x => x.Key, x => (IReadOnlyList<SectionMedia>)x.ToList());
+        return View(viewPath, new HomeViewModel(settings, sections, extendedSettings, brandingMedia, sectionMedia));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]
