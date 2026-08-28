@@ -11,7 +11,7 @@ using LandingCms.Services;
 namespace LandingCms.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator,Editor")]
-public class SectionsController(ApplicationDbContext db, IMediaStorageService mediaStorage) : Controller
+public class SectionsController(ApplicationDbContext db, IMediaStorageService mediaStorage, IContentHtmlSanitizer htmlSanitizer) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -32,6 +32,8 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (slot is null) return NotFound();
         var content = await db.SectionContents.AsNoTracking().FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
         var payload = content is null ? new SectionContentPayload() : JsonSerializer.Deserialize<SectionContentPayload>(content.ContentJson) ?? new();
+        if (slot.SectionDefinition.SectionType == "Content")
+            payload.Content = htmlSanitizer.Sanitize(payload.Content);
         var model = new SectionContentEditViewModel
         {
             TemplateSectionId = slot.Id, ContentId = content?.Id, SectionKey = slot.SectionKey,
@@ -52,6 +54,8 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         var slot = await db.TemplateSections.Include(x => x.SectionDefinition)
             .FirstOrDefaultAsync(x => x.Id == model.TemplateSectionId && x.TemplateId == setting.ActiveTemplateId);
         if (slot is null) return NotFound();
+        if (slot.SectionDefinition.SectionType == "Content")
+            model.Content = htmlSanitizer.Sanitize(model.Content);
         if (slot.IsRequired && !model.IsPublished) ModelState.AddModelError(nameof(model.IsPublished), "Section bắt buộc không thể bị ẩn.");
         if (!ModelState.IsValid) { await PrepareForViewAsync(model, slot); return View("Edit", model); }
         try

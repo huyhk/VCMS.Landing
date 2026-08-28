@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/templates-admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/media-admin.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/html-editor.css" asp-append-version="true">
 </head>
 <body>
 <aside>
@@ -17,11 +18,9 @@
         @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="Settings" asp-action="Index">Cấu hình website</a><a asp-area="Admin" asp-controller="Users" asp-action="Index">Tài khoản & phân quyền</a>}
         @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="TemplateSettings" asp-action="Index">Setting values</a>}
         @if(User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator")){<a asp-area="Admin" asp-controller="Contacts" asp-action="Index">Liên hệ khách hàng</a>}
-        <a asp-area="" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
         <a href="/" target="_blank">Xem website ↗</a>
     </nav>
-    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button class="link-button">Đăng xuất</button></form>
 </aside>
-<div class="admin-main"><header><button class="sidebar-toggle">☰</button><span>@User.Identity?.Name</span></header><main>@if(TempData["Message"] is string message){<div class="alert">@message</div>}@RenderBody()</main></div>
+<div class="admin-main"><header><button class="sidebar-toggle">☰</button><details class="user-menu"><summary>@User.Identity?.Name <span>⌄</span></summary><div class="user-menu-dropdown"><a asp-area="" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a><form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button type="submit">Đăng xuất</button></form></div></details></header><main>@if(TempData["Message"] is string message){<div class="alert">@message</div>}@RenderBody()</main></div>
 <script src="~/js/admin.js" asp-append-version="true"></script>@await RenderSectionAsync("Scripts",false)
 </body></html>

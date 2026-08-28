@@ -8,7 +8,27 @@
         <div class="full"><label asp-for="Eyebrow">Nhãn nhỏ</label><input asp-for="Eyebrow"></div>
         <div class="full"><label asp-for="Title">Tiêu đề</label><input asp-for="Title"><span asp-validation-for="Title"></span></div>
         <div class="full"><label asp-for="Subtitle">Mô tả ngắn</label><textarea asp-for="Subtitle" rows="2"></textarea></div>
-        <div class="full"><label asp-for="Content">Nội dung</label><textarea asp-for="Content" rows="7"></textarea><small>Cards/Stats: mỗi dòng là một mục, phân cách tiêu đề và mô tả bằng ký tự |</small></div>
+        @if(Model.SectionType == "Content")
+        {
+            <div class="full">
+                <label asp-for="Content">Nội dung</label>
+                <div class="html-editor" data-html-editor>
+                    <div class="html-editor-toolbar" role="toolbar" aria-label="Định dạng nội dung">
+                        <button type="button" data-command="bold"><strong>B</strong></button><button type="button" data-command="italic"><em>I</em></button><button type="button" data-command="underline"><u>U</u></button>
+                        <button type="button" data-block="h2">H2</button><button type="button" data-block="h3">H3</button>
+                        <button type="button" data-command="insertUnorderedList">• List</button><button type="button" data-command="insertOrderedList">1. List</button>
+                        <button type="button" data-link>Link</button><button type="button" data-command="removeFormat">Xóa định dạng</button>
+                    </div>
+                    <div class="html-editor-content" contenteditable="true">@Html.Raw(Model.Content)</div>
+                    <textarea asp-for="Content" hidden data-html-editor-value></textarea>
+                </div>
+                <small>Cho phép tiêu đề, đoạn văn, định dạng chữ, danh sách và liên kết.</small>
+            </div>
+        }
+        else
+        {
+            <div class="full"><label asp-for="Content">Nội dung</label><textarea asp-for="Content" rows="7"></textarea><small>Cards/Stats: mỗi dòng là một mục, phân cách tiêu đề và mô tả bằng ký tự |</small></div>
+        }
         <div class="full"><label>Ảnh chính của section</label><div id="section-image-preview" class="single-image-preview">@if(!string.IsNullOrWhiteSpace(Model.ImageUrl)){<img src="@Model.ImageUrl" alt=""><span>Ảnh hiện tại</span>}</div><input asp-for="ImageFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="section-image-preview"><small>Có thể tiếp tục dùng URL ngoài ở trường bên dưới.</small></div>
         <div class="full"><label asp-for="ImageUrl">URL hình ảnh</label><input asp-for="ImageUrl"></div>
         @if(Model.SectionType == "Hero")

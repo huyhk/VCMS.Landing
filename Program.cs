@@ -33,6 +33,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IContactEmailSender, ContactEmailSender>();
 builder.Services.AddScoped<IMediaStorageService, MediaStorageService>();
+builder.Services.AddSingleton<IContentHtmlSanitizer, ContentHtmlSanitizer>();
 builder.Services.AddRateLimiter(options => options.AddPolicy("contact", context =>
     RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",

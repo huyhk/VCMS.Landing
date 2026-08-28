@@ -21,3 +21,30 @@ document.querySelectorAll('input[type="file"][data-images-preview]').forEach(inp
     });
 }));
 window.addEventListener('pagehide',()=>previewUrls.forEach((_,input)=>clearPreviewUrls(input)));
+
+document.querySelectorAll('[data-html-editor]').forEach(editor=>{
+    const content=editor.querySelector('.html-editor-content');
+    const value=editor.querySelector('[data-html-editor-value]');
+    editor.querySelectorAll('.html-editor-toolbar button').forEach(button=>{
+        button.addEventListener('mousedown',event=>event.preventDefault());
+        button.addEventListener('click',()=>{
+            content.focus();
+            if(button.dataset.link!==undefined){
+                const url=window.prompt('Nhập URL liên kết (https://, mailto: hoặc tel:):');
+                if(url)document.execCommand('createLink',false,url);
+            }else if(button.dataset.block){
+                document.execCommand('formatBlock',false,button.dataset.block);
+            }else{
+                document.execCommand(button.dataset.command,false);
+            }
+        });
+    });
+    editor.closest('form')?.addEventListener('submit',()=>value.value=content.innerHTML);
+});
+
+document.addEventListener('click',event=>document.querySelectorAll('.user-menu[open]').forEach(menu=>{
+    if(!menu.contains(event.target))menu.removeAttribute('open');
+}));
+document.addEventListener('keydown',event=>{
+    if(event.key==='Escape')document.querySelectorAll('.user-menu[open]').forEach(menu=>menu.removeAttribute('open'));
+});

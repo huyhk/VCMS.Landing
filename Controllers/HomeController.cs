@@ -8,7 +8,7 @@ using LandingCms.Services;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace LandingCms.Controllers;
-public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger) : Controller
+public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger, IContentHtmlSanitizer htmlSanitizer) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -28,6 +28,8 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         {
             if (!contents.TryGetValue(slot.SectionKey, out var content)) continue;
             var payload = JsonSerializer.Deserialize<SectionContentPayload>(content.ContentJson) ?? new();
+            if (slot.SectionDefinition.SectionType == "Content")
+                payload.Content = htmlSanitizer.Sanitize(payload.Content);
             sections.Add(new LandingSection
             {
                 SectionKey = slot.SectionKey, SectionType = slot.SectionDefinition.SectionType,
