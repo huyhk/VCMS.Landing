@@ -2,7 +2,7 @@
 @{ ViewData["Title"] = Model.Settings.SeoTitle ?? Model.Settings.SiteName; ViewData["Description"] = Model.Settings.SeoDescription; Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl); Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl); Model.ExtendedSettings.TryGetValue("analytics.ga_measurement_id", out var gaId); }
 <style>:root{--brand:@Model.Settings.PrimaryColor}</style>
 <header class="site-header">
-  <div class="container nav"><a class="brand" href="#top">@if(Model.BrandingMedia.TryGetValue("branding.logo_primary",out var logo)){<img src="@logo.RelativeUrl" width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName">}else{@(Model.Settings.LogoText ?? Model.Settings.SiteName)}</a><nav><a href="#services">Dịch vụ</a><a href="#about">Về chúng tôi</a><a href="#contact">Liên hệ</a></nav><a class="btn btn-small" href="#contact">Trao đổi dự án</a><button class="menu-button" aria-label="Mở menu">☰</button></div>
+  <div class="container nav"><a class="brand" href="#top">@if(Model.BrandingMedia.TryGetValue("branding.logo_primary",out var logo)){<img src="@logo.RelativeUrl" width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName">}else{@(Model.Settings.LogoText ?? Model.Settings.SiteName)}</a><nav id="site-navigation"><a href="#services">Dịch vụ</a><a href="#about">Về chúng tôi</a><a href="#contact">Liên hệ</a></nav><a class="btn btn-small" href="#contact">Trao đổi dự án</a><button class="menu-button" type="button" aria-label="Mở menu" aria-controls="site-navigation" aria-expanded="false">☰</button></div>
 </header>
 <main id="top">
 @foreach (var contentSection in Model.Sections)
