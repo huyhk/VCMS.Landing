@@ -1,43 +1,96 @@
 @model HomeViewModel
-@{ ViewData["Title"] = Model.Settings.SeoTitle ?? Model.Settings.SiteName; ViewData["Description"] = Model.Settings.SeoDescription; Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl); Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl); Model.ExtendedSettings.TryGetValue("analytics.ga_measurement_id", out var gaId); }
-<style>:root{--brand:@Model.Settings.PrimaryColor}</style>
-<header class="site-header">
-  <div class="container nav"><a class="brand" href="#top">@if(Model.BrandingMedia.TryGetValue("branding.logo_primary",out var logo)){<img src="@logo.RelativeUrl" width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName">}else{@(Model.Settings.LogoText ?? Model.Settings.SiteName)}</a><nav id="site-navigation">@foreach(var item in Model.NavigationItems){<a href="#@item.SectionKey">@item.Label</a>}</nav><a class="btn btn-small" href="#contact">Trao đổi dự án</a><button class="menu-button" type="button" aria-label="Mở menu" aria-controls="site-navigation" aria-expanded="false">☰</button></div>
-</header>
-<main id="top">
-@foreach (var contentSection in Model.Sections)
-{
-    var lines = (contentSection.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
-    if (contentSection.SectionType == "Hero")
-    {
-      Model.SectionMedia.TryGetValue(contentSection.SectionKey, out var heroMedia);
-      var backgrounds = heroMedia?.Where(x => x.Role == "Background").ToList() ?? new List<SectionMedia>();
-      <section id="@contentSection.SectionKey" class="hero @(backgrounds.Count>0?"has-background":"")">@if(backgrounds.Count>0){<div class="hero-backgrounds">@for(var backgroundIndex=0;backgroundIndex<backgrounds.Count;backgroundIndex++){var background=backgrounds[backgroundIndex];<img class="@(backgroundIndex==0?"active":"")" src="@background.MediaAsset.RelativeUrl" style="object-position:@background.FocalPointX% @background.FocalPointY%" alt="" aria-hidden="true" loading="@(backgroundIndex==0?"eager":"lazy")">}</div>}<div class="orb orb-one"></div><div class="orb orb-two"></div><div class="container hero-grid"><div><p class="eyebrow">@contentSection.Eyebrow</p><h1>@contentSection.Title</h1><p class="lead">@contentSection.Subtitle</p><div class="actions"><a class="btn" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText <span>→</span></a><a class="text-link" href="@contentSection.SecondaryButtonUrl">@contentSection.SecondaryButtonText</a></div></div><div class="hero-art"><div class="art-card"><span class="art-label">Tăng trưởng bền vững</span><strong>+42%</strong><div class="chart"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="mini-card">✦ <span>Thiết kế có mục tiêu</span></div></div></div></section>
-    }
-    else if (contentSection.SectionType == "Cards")
-    {
-      <section id="@contentSection.SectionKey" class="section"><div class="container"><div class="section-heading"><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p></div><div class="card-grid">@for(var i=0;i<lines.Length;i++){var p=lines[i].Split('|',2);<article class="service-card"><span class="card-number">0@(i+1)</span><h3>@p[0]</h3><p>@(p.Length>1?p[1]:"")</p><span class="card-arrow">↗</span></article>}</div></div></section>
-    }
-    else if (contentSection.SectionType == "Content")
-    {
-      <section id="@contentSection.SectionKey" class="section section-soft content-section @contentSection.LayoutVariant"><div class="container split"><div class="image-wrap"><img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="lazy" /><div class="image-badge"><strong>8+</strong><span>năm kinh nghiệm</span></div></div><div class="content-wrap"><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><div class="body-copy rich-content">@if(contentSection.ContentIsHtml){@Html.Raw(contentSection.Content)}else{@contentSection.Content}</div>@if(!string.IsNullOrWhiteSpace(contentSection.PrimaryButtonText)&&!string.IsNullOrWhiteSpace(contentSection.PrimaryButtonUrl)){<a class="btn" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText →</a>}@if(!string.IsNullOrWhiteSpace(contentSection.SecondaryButtonText)&&!string.IsNullOrWhiteSpace(contentSection.SecondaryButtonUrl)){<a class="text-link" href="@contentSection.SecondaryButtonUrl">@contentSection.SecondaryButtonText →</a>}</div></div></section>
-    }
-    else if (contentSection.SectionType == "Stats")
-    {
-      <section id="@contentSection.SectionKey" class="stats"><div class="container"><h2>@contentSection.Title</h2><div class="stats-grid">@foreach(var line in lines){var p=line.Split('|',2);<div><strong>@p[0]</strong><span>@(p.Length>1?p[1]:"")</span></div>}</div></div></section>
-    }
-    else if (contentSection.SectionType == "Cta")
-    {
-      if (contentSection.SectionKey == "contact")
-      {
-        <section id="contact" class="section contact-section"><div class="container contact-grid"><div><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p><div class="contact-details"><a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a><a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a><span>@Model.Settings.Address</span></div></div><form asp-controller="Home" asp-action="Contact" method="post" class="contact-form">@if(TempData["ContactSuccess"] is string success){<div class="form-message success">@success</div>}@if(TempData["ContactError"] is string error){<div class="form-message error">@error</div>}<div class="honeypot" aria-hidden="true"><label>Website</label><input name="Website" tabindex="-1" autocomplete="off"></div><div class="contact-row"><div><label>Họ và tên</label><input name="Name" maxlength="150" required></div><div><label>Email</label><input name="Email" type="email" maxlength="200" required></div></div><div><label>Điện thoại</label><input name="Phone" type="tel" maxlength="50"></div><div><label>Nội dung cần trao đổi</label><textarea name="Message" rows="5" minlength="10" maxlength="4000" required></textarea></div><button class="btn" type="submit">Gửi liên hệ →</button></form></div></section>
-      }
-      else
-      {
-        <section id="@contentSection.SectionKey" class="section"><div class="container cta"><p class="eyebrow">@contentSection.Eyebrow</p><h2>@contentSection.Title</h2><p>@contentSection.Subtitle</p><a class="btn btn-light" href="@contentSection.PrimaryButtonUrl">@contentSection.PrimaryButtonText →</a></div></section>
-      }
-    }
+@{
+    ViewData["Title"] = Model.Settings.SeoTitle ?? Model.Settings.SiteName;
+    ViewData["Description"] = Model.Settings.SeoDescription;
+    Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
+    Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
+    Model.ExtendedSettings.TryGetValue("analytics.ga_measurement_id", out var gaId);
 }
+
+<style>:root { --brand: @Model.Settings.PrimaryColor }</style>
+
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="#top">
+            @if (Model.BrandingMedia.TryGetValue("branding.logo_primary", out var logo))
+            {
+                <img src="@logo.RelativeUrl" width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName">
+            }
+            else
+            {
+                @(Model.Settings.LogoText ?? Model.Settings.SiteName)
+            }
+        </a>
+        <nav id="site-navigation">
+            @foreach (var item in Model.NavigationItems)
+            {
+                <a href="#@item.SectionKey">@item.Label</a>
+            }
+        </nav>
+        <a class="btn btn-small" href="#contact">Trao đổi dự án</a>
+        <button class="menu-button" type="button" aria-label="Mở menu" aria-controls="site-navigation" aria-expanded="false">☰</button>
+    </div>
+</header>
+
+<main id="top">
+    @foreach (var section in Model.Sections)
+    {
+        var renderModel = new SectionRenderViewModel(section, Model);
+        switch (section.SectionType)
+        {
+            case "Hero":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Hero.cshtml", renderModel)
+                break;
+            case "Cards":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Cards.cshtml", renderModel)
+                break;
+            case "Content":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Content.cshtml", renderModel)
+                break;
+            case "Stats":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Stats.cshtml", renderModel)
+                break;
+            case "Cta" when section.SectionKey == "contact":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Contact.cshtml", renderModel)
+                break;
+            case "Cta":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Cta.cshtml", renderModel)
+                break;
+        }
+    }
 </main>
-<footer><div class="container footer-grid"><div><a class="brand" href="#top">@(Model.Settings.LogoText ?? Model.Settings.SiteName)</a><p>@Model.Settings.FooterText</p>@if(!string.IsNullOrWhiteSpace(facebookUrl)){<a href="@facebookUrl" target="_blank" rel="noopener noreferrer">Facebook</a>}@if(!string.IsNullOrWhiteSpace(zaloUrl)){<a href="@zaloUrl" target="_blank" rel="noopener noreferrer">Zalo</a>}</div><div><strong>Liên hệ</strong><a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a><a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a><span>@Model.Settings.Address</span></div><a class="admin-link" href="/admin">Quản trị</a></div></footer>
-@if(!string.IsNullOrWhiteSpace(gaId)){<script async src="https://www.googletagmanager.com/gtag/js?id=@gaId"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','@gaId');</script>}
+
+<footer>
+    <div class="container footer-grid">
+        <div>
+            <a class="brand" href="#top">@(Model.Settings.LogoText ?? Model.Settings.SiteName)</a>
+            <p>@Model.Settings.FooterText</p>
+            @if (!string.IsNullOrWhiteSpace(facebookUrl))
+            {
+                <a href="@facebookUrl" target="_blank" rel="noopener noreferrer">Facebook</a>
+            }
+            @if (!string.IsNullOrWhiteSpace(zaloUrl))
+            {
+                <a href="@zaloUrl" target="_blank" rel="noopener noreferrer">Zalo</a>
+            }
+        </div>
+        <div>
+            <strong>Liên hệ</strong>
+            <a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a>
+            <a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a>
+            <span>@Model.Settings.Address</span>
+        </div>
+        <a class="admin-link" href="/admin">Quản trị</a>
+    </div>
+</footer>
+
+@if (!string.IsNullOrWhiteSpace(gaId))
+{
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@gaId"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '@gaId');
+    </script>
+}

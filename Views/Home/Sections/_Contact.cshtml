@@ -1,0 +1,53 @@
+@model SectionRenderViewModel
+@{
+    var section = Model.Section;
+    var settings = Model.Page.Settings;
+}
+
+<section id="@section.SectionKey" class="section contact-section">
+    <div class="container contact-grid">
+        <div>
+            <p class="eyebrow">@section.Eyebrow</p>
+            <h2>@section.Title</h2>
+            <p>@section.Subtitle</p>
+            <div class="contact-details">
+                <a href="mailto:@settings.Email">@settings.Email</a>
+                <a href="tel:@settings.Phone">@settings.Phone</a>
+                <span>@settings.Address</span>
+            </div>
+        </div>
+        <form asp-controller="Home" asp-action="Contact" method="post" class="contact-form">
+            @if (TempData["ContactSuccess"] is string success)
+            {
+                <div class="form-message success">@success</div>
+            }
+            @if (TempData["ContactError"] is string error)
+            {
+                <div class="form-message error">@error</div>
+            }
+            <div class="honeypot" aria-hidden="true">
+                <label>Website</label>
+                <input name="Website" tabindex="-1" autocomplete="off">
+            </div>
+            <div class="contact-row">
+                <div>
+                    <label>Họ và tên</label>
+                    <input name="Name" maxlength="150" required>
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input name="Email" type="email" maxlength="200" required>
+                </div>
+            </div>
+            <div>
+                <label>Điện thoại</label>
+                <input name="Phone" type="tel" maxlength="50">
+            </div>
+            <div>
+                <label>Nội dung cần trao đổi</label>
+                <textarea name="Message" rows="5" minlength="10" maxlength="4000" required></textarea>
+            </div>
+            <button class="btn" type="submit">Gửi liên hệ →</button>
+        </form>
+    </div>
+</section>

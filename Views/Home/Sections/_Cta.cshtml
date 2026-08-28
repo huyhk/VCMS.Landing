@@ -1,0 +1,13 @@
+@model SectionRenderViewModel
+@{
+    var section = Model.Section;
+}
+
+<section id="@section.SectionKey" class="section">
+    <div class="container cta">
+        <p class="eyebrow">@section.Eyebrow</p>
+        <h2>@section.Title</h2>
+        <p>@section.Subtitle</p>
+        <a class="btn btn-light" href="@section.PrimaryButtonUrl">@section.PrimaryButtonText →</a>
+    </div>
+</section>

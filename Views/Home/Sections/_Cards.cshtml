@@ -1,0 +1,27 @@
+@model SectionRenderViewModel
+@{
+    var section = Model.Section;
+    var lines = (section.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+}
+
+<section id="@section.SectionKey" class="section">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@section.Eyebrow</p>
+            <h2>@section.Title</h2>
+            <p>@section.Subtitle</p>
+        </div>
+        <div class="card-grid">
+            @for (var index = 0; index < lines.Length; index++)
+            {
+                var parts = lines[index].Split('|', 2);
+                <article class="service-card">
+                    <span class="card-number">0@(index + 1)</span>
+                    <h3>@parts[0]</h3>
+                    <p>@(parts.Length > 1 ? parts[1] : "")</p>
+                    <span class="card-arrow">↗</span>
+                </article>
+            }
+        </div>
+    </div>
+</section>
