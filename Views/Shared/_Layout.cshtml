@@ -4,7 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"]</title>
-    <meta name="description" content="@ViewData["Description"]" />
+    @if (ViewData["Description"] is string description && !string.IsNullOrWhiteSpace(description))
+    {
+        <meta name="description" content="@description" />
+    }
+    @if (ViewData["Keywords"] is string keywords && !string.IsNullOrWhiteSpace(keywords))
+    {
+        <meta name="keywords" content="@keywords" />
+    }
     @if (ViewData["FaviconUrl"] is string faviconUrl) { <link rel="icon" href="@faviconUrl" /> }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

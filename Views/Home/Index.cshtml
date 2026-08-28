@@ -1,7 +1,5 @@
 @model HomeViewModel
 @{
-    ViewData["Title"] = Model.Settings.SeoTitle ?? Model.Settings.SiteName;
-    ViewData["Description"] = Model.Settings.SeoDescription;
     Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
     Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
     Model.ExtendedSettings.TryGetValue("analytics.ga_measurement_id", out var gaId);

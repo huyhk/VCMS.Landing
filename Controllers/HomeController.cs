@@ -16,6 +16,9 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
     public async Task<IActionResult> Index()
     {
         var settings = await db.SiteSettings.AsNoTracking().FirstAsync();
+        ViewData["Title"] = string.IsNullOrWhiteSpace(settings.SeoTitle) ? settings.SiteName : settings.SeoTitle;
+        ViewData["Description"] = settings.SeoDescription;
+        ViewData["Keywords"] = settings.SeoKeywords;
         var templateSetting = await db.SiteTemplateSettings.AsNoTracking()
             .Include(x => x.ActiveTemplate).FirstAsync();
         var slots = await db.TemplateSections.AsNoTracking()
