@@ -1,6 +1,6 @@
 @model SectionContentEditViewModel
 @{ ViewData["Title"] = "Chỉnh sửa " + Model.DisplayName; }
-<div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Section <strong>#@Model.SectionKey</strong> · @Model.SectionType</p></div><a class="button button-secondary" asp-action="Index">Quay lại</a></div>
+<div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Section <strong>#@Model.SectionKey</strong> · @Model.SectionType</p></div><div class="page-actions"><a class="button button-secondary" asp-action="History" asp-route-id="@Model.TemplateSectionId">Lịch sử phiên bản</a><a class="button button-secondary" asp-action="Index">Quay lại</a></div></div>
 <form asp-action="Save" method="post" enctype="multipart/form-data" class="panel form-panel">
     <div asp-validation-summary="ModelOnly" class="validation"></div>
     <input asp-for="TemplateSectionId" type="hidden"><input asp-for="ContentId" type="hidden"><input asp-for="SectionKey" type="hidden"><input asp-for="SectionType" type="hidden"><input asp-for="DisplayName" type="hidden">

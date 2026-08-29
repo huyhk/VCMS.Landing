@@ -99,6 +99,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             ModelState.AddModelError("", ex.Message); await PrepareForViewAsync(model, slot); return View("Edit", model);
         }
         var content = await db.SectionContents.FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
+        var contentIsNew = content is null;
         if (content is null) { content = new SectionContent { SectionKey = slot.SectionKey, SectionDefinitionId = slot.SectionDefinitionId }; db.SectionContents.Add(content); }
         content.ContentJson = JsonSerializer.Serialize(new SectionContentPayload
         {
@@ -109,6 +110,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (canManageVisibility) slot.IsEnabled = model.IsEnabled;
         content.UpdatedAtUtc = DateTime.UtcNow;
         content.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        AddSectionContentRevision(content, slot, contentIsNew ? "Created" : "Saved");
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã lưu {slot.DisplayName}.";
         return RedirectToAction(nameof(Index));
@@ -229,6 +231,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             ModelState.AddModelError(nameof(model.MediaFile), ex.Message); return View("EditItem", model);
         }
 
+        var itemIsNew = item is null;
         if (item is null)
         {
             var nextOrder = (await db.SectionItems.Where(x => x.SectionKey == slot.SectionKey)
@@ -240,6 +243,8 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         item.IsEnabled = model.IsEnabled;
         item.UpdatedAtUtc = DateTime.UtcNow;
         item.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (itemIsNew) await db.SaveChangesAsync(); // Lấy Id ổn định trước khi tạo EntityKey cho revision.
+        AddSectionItemRevision(item, slot, itemIsNew ? "Created" : "Saved");
         await db.SaveChangesAsync();
         TempData["Message"] = "Đã lưu mục nội dung.";
         return RedirectToAction(nameof(Items), new { id = slot.Id });
@@ -274,6 +279,85 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         db.SectionItems.Remove(item); await db.SaveChangesAsync();
         TempData["Message"] = "Đã xóa mục nội dung. File ảnh trong Media Library vẫn được giữ lại.";
         return RedirectToAction(nameof(Items), new { id = slot.Id });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> History(int id, long? itemId)
+    {
+        var slot = await FindActiveSlotAsync(id);
+        if (slot is null) return NotFound();
+
+        SectionItem? item = null;
+        var entityType = "SectionContent";
+        var entityKey = slot.SectionKey;
+        if (itemId.HasValue)
+        {
+            item = await db.SectionItems.AsNoTracking().FirstOrDefaultAsync(x => x.Id == itemId && x.SectionKey == slot.SectionKey);
+            if (item is null) return NotFound();
+            entityType = "SectionItem";
+            entityKey = GetSectionItemRevisionKey(slot.SectionKey, item.Id);
+        }
+
+        var revisions = await db.ContentRevisions.AsNoTracking()
+            .Where(x => x.EntityType == entityType && x.EntityKey == entityKey)
+            .OrderByDescending(x => x.CreatedAtUtc).ThenByDescending(x => x.Id)
+            .Take(100).ToListAsync();
+        return View(new RevisionHistoryViewModel(slot, item, revisions));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RestoreRevision(long revisionId, int sectionId, long? itemId)
+    {
+        var slot = await FindActiveSlotAsync(sectionId);
+        if (slot is null) return NotFound();
+        var revision = await db.ContentRevisions.AsNoTracking().FirstOrDefaultAsync(x => x.Id == revisionId);
+        if (revision is null) return NotFound();
+
+        try
+        {
+            if (itemId.HasValue)
+            {
+                var entityKey = GetSectionItemRevisionKey(slot.SectionKey, itemId.Value);
+                if (revision.EntityType != "SectionItem" || revision.EntityKey != entityKey) return BadRequest();
+                var item = await db.SectionItems.FirstOrDefaultAsync(x => x.Id == itemId && x.SectionKey == slot.SectionKey);
+                if (item is null) return NotFound();
+                var snapshot = JsonSerializer.Deserialize<SectionItemRevisionSnapshot>(revision.SnapshotJson)
+                    ?? throw new JsonException("Revision không có dữ liệu hợp lệ.");
+                if (snapshot.MediaAssetId.HasValue &&
+                    !await db.MediaAssets.AnyAsync(x => x.Id == snapshot.MediaAssetId && !x.IsDeleted))
+                    throw new InvalidOperationException("Ảnh của revision này không còn tồn tại trong Media Library.");
+
+                item.ContentJson = snapshot.ContentJson;
+                item.MediaAssetId = snapshot.MediaAssetId;
+                item.IsEnabled = snapshot.IsEnabled;
+                item.UpdatedAtUtc = DateTime.UtcNow;
+                item.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                AddSectionItemRevision(item, slot, $"Restored #{revision.Id}");
+            }
+            else
+            {
+                if (revision.EntityType != "SectionContent" || revision.EntityKey != slot.SectionKey) return BadRequest();
+                var content = await db.SectionContents.FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
+                if (content is null) return NotFound();
+                var snapshot = JsonSerializer.Deserialize<SectionContentRevisionSnapshot>(revision.SnapshotJson)
+                    ?? throw new JsonException("Revision không có dữ liệu hợp lệ.");
+
+                content.ContentJson = snapshot.ContentJson;
+                if (User.IsInRole(DbInitializer.SuperAdministrator)) slot.IsEnabled = snapshot.IsEnabled;
+                content.UpdatedAtUtc = DateTime.UtcNow;
+                content.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                AddSectionContentRevision(content, slot, $"Restored #{revision.Id}");
+            }
+
+            await db.SaveChangesAsync();
+            TempData["Message"] = $"Đã khôi phục revision #{revision.Id}.";
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(History), new { id = sectionId, itemId });
     }
 
     private async Task PrepareForViewAsync(SectionContentEditViewModel model, TemplateSection slot)
@@ -323,4 +407,31 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
     private IReadOnlyDictionary<string, IReadOnlySet<string>> GetAllowedItemTags(SectionItemsSchema schema) =>
         schema.Fields.Where(x => x.Value.Editor == "html").ToDictionary(
             x => x.Key, x => htmlSanitizer.GetAllowedTags(x.Value.HtmlPolicy), StringComparer.OrdinalIgnoreCase);
+
+    private void AddSectionContentRevision(SectionContent content, TemplateSection slot, string action)
+    {
+        db.ContentRevisions.Add(new ContentRevision
+        {
+            EntityType = "SectionContent", EntityKey = slot.SectionKey, Action = action,
+            DisplayName = slot.DisplayName,
+            SnapshotJson = JsonSerializer.Serialize(new SectionContentRevisionSnapshot(content.ContentJson, slot.IsEnabled)),
+            CreatedById = User.FindFirstValue(ClaimTypes.NameIdentifier), CreatedByName = User.Identity?.Name
+        });
+    }
+
+    private void AddSectionItemRevision(SectionItem item, TemplateSection slot, string action)
+    {
+        db.ContentRevisions.Add(new ContentRevision
+        {
+            EntityType = "SectionItem", EntityKey = GetSectionItemRevisionKey(slot.SectionKey, item.Id), Action = action,
+            DisplayName = slot.DisplayName,
+            SnapshotJson = JsonSerializer.Serialize(new SectionItemRevisionSnapshot(
+                item.ContentJson, item.MediaAssetId, item.IsEnabled)),
+            CreatedById = User.FindFirstValue(ClaimTypes.NameIdentifier), CreatedByName = User.Identity?.Name
+        });
+    }
+
+    private static string GetSectionItemRevisionKey(string sectionKey, long itemId) => $"{sectionKey}:{itemId}";
+    private sealed record SectionContentRevisionSnapshot(string ContentJson, bool IsEnabled);
+    private sealed record SectionItemRevisionSnapshot(string ContentJson, long? MediaAssetId, bool IsEnabled);
 }

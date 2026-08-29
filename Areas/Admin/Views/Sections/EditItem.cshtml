@@ -8,7 +8,13 @@
         <h1>@ViewData["Title"]</h1>
         <p>Nội dung hiển thị theo schema do Developer định nghĩa.</p>
     </div>
-    <a class="button button-secondary" asp-action="Items" asp-route-id="@Model.TemplateSectionId">Quay lại</a>
+    <div class="page-actions">
+        @if (Model.Id.HasValue)
+        {
+            <a class="button button-secondary" asp-action="History" asp-route-id="@Model.TemplateSectionId" asp-route-itemId="@Model.Id">Lịch sử phiên bản</a>
+        }
+        <a class="button button-secondary" asp-action="Items" asp-route-id="@Model.TemplateSectionId">Quay lại</a>
+    </div>
 </div>
 
 <form asp-action="SaveItem" method="post" enctype="multipart/form-data" class="panel form-panel">

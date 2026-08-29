@@ -21,6 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
     public DbSet<SectionMedia> SectionMedia => Set<SectionMedia>();
     public DbSet<SectionItem> SectionItems => Set<SectionItem>();
+    public DbSet<ContentRevision> ContentRevisions => Set<ContentRevision>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -44,6 +45,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<SectionItem>().HasIndex(x => new { x.SectionKey, x.SortOrder });
         builder.Entity<SectionItem>().HasOne(x => x.MediaAsset).WithMany(x => x.SectionItemUsages)
             .HasForeignKey(x => x.MediaAssetId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<ContentRevision>().HasIndex(x => new { x.EntityType, x.EntityKey, x.CreatedAtUtc });
         builder.Entity<SiteTemplateSetting>()
             .HasOne(x => x.ActiveTemplate).WithMany().HasForeignKey(x => x.ActiveTemplateId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<SiteTemplateSetting>()

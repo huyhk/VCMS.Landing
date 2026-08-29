@@ -36,6 +36,11 @@ public class SectionContentEditViewModel
 
 public record SectionItemListViewModel(TemplateSection Slot, IReadOnlyList<SectionItem> Items);
 
+public record RevisionHistoryViewModel(
+    TemplateSection Slot,
+    SectionItem? Item,
+    IReadOnlyList<ContentRevision> Revisions);
+
 public class SectionItemEditViewModel
 {
     public long? Id { get; set; }

@@ -1,0 +1,61 @@
+@model RevisionHistoryViewModel
+@{
+    var isItem = Model.Item is not null;
+    ViewData["Title"] = "Lịch sử phiên bản — " + Model.Slot.DisplayName;
+}
+
+<div class="page-title">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <p>
+            @(isItem ? $"Mục nội dung #{Model.Item!.Id}" : $"Section #{Model.Slot.SectionKey}")
+            · Tối đa 100 phiên bản gần nhất
+        </p>
+    </div>
+    <a class="button button-secondary"
+       asp-action="@(isItem ? "EditItem" : "Edit")"
+       asp-route-sectionId="@(isItem ? Model.Slot.Id : null)"
+       asp-route-id="@(isItem ? Model.Item!.Id : Model.Slot.Id)">Quay lại chỉnh sửa</a>
+</div>
+
+<section class="panel revision-panel">
+    @if (Model.Revisions.Count == 0)
+    {
+        <div class="empty-state">Chưa có revision. Phiên bản đầu tiên sẽ được tạo khi nội dung được lưu lần kế tiếp.</div>
+    }
+    else
+    {
+        <div class="revision-list">
+            @for (var index = 0; index < Model.Revisions.Count; index++)
+            {
+                var revision = Model.Revisions[index];
+                var isCurrent = index == 0;
+                <article class="revision-row">
+                    <div class="revision-icon" aria-hidden="true">↺</div>
+                    <div class="revision-info">
+                        <strong>Revision #@revision.Id</strong>
+                        <span>@revision.Action</span>
+                        <small>
+                            @revision.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")
+                            · @(revision.CreatedByName ?? "Hệ thống")
+                        </small>
+                    </div>
+                    @if (isCurrent)
+                    {
+                        <span class="status on">Mới nhất</span>
+                    }
+                    else
+                    {
+                        <form asp-action="RestoreRevision" method="post"
+                              onsubmit="return confirm('Khôi phục revision #@revision.Id? Nội dung hiện tại vẫn được giữ trong lịch sử.')">
+                            <input type="hidden" name="revisionId" value="@revision.Id">
+                            <input type="hidden" name="sectionId" value="@Model.Slot.Id">
+                            @if (isItem) { <input type="hidden" name="itemId" value="@Model.Item!.Id"> }
+                            <button class="button button-secondary" type="submit">Khôi phục</button>
+                        </form>
+                    }
+                </article>
+            }
+        </div>
+    }
+</section>
