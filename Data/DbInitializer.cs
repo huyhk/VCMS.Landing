@@ -72,7 +72,8 @@ public static class DbInitializer
             new DeveloperSection("gallery", "Thư viện hình ảnh", "Gallery", GalleryContentSchema),
             new DeveloperSection("faq", "Câu hỏi thường gặp", "Faq", FaqContentSchema),
             new DeveloperSection("testimonials", "Ý kiến khách hàng", "Testimonials", TestimonialsContentSchema),
-            new DeveloperSection("process", "Quy trình", "Process", ProcessContentSchema)
+            new DeveloperSection("process", "Quy trình", "Process", ProcessContentSchema),
+            new DeveloperSection("media", "Video / Media", "Media", MediaContentSchema)
         };
         var existingDefinitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
         foreach (var item in developerSections)
@@ -229,6 +230,10 @@ public static class DbInitializer
 
     private const string ProcessContentSchema = """
         {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"title":{"label":"Tên bước","editor":"text","required":true},"content":{"label":"Mô tả","editor":"textarea","required":true}}},"settings":{"layout":{"editor":"select","default":"horizontal","options":[{"value":"horizontal","label":"Theo chiều ngang"},{"value":"vertical","label":"Theo chiều dọc"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string MediaContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"title":{"label":"Tiêu đề video","editor":"text","required":true},"description":{"label":"Mô tả","editor":"textarea"},"mediaUrl":{"label":"URL YouTube hoặc Vimeo","editor":"media-url","required":true},"image":{"label":"Ảnh thumbnail","editor":"image"}}},"settings":{"layout":{"editor":"select","default":"grid","options":[{"value":"grid","label":"Dạng lưới"},{"value":"featured","label":"Video đầu tiên nổi bật"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private const string StructuredContentSchema = """

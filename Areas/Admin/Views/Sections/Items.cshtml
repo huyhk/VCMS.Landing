@@ -2,27 +2,104 @@
 @using System.Text.Json
 @{
     ViewData["Title"] = "Danh sách " + Model.Slot.DisplayName;
-    static Dictionary<string,string?> Values(string json)
+
+    static Dictionary<string, string?> Values(string json)
     {
-        try { return JsonSerializer.Deserialize<Dictionary<string,string?>>(json) ?? new(); }
-        catch { return new(); }
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, string?>>(json) ?? new();
+        }
+        catch
+        {
+            return new();
+        }
+    }
+
+    static string PlainText(string value)
+    {
+        var result = System.Text.RegularExpressions.Regex.Replace(value, "<[^>]+>", " ");
+        return System.Net.WebUtility.HtmlDecode(result).Trim();
     }
 }
-<div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Thêm, sắp xếp hoặc ẩn từng mục nội dung.</p></div><div class="page-actions"><a class="button button-secondary" asp-action="Edit" asp-route-id="@Model.Slot.Id">Quay lại section</a><a class="button" asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id">Thêm mục</a></div></div>
-<section class="panel">
-    @if(Model.Items.Count == 0)
+
+<div class="page-title">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <p>Thêm, sắp xếp hoặc ẩn từng mục nội dung.</p>
+    </div>
+    <div class="page-actions">
+        <a class="button button-secondary" asp-action="Edit" asp-route-id="@Model.Slot.Id">Quay lại section</a>
+        <a class="button" asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id">Thêm mục</a>
+    </div>
+</div>
+
+<section class="panel repeater-panel">
+    @if (Model.Items.Count == 0)
     {
         <div class="empty-state">Chưa có mục nội dung. Hãy thêm mục đầu tiên.</div>
     }
     else
     {
-        <table><thead><tr><th>Thứ tự</th><th>Nội dung</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
-        @foreach(var item in Model.Items)
-        {
-            var values = Values(item.ContentJson);
-            var summary = values.Values.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)) ?? $"Mục #{item.Id}";
-            <tr><td>@item.SortOrder</td><td><div class="item-summary">@if(item.MediaAsset is not null){<img src="@item.MediaAsset.RelativeUrl" alt="">}<strong>@summary</strong></div></td><td><span class="status @(item.IsEnabled?"on":"off")">@(item.IsEnabled?"Đang hiện":"Đang ẩn")</span></td><td><div class="row-actions"><form asp-action="MoveItem" method="post"><input type="hidden" name="id" value="@item.Id"><input type="hidden" name="direction" value="-1"><button type="submit" title="Di chuyển lên">↑</button></form><form asp-action="MoveItem" method="post"><input type="hidden" name="id" value="@item.Id"><input type="hidden" name="direction" value="1"><button type="submit" title="Di chuyển xuống">↓</button></form><a asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id" asp-route-id="@item.Id">Sửa</a><form asp-action="DeleteItem" method="post" onsubmit="return confirm('Xóa mục nội dung này?')"><input type="hidden" name="id" value="@item.Id"><button type="submit" class="danger-link">Xóa</button></form></div></td></tr>
-        }
-        </tbody></table>
+        <div class="repeater-list">
+            @for (var index = 0; index < Model.Items.Count; index++)
+            {
+                var item = Model.Items[index];
+                var values = Values(item.ContentJson);
+                var contentValues = values.Values
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => PlainText(x!))
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToList();
+                var title = contentValues.FirstOrDefault() ?? $"Mục #{item.Id}";
+                var description = contentValues.Skip(1).FirstOrDefault();
+
+                <article class="repeater-item">
+                    <div class="repeater-order" title="Thứ tự hiển thị">@(index + 1)</div>
+
+                    @if (item.MediaAsset is not null)
+                    {
+                        <img class="repeater-thumbnail"
+                             src="@Url.Action("Thumbnail", "Media", new { area = "", id = item.MediaAssetId })"
+                             alt=""
+                             width="72"
+                             height="72"
+                             loading="lazy">
+                    }
+                    else
+                    {
+                        <div class="repeater-thumbnail repeater-thumbnail-placeholder" aria-hidden="true">Aa</div>
+                    }
+
+                    <div class="repeater-content">
+                        <strong title="@title">@title</strong>
+                        @if (!string.IsNullOrWhiteSpace(description))
+                        {
+                            <p title="@description">@description</p>
+                        }
+                        <span class="status @(item.IsEnabled ? "on" : "off")">
+                            @(item.IsEnabled ? "Đang hiện" : "Đang ẩn")
+                        </span>
+                    </div>
+
+                    <div class="row-actions">
+                        <form asp-action="MoveItem" method="post">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <input type="hidden" name="direction" value="-1">
+                            <button type="submit" title="Di chuyển lên" aria-label="Di chuyển lên" disabled="@(index == 0)">↑</button>
+                        </form>
+                        <form asp-action="MoveItem" method="post">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <input type="hidden" name="direction" value="1">
+                            <button type="submit" title="Di chuyển xuống" aria-label="Di chuyển xuống" disabled="@(index == Model.Items.Count - 1)">↓</button>
+                        </form>
+                        <a class="item-edit-link" asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id" asp-route-id="@item.Id">Sửa</a>
+                        <form asp-action="DeleteItem" method="post" onsubmit="return confirm('Xóa mục nội dung này?')">
+                            <input type="hidden" name="id" value="@item.Id">
+                            <button type="submit" class="danger-link">Xóa</button>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
     }
 </section>

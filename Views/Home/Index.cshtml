@@ -66,6 +66,9 @@
             case "Process":
                 @await Html.PartialAsync("~/Views/Home/Sections/_Process.cshtml", renderModel)
                 break;
+            case "Media":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Media.cshtml", renderModel)
+                break;
         }
     }
 </main>

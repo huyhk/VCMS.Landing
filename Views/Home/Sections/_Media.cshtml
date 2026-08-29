@@ -1,0 +1,57 @@
+@model SectionRenderViewModel
+@using System.Text.Json
+@using LandingCms.Services
+@{
+    var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
+    items ??= Array.Empty<SectionItem>();
+
+    static Dictionary<string, string?> Values(string json)
+    {
+        try { return JsonSerializer.Deserialize<Dictionary<string, string?>>(json) ?? new(); }
+        catch { return new(); }
+    }
+}
+
+<section id="@contentSection.SectionKey" class="section media-section @contentSection.LayoutVariant">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
+        </div>
+
+        <div class="media-grid">
+            @foreach (var item in items)
+            {
+                var values = Values(item.ContentJson);
+                values.TryGetValue("title", out var title);
+                values.TryGetValue("description", out var description);
+                values.TryGetValue("mediaUrl", out var mediaUrl);
+                if (!MediaEmbedUrl.TryResolve(mediaUrl, out var embedUrl)) continue;
+
+                <article class="media-card">
+                    <button class="media-player" type="button" data-media-player data-embed-url="@embedUrl" aria-label="Phát video: @title">
+                        @if (item.MediaAsset is not null)
+                        {
+                            <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })"
+                                 alt="@title" width="800" height="450" loading="lazy" decoding="async">
+                        }
+                        else
+                        {
+                            <span class="media-placeholder" aria-hidden="true"></span>
+                        }
+                        <span class="media-play" aria-hidden="true">▶</span>
+                    </button>
+                    <div class="media-copy">
+                        <h3>@title</h3>
+                        @if (!string.IsNullOrWhiteSpace(description))
+                        {
+                            <p>@description</p>
+                        }
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</section>

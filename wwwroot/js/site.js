@@ -87,3 +87,15 @@ if(galleryItems.length){
         if(event.key==='ArrowRight')showImage(activeIndex+1);
     });
 }
+
+document.querySelectorAll('[data-media-player]').forEach(player=>player.addEventListener('click',()=>{
+    const embedUrl=player.dataset.embedUrl;
+    if(!embedUrl)return;
+    const iframe=document.createElement('iframe');
+    iframe.src=`${embedUrl}${embedUrl.includes('?')?'&':'?'}autoplay=1`;
+    iframe.title=player.getAttribute('aria-label')?.replace('Phát video: ','')||'Video';
+    iframe.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+    iframe.allowFullscreen=true;
+    iframe.referrerPolicy='strict-origin-when-cross-origin';
+    player.replaceWith(iframe);
+}));

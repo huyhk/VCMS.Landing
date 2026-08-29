@@ -192,6 +192,8 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             if (field.Value.Required && string.IsNullOrWhiteSpace(value) && field.Value.Editor != "image")
                 ModelState.AddModelError($"Values[{field.Key}]", $"{field.Value.Label} là bắt buộc.");
             if (field.Value.Editor == "html") value = htmlSanitizer.Sanitize(value, field.Value.HtmlPolicy);
+            if (field.Value.Editor == "media-url" && !string.IsNullOrWhiteSpace(value) && !MediaEmbedUrl.TryResolve(value, out _))
+                ModelState.AddModelError($"Values[{field.Key}]", "Chỉ hỗ trợ URL video YouTube hoặc Vimeo hợp lệ.");
             if (field.Value.Editor != "image") values[field.Key] = value;
         }
 
