@@ -9,6 +9,11 @@ public static class PublicLinkUrl
         if (value.StartsWith('#')) return value;
         if (value.StartsWith('/') && !value.StartsWith("//")) return value;
         if (!Uri.TryCreate(value, UriKind.Absolute, out var uri)) return null;
-        return uri.Scheme is Uri.UriSchemeHttp or Uri.UriSchemeHttps or "mailto" or "tel" ? value : null;
+        return uri.Scheme == Uri.UriSchemeHttp ||
+               uri.Scheme == Uri.UriSchemeHttps ||
+               uri.Scheme == "mailto" ||
+               uri.Scheme == "tel"
+            ? value
+            : null;
     }
 }
