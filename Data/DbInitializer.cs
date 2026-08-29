@@ -73,7 +73,10 @@ public static class DbInitializer
             new DeveloperSection("faq", "Câu hỏi thường gặp", "Faq", FaqContentSchema),
             new DeveloperSection("testimonials", "Ý kiến khách hàng", "Testimonials", TestimonialsContentSchema),
             new DeveloperSection("process", "Quy trình", "Process", ProcessContentSchema),
-            new DeveloperSection("media", "Video / Media", "Media", MediaContentSchema)
+            new DeveloperSection("media", "Video / Media", "Media", MediaContentSchema),
+            new DeveloperSection("pricing", "Bảng giá", "Pricing", PricingContentSchema),
+            new DeveloperSection("partners", "Đối tác / Khách hàng", "Partners", PartnersContentSchema),
+            new DeveloperSection("team", "Đội ngũ", "Team", TeamContentSchema)
         };
         var existingDefinitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
         foreach (var item in developerSections)
@@ -234,6 +237,18 @@ public static class DbInitializer
 
     private const string MediaContentSchema = """
         {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"title":{"label":"Tiêu đề video","editor":"text","required":true},"description":{"label":"Mô tả","editor":"textarea"},"mediaUrl":{"label":"URL YouTube hoặc Vimeo","editor":"media-url","required":true},"image":{"label":"Ảnh thumbnail","editor":"image"}}},"settings":{"layout":{"editor":"select","default":"grid","options":[{"value":"grid","label":"Dạng lưới"},{"value":"featured","label":"Video đầu tiên nổi bật"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string PricingContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"name":{"label":"Tên gói","editor":"text","required":true},"price":{"label":"Giá","editor":"text","required":true},"period":{"label":"Chu kỳ / ghi chú giá","editor":"text"},"description":{"label":"Mô tả ngắn","editor":"textarea"},"features":{"label":"Danh sách quyền lợi","editor":"html","htmlPolicy":"RichContent","required":true},"buttonText":{"label":"Nội dung nút","editor":"text"},"buttonUrl":{"label":"Liên kết nút","editor":"url"},"emphasis":{"label":"Mức độ nổi bật","editor":"select","options":[{"value":"normal","label":"Thông thường"},{"value":"featured","label":"Nổi bật"}]}}},"settings":{"layout":{"editor":"select","default":"cards","options":[{"value":"cards","label":"Dạng thẻ"},{"value":"compact","label":"Thu gọn"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string PartnersContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"name":{"label":"Tên đối tác / khách hàng","editor":"text","required":true},"url":{"label":"Liên kết website","editor":"url"},"image":{"label":"Logo","editor":"image","required":true}}},"settings":{"layout":{"editor":"select","default":"grid","options":[{"value":"grid","label":"Lưới logo"},{"value":"monochrome","label":"Logo đơn sắc"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string TeamContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"name":{"label":"Họ tên","editor":"text","required":true},"position":{"label":"Chức danh","editor":"text","required":true},"bio":{"label":"Giới thiệu ngắn","editor":"textarea"},"profileUrl":{"label":"Liên kết hồ sơ","editor":"url"},"image":{"label":"Ảnh thành viên","editor":"image","required":true}}},"settings":{"layout":{"editor":"select","default":"grid","options":[{"value":"grid","label":"Dạng lưới"},{"value":"compact","label":"Thu gọn"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private const string StructuredContentSchema = """

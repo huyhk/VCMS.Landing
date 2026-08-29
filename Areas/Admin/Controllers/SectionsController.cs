@@ -194,6 +194,10 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             if (field.Value.Editor == "html") value = htmlSanitizer.Sanitize(value, field.Value.HtmlPolicy);
             if (field.Value.Editor == "media-url" && !string.IsNullOrWhiteSpace(value) && !MediaEmbedUrl.TryResolve(value, out _))
                 ModelState.AddModelError($"Values[{field.Key}]", "Chỉ hỗ trợ URL video YouTube hoặc Vimeo hợp lệ.");
+            if (field.Value.Editor == "url" && !string.IsNullOrWhiteSpace(value) && PublicLinkUrl.Normalize(value) is null)
+                ModelState.AddModelError($"Values[{field.Key}]", "Liên kết không hợp lệ. Chỉ hỗ trợ HTTP(S), email, số điện thoại hoặc liên kết nội bộ.");
+            if (field.Value.Editor == "select" && !string.IsNullOrWhiteSpace(value) && !field.Value.Options.Any(x => x.Value == value))
+                ModelState.AddModelError($"Values[{field.Key}]", "Giá trị lựa chọn không hợp lệ.");
             if (field.Value.Editor != "image") values[field.Key] = value;
         }
 
@@ -205,6 +209,9 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             if (item is null) return NotFound();
             model.MediaAsset = item.MediaAsset;
         }
+        if (itemSchema.Fields.Values.Any(x => x.Editor == "image" && x.Required) &&
+            model.MediaFile is not { Length: > 0 } && item?.MediaAssetId is null)
+            ModelState.AddModelError(nameof(model.MediaFile), "Hình ảnh là bắt buộc.");
         if (!ModelState.IsValid) return View("EditItem", model);
 
         try

@@ -1,0 +1,48 @@
+@model SectionRenderViewModel
+@using System.Text.Json
+@using LandingCms.Services
+@{
+    var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
+    items ??= Array.Empty<SectionItem>();
+
+    static Dictionary<string, string?> Values(string json)
+    {
+        try { return JsonSerializer.Deserialize<Dictionary<string, string?>>(json) ?? new(); }
+        catch { return new(); }
+    }
+}
+
+<section id="@contentSection.SectionKey" class="section team-section @contentSection.LayoutVariant">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
+        </div>
+
+        <div class="team-grid">
+            @foreach (var item in items.Where(x => x.MediaAsset is not null))
+            {
+                var values = Values(item.ContentJson);
+                values.TryGetValue("name", out var name);
+                values.TryGetValue("position", out var position);
+                values.TryGetValue("bio", out var bio);
+                values.TryGetValue("profileUrl", out var profileUrl);
+                var safeProfileUrl = PublicLinkUrl.Normalize(profileUrl);
+
+                <article class="team-card">
+                    <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })" alt="@name" width="640" height="720" loading="lazy" decoding="async">
+                    <div class="team-copy">
+                        <h3>
+                            @if (safeProfileUrl is not null) { <a href="@safeProfileUrl">@name</a> }
+                            else { <span>@name</span> }
+                        </h3>
+                        <strong>@position</strong>
+                        @if (!string.IsNullOrWhiteSpace(bio)) { <p>@bio</p> }
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</section>

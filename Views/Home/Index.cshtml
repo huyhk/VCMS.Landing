@@ -69,6 +69,15 @@
             case "Media":
                 @await Html.PartialAsync("~/Views/Home/Sections/_Media.cshtml", renderModel)
                 break;
+            case "Pricing":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Pricing.cshtml", renderModel)
+                break;
+            case "Partners":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Partners.cshtml", renderModel)
+                break;
+            case "Team":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Team.cshtml", renderModel)
+                break;
         }
     }
 </main>

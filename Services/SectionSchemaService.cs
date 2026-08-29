@@ -8,6 +8,7 @@ public sealed class SectionFieldSchema
     public string Editor { get; set; } = "textarea";
     public string? HtmlPolicy { get; set; }
     public bool Required { get; set; }
+    public List<SectionSettingOption> Options { get; set; } = new();
 }
 
 public sealed class SectionItemsSchema

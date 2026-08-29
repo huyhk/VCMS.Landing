@@ -1,0 +1,47 @@
+@model SectionRenderViewModel
+@using System.Text.Json
+@using LandingCms.Services
+@{
+    var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
+    items ??= Array.Empty<SectionItem>();
+
+    static Dictionary<string, string?> Values(string json)
+    {
+        try { return JsonSerializer.Deserialize<Dictionary<string, string?>>(json) ?? new(); }
+        catch { return new(); }
+    }
+}
+
+<section id="@contentSection.SectionKey" class="section partners-section @contentSection.LayoutVariant">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
+        </div>
+
+        <div class="partners-grid">
+            @foreach (var item in items.Where(x => x.MediaAsset is not null))
+            {
+                var values = Values(item.ContentJson);
+                values.TryGetValue("name", out var name);
+                values.TryGetValue("url", out var url);
+                var safeUrl = PublicLinkUrl.Normalize(url);
+
+                @if (safeUrl is not null)
+                {
+                    <a class="partner-logo" href="@safeUrl" aria-label="@name">
+                        <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })" alt="@name" width="240" height="120" loading="lazy" decoding="async">
+                    </a>
+                }
+                else
+                {
+                    <div class="partner-logo">
+                        <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })" alt="@name" width="240" height="120" loading="lazy" decoding="async">
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

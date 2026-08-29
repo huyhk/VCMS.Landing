@@ -1,32 +1,112 @@
 @model SectionItemEditViewModel
-@{ ViewData["Title"] = (Model.Id.HasValue ? "Chỉnh sửa mục — " : "Thêm mục — ") + Model.DisplayName; }
-<div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Nội dung hiển thị theo schema do Developer định nghĩa.</p></div><a class="button button-secondary" asp-action="Items" asp-route-id="@Model.TemplateSectionId">Quay lại</a></div>
+@{
+    ViewData["Title"] = (Model.Id.HasValue ? "Chỉnh sửa mục — " : "Thêm mục — ") + Model.DisplayName;
+}
+
+<div class="page-title">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <p>Nội dung hiển thị theo schema do Developer định nghĩa.</p>
+    </div>
+    <a class="button button-secondary" asp-action="Items" asp-route-id="@Model.TemplateSectionId">Quay lại</a>
+</div>
+
 <form asp-action="SaveItem" method="post" enctype="multipart/form-data" class="panel form-panel">
     <div asp-validation-summary="ModelOnly" class="validation"></div>
-    <input asp-for="Id" type="hidden"><input asp-for="TemplateSectionId" type="hidden">
+    <input asp-for="Id" type="hidden">
+    <input asp-for="TemplateSectionId" type="hidden">
+
     <div class="form-grid">
-    @foreach(var field in Model.Fields)
-    {
-        Model.Values.TryGetValue(field.Key, out var value);
-        if(field.Value.Editor == "image")
+        @foreach (var field in Model.Fields)
         {
-            <div class="full"><label for="MediaFile">@field.Value.Label</label>@if(Model.MediaAsset is not null){<div class="single-image-preview"><img src="@Model.MediaAsset.RelativeUrl" alt=""><span>Ảnh hiện tại</span></div>}<input asp-for="MediaFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="item-image-preview"><div id="item-image-preview" class="single-image-preview"></div><span asp-validation-for="MediaFile"></span></div>
+            Model.Values.TryGetValue(field.Key, out var value);
+            var fieldId = $"item-{field.Key}";
+            var requiredMark = field.Value.Required ? " *" : "";
+
+            if (field.Value.Editor == "image")
+            {
+                <div class="full">
+                    <label for="MediaFile">@field.Value.Label@requiredMark</label>
+                    @if (Model.MediaAsset is not null)
+                    {
+                        <div class="single-image-preview">
+                            <img src="@Url.Action("Thumbnail", "Media", new { area = "", id = Model.MediaAsset.Id })" alt="">
+                            <span>Ảnh hiện tại</span>
+                        </div>
+                    }
+                    <input asp-for="MediaFile" type="file" accept="image/png,image/jpeg,image/webp"
+                           data-image-preview="item-image-preview">
+                    <div id="item-image-preview" class="single-image-preview"></div>
+                    <span asp-validation-for="MediaFile"></span>
+                </div>
+            }
+            else if (field.Value.Editor == "html")
+            {
+                Model.AllowedHtmlTags.TryGetValue(field.Key, out var allowedTags);
+                <div class="full">
+                    <label>@field.Value.Label@requiredMark</label>
+                    <div class="html-editor" data-html-editor>
+                        <div class="html-editor-toolbar" role="toolbar" aria-label="Định dạng nội dung">
+                            @if (allowedTags?.Contains("strong") == true) { <button type="button" data-command="bold"><strong>B</strong></button> }
+                            @if (allowedTags?.Contains("em") == true) { <button type="button" data-command="italic"><em>I</em></button> }
+                            @if (allowedTags?.Contains("ul") == true) { <button type="button" data-command="insertUnorderedList">• List</button> }
+                            @if (allowedTags?.Contains("a") == true) { <button type="button" data-link>Link</button> }
+                            <button type="button" data-command="removeFormat">Xóa định dạng</button>
+                        </div>
+                        <div class="html-editor-content" contenteditable="true">@Html.Raw(value)</div>
+                        <textarea name="Values[@field.Key]" hidden data-html-editor-value>@value</textarea>
+                    </div>
+                    @Html.ValidationMessage($"Values[{field.Key}]", new { @class = "field-validation-error" })
+                </div>
+            }
+            else if (field.Value.Editor == "textarea")
+            {
+                <div class="full">
+                    <label for="@fieldId">@field.Value.Label@requiredMark</label>
+                    <textarea id="@fieldId" name="Values[@field.Key]" rows="5">@value</textarea>
+                    @Html.ValidationMessage($"Values[{field.Key}]", new { @class = "field-validation-error" })
+                </div>
+            }
+            else if (field.Value.Editor == "select")
+            {
+                var selectedValue = string.IsNullOrWhiteSpace(value) ? field.Value.Options.FirstOrDefault()?.Value : value;
+                <div class="full">
+                    <label for="@fieldId">@field.Value.Label@requiredMark</label>
+                    <select id="@fieldId" name="Values[@field.Key]">
+                        @foreach (var option in field.Value.Options)
+                        {
+                            if (option.Value == selectedValue)
+                            {
+                                <option value="@option.Value" selected>@option.Label</option>
+                            }
+                            else
+                            {
+                                <option value="@option.Value">@option.Label</option>
+                            }
+                        }
+                    </select>
+                    @Html.ValidationMessage($"Values[{field.Key}]", new { @class = "field-validation-error" })
+                </div>
+            }
+            else
+            {
+                var isMediaUrl = field.Value.Editor == "media-url";
+                <div class="full">
+                    <label for="@fieldId">@field.Value.Label@requiredMark</label>
+                    <input id="@fieldId" name="Values[@field.Key]" value="@value"
+                           type="@(isMediaUrl ? "url" : "text")"
+                           placeholder="@(isMediaUrl ? "https://www.youtube.com/watch?v=..." : field.Value.Editor == "url" ? "https://... hoặc #contact" : null)">
+                    @Html.ValidationMessage($"Values[{field.Key}]", new { @class = "field-validation-error" })
+                </div>
+            }
         }
-        else if(field.Value.Editor == "html")
-        {
-            Model.AllowedHtmlTags.TryGetValue(field.Key, out var allowedTags);
-            <div class="full"><label>@field.Value.Label</label><div class="html-editor" data-html-editor><div class="html-editor-toolbar" role="toolbar" aria-label="Định dạng nội dung">@if(allowedTags?.Contains("strong")==true){<button type="button" data-command="bold"><strong>B</strong></button>}@if(allowedTags?.Contains("em")==true){<button type="button" data-command="italic"><em>I</em></button>}@if(allowedTags?.Contains("ul")==true){<button type="button" data-command="insertUnorderedList">• List</button>}@if(allowedTags?.Contains("a")==true){<button type="button" data-link>Link</button>}<button type="button" data-command="removeFormat">Xóa định dạng</button></div><div class="html-editor-content" contenteditable="true">@Html.Raw(value)</div><textarea name="Values[@field.Key]" hidden data-html-editor-value>@value</textarea></div><span class="field-validation-error">@Html.ValidationMessage($"Values[{field.Key}]")</span></div>
-        }
-        else if(field.Value.Editor == "textarea")
-        {
-            <div class="full"><label for="item-@field.Key">@field.Value.Label</label><textarea id="item-@field.Key" name="Values[@field.Key]" rows="5">@value</textarea><span class="field-validation-error">@Html.ValidationMessage($"Values[{field.Key}]")</span></div>
-        }
-        else
-        {
-            <div class="full"><label for="item-@field.Key">@field.Value.Label</label><input id="item-@field.Key" name="Values[@field.Key]" value="@value" type="@(field.Value.Editor == "media-url" ? "url" : "text")" placeholder="@(field.Value.Editor == "media-url" ? "https://www.youtube.com/watch?v=..." : null)"><span class="field-validation-error">@Html.ValidationMessage($"Values[{field.Key}]")</span></div>
-        }
-    }
-        <div class="check-row full"><label><input asp-for="IsEnabled"> Hiển thị mục này</label></div>
+
+        <div class="check-row full">
+            <label><input asp-for="IsEnabled"> Hiển thị mục này</label>
+        </div>
     </div>
-    <div class="form-actions"><button class="button" type="submit">Lưu mục nội dung</button></div>
+
+    <div class="form-actions">
+        <button class="button" type="submit">Lưu mục nội dung</button>
+    </div>
 </form>

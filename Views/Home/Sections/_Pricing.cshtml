@@ -1,0 +1,52 @@
+@model SectionRenderViewModel
+@using System.Text.Json
+@using LandingCms.Services
+@{
+    var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
+    items ??= Array.Empty<SectionItem>();
+
+    static Dictionary<string, string?> Values(string json)
+    {
+        try { return JsonSerializer.Deserialize<Dictionary<string, string?>>(json) ?? new(); }
+        catch { return new(); }
+    }
+}
+
+<section id="@contentSection.SectionKey" class="section pricing-section @contentSection.LayoutVariant">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
+        </div>
+
+        <div class="pricing-grid">
+            @foreach (var item in items)
+            {
+                var values = Values(item.ContentJson);
+                values.TryGetValue("name", out var name);
+                values.TryGetValue("price", out var price);
+                values.TryGetValue("period", out var period);
+                values.TryGetValue("description", out var description);
+                values.TryGetValue("features", out var features);
+                values.TryGetValue("buttonText", out var buttonText);
+                values.TryGetValue("buttonUrl", out var buttonUrl);
+                values.TryGetValue("emphasis", out var emphasis);
+                var safeButtonUrl = PublicLinkUrl.Normalize(buttonUrl);
+
+                <article class="pricing-card @(emphasis == "featured" ? "featured" : "")">
+                    @if (emphasis == "featured") { <span class="pricing-badge">Đề xuất</span> }
+                    <h3>@name</h3>
+                    @if (!string.IsNullOrWhiteSpace(description)) { <p class="pricing-description">@description</p> }
+                    <div class="pricing-price"><strong>@price</strong><span>@period</span></div>
+                    <div class="pricing-features rich-content">@Html.Raw(features)</div>
+                    @if (!string.IsNullOrWhiteSpace(buttonText) && safeButtonUrl is not null)
+                    {
+                        <a class="btn @(emphasis == "featured" ? "" : "pricing-button-secondary")" href="@safeButtonUrl">@buttonText</a>
+                    }
+                </article>
+            }
+        </div>
+    </div>
+</section>
