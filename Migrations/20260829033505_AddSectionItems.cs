@@ -11,19 +11,7 @@ namespace VCMS.Landing.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "CompanyName",
-                table: "SiteSettings",
-                type: "TEXT",
-                maxLength: 200,
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "SeoKeywords",
-                table: "SiteSettings",
-                type: "TEXT",
-                maxLength: 500,
-                nullable: true);
+          
 
             migrationBuilder.CreateTable(
                 name: "SectionItems",
@@ -67,13 +55,7 @@ namespace VCMS.Landing.Migrations
             migrationBuilder.DropTable(
                 name: "SectionItems");
 
-            migrationBuilder.DropColumn(
-                name: "CompanyName",
-                table: "SiteSettings");
-
-            migrationBuilder.DropColumn(
-                name: "SeoKeywords",
-                table: "SiteSettings");
+          
         }
     }
 }
