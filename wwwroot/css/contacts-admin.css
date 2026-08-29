@@ -1,0 +1,31 @@
+.contact-actions,.page-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.contact-actions form,.page-actions form,.page-title > form { margin: 0; }
+.contact-actions a,.contact-actions button {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 7px;
+    color: var(--blue);
+    background: #eff6ff;
+    font: 700 12px Inter,system-ui,sans-serif;
+    cursor: pointer;
+}
+
+.contact-actions button { color: #fff; background: var(--blue); }
+.contact-message { white-space: pre-wrap; line-height: 1.7; }
+.contact-error { overflow-wrap: anywhere; white-space: pre-wrap; }
+.alert-error { border-color: #fecdca; color: #b42318; background: #fef3f2; }
+
+@media (max-width: 800px) {
+    .page-actions { justify-content: flex-start; flex-wrap: wrap; }
+    .contacts-panel { overflow-x: auto; }
+    .contacts-panel table { min-width: 850px; }
+}

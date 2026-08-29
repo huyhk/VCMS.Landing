@@ -1,3 +1,61 @@
 @model ContactSubmission
-@{ ViewData["Title"] = "Chi tiết liên hệ"; }
-<div class="page-title"><div><h1>@Model.Name</h1><p>@Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p></div><a class="button button-secondary" asp-action="Index">Quay lại</a></div><section class="panel form-panel"><div class="form-grid"><div><label>Email</label><p><a href="mailto:@Model.Email">@Model.Email</a></p></div><div><label>Điện thoại</label><p>@Model.Phone</p></div><div class="full"><label>Nội dung</label><p style="white-space:pre-wrap">@Model.Message</p></div><div><label>Trạng thái email</label><p>@Model.Status</p></div>@if(!string.IsNullOrWhiteSpace(Model.ErrorMessage)){<div class="full"><label>Lỗi gửi email</label><p class="validation">@Model.ErrorMessage</p></div>}</div></section>
+@{
+    ViewData["Title"] = "Chi tiết liên hệ";
+    var isSent = Model.Status == "Sent";
+}
+
+<div class="page-title">
+    <div>
+        <h1>@Model.Name</h1>
+        <p>@Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <div class="page-actions">
+        @if (!isSent)
+        {
+            <form asp-action="Resend" method="post">
+                <input type="hidden" name="id" value="@Model.Id">
+                <button class="button" type="submit">Gửi lại email</button>
+            </form>
+        }
+        <a class="button button-secondary" asp-action="Index">Quay lại</a>
+    </div>
+</div>
+
+<section class="panel form-panel">
+    <div class="form-grid">
+        <div>
+            <label>Email</label>
+            <p><a href="mailto:@Model.Email">@Model.Email</a></p>
+        </div>
+        <div>
+            <label>Điện thoại</label>
+            <p>@Model.Phone</p>
+        </div>
+        <div class="full">
+            <label>Nội dung</label>
+            <p class="contact-message">@Model.Message</p>
+        </div>
+        <div>
+            <label>Trạng thái email</label>
+            <p>
+                <span class="status @(isSent ? "on" : "off")">
+                    @(isSent ? "Đã gửi" : Model.Status == "Failed" ? "Gửi lỗi" : "Đang chờ")
+                </span>
+            </p>
+        </div>
+        @if (Model.SentAtUtc.HasValue)
+        {
+            <div>
+                <label>Thời gian gửi</label>
+                <p>@Model.SentAtUtc.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="full">
+                <label>Lỗi gửi email gần nhất</label>
+                <p class="validation contact-error">@Model.ErrorMessage</p>
+            </div>
+        }
+    </div>
+</section>

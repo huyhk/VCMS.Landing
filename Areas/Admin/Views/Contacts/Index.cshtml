@@ -1,3 +1,63 @@
 @model IReadOnlyList<ContactSubmission>
-@{ ViewData["Title"] = "Liên hệ khách hàng"; }
-<div class="page-title"><div><h1>Liên hệ khách hàng</h1><p>Tối đa 500 liên hệ mới nhất đã nhận từ landing page.</p></div></div><section class="panel"><table><thead><tr><th>Thời gian</th><th>Khách hàng</th><th>Email</th><th>Điện thoại</th><th>Gửi email</th><th></th></tr></thead><tbody>@foreach(var item in Model){<tr><td>@item.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td><strong>@item.Name</strong></td><td>@item.Email</td><td>@item.Phone</td><td><span class="status @(item.Status=="Sent"?"on":"off")">@(item.Status=="Sent"?"Đã gửi":"Chưa gửi")</span></td><td><a asp-action="Detail" asp-route-id="@item.Id">Xem</a></td></tr>}</tbody></table></section>
+@{
+    ViewData["Title"] = "Liên hệ khách hàng";
+    var pendingCount = Model.Count(x => x.Status != "Sent");
+}
+
+<div class="page-title">
+    <div>
+        <h1>Liên hệ khách hàng</h1>
+        <p>Tối đa 500 liên hệ mới nhất đã nhận từ landing page.</p>
+    </div>
+    @if (pendingCount > 0)
+    {
+        <form asp-action="ResendAll" method="post"
+              onsubmit="return confirm('Gửi lại @pendingCount email chưa thành công?')">
+            <button class="button" type="submit">Gửi lại tất cả (@pendingCount)</button>
+        </form>
+    }
+</div>
+
+<section class="panel contacts-panel">
+    <table>
+        <thead>
+        <tr>
+            <th>Thời gian</th>
+            <th>Khách hàng</th>
+            <th>Email</th>
+            <th>Điện thoại</th>
+            <th>Gửi email</th>
+            <th>Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            var isSent = item.Status == "Sent";
+            <tr>
+                <td>@item.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td><strong>@item.Name</strong></td>
+                <td>@item.Email</td>
+                <td>@item.Phone</td>
+                <td>
+                    <span class="status @(isSent ? "on" : "off")">
+                        @(isSent ? "Đã gửi" : item.Status == "Failed" ? "Gửi lỗi" : "Đang chờ")
+                    </span>
+                </td>
+                <td>
+                    <div class="contact-actions">
+                        <a asp-action="Detail" asp-route-id="@item.Id">Xem</a>
+                        @if (!isSent)
+                        {
+                            <form asp-action="Resend" method="post">
+                                <input type="hidden" name="id" value="@item.Id">
+                                <button type="submit">Gửi lại</button>
+                            </form>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>

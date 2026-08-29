@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/css/html-editor.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/template-composer.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/repeater-admin.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/contacts-admin.css" asp-append-version="true">
 </head>
 <body>
 <aside>
@@ -53,6 +54,10 @@
         @if (TempData["Message"] is string message)
         {
             <div class="alert">@message</div>
+        }
+        @if (TempData["Error"] is string error)
+        {
+            <div class="alert alert-error">@error</div>
         }
         @RenderBody()
     </main>
