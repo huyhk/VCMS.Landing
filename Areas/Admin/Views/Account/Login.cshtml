@@ -1,0 +1,27 @@
+@model LoginViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Đăng nhập quản trị";
+}
+
+<main class="auth-page">
+    <form asp-area="Admin" asp-controller="Account" asp-action="Login" method="post" class="auth-card">
+        <a class="auth-brand" href="/">VCMS <span>Landing</span></a>
+        <h1>Đăng nhập</h1>
+        <p>Truy cập khu vực quản trị nội dung.</p>
+        <div asp-validation-summary="ModelOnly" class="validation"></div>
+        <input asp-for="ReturnUrl" type="hidden">
+
+        <label asp-for="UserName">Tên đăng nhập</label>
+        <input asp-for="UserName" autocomplete="username">
+        <span asp-validation-for="UserName"></span>
+
+        <label asp-for="Password">Mật khẩu</label>
+        <input asp-for="Password" autocomplete="current-password">
+        <span asp-validation-for="Password"></span>
+
+        <label class="check"><input asp-for="RememberMe"> Ghi nhớ đăng nhập</label>
+        <button class="auth-button" type="submit">Đăng nhập</button>
+        <a class="back-link" href="/">← Về trang chủ</a>
+    </form>
+</main>

@@ -23,8 +23,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/account/login";
-    options.AccessDeniedPath = "/account/access-denied";
+    options.LoginPath = "/admin/account/login";
+    options.AccessDeniedPath = "/admin/account/access-denied";
     options.Cookie.Name = "LandingCms.Auth";
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;

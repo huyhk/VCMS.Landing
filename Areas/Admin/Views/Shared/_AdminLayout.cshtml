@@ -42,8 +42,8 @@
                 <span>@User.Identity?.Name</span>
             </summary>
             <div class="user-menu-dropdown">
-                <a asp-area="" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
-                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                <a asp-area="Admin" asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
+                <form asp-area="Admin" asp-controller="Account" asp-action="Logout" method="post">
                     <button type="submit">Đăng xuất</button>
                 </form>
             </div>
