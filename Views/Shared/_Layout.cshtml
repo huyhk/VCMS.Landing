@@ -15,14 +15,29 @@
     @if (ViewData["FaviconUrl"] is string faviconUrl) { <link rel="icon" href="@faviconUrl" /> }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/contact.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/media.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/rich-content.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/mobile-navigation.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/content-variants.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/enhanced-sections.css" asp-append-version="true" />
+    @if (ViewData["HasHeroLeadForm"] is true)
+    {
+        <link rel="stylesheet" href="~/css/contact.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/enhanced-sections.css" asp-append-version="true" />
+    }
+    else
+    {
+        <link rel="preload" as="style" href="~/css/contact.css" asp-append-version="true" onload="this.onload=null;this.rel='stylesheet'" />
+        <link rel="preload" as="style" href="~/css/enhanced-sections.css" asp-append-version="true" onload="this.onload=null;this.rel='stylesheet'" />
+    }
+    <link rel="preload" as="style" href="~/css/rich-content.css" asp-append-version="true" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="preload" as="style" href="~/css/content-variants.css" asp-append-version="true" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+        <link rel="stylesheet" href="~/css/contact.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/rich-content.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/content-variants.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/enhanced-sections.css" asp-append-version="true" />
+    </noscript>
     @if (ViewData["TemplateStylesheet"] is string templateStylesheet &&
          templateStylesheet.StartsWith("~/css/templates/", StringComparison.Ordinal))
     {

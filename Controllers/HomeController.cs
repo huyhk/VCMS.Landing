@@ -50,6 +50,8 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             });
         }
         var renderedKeys = sections.Select(x => x.SectionKey).ToHashSet(StringComparer.Ordinal);
+        ViewData["HasHeroLeadForm"] = sections.Any(x =>
+            x.SectionType == "Hero" && x.LayoutVariant == "lead-form-right");
         var navigationItems = slots
             .Where(x => renderedKeys.Contains(x.SectionKey) && x.ShowInNavigation && sectionSchemas.GetNavigation(x.SectionDefinition.SchemaJson).Allowed)
             .Select(x => new NavigationItem(x.SectionKey,

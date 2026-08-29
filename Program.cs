@@ -54,7 +54,21 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context =>
+    {
+        var path = context.Context.Request.Path;
+        if (path.StartsWithSegments("/uploads") || context.Context.Request.Query.ContainsKey("v"))
+        {
+            context.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        }
+        else if (path.StartsWithSegments("/css") || path.StartsWithSegments("/js"))
+        {
+            context.Context.Response.Headers.CacheControl = "public,max-age=86400";
+        }
+    }
+});
 app.UseRouting();
 app.UseRateLimiter();
 app.UseAuthentication();

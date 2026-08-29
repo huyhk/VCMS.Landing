@@ -21,7 +21,16 @@ document.addEventListener('click',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu()});
 window.addEventListener('resize',()=>{if(window.innerWidth>800)closeMenu()});
 
-if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.querySelectorAll('.hero-backgrounds').forEach(container=>{const images=[...container.querySelectorAll('img')];if(images.length<2)return;let index=0;setInterval(()=>{if(document.hidden)return;images[index].classList.remove('active');index=(index+1)%images.length;images[index].classList.add('active')},10000)})}
+const prepareHeroBackgrounds=()=>document.querySelectorAll('.hero-backgrounds img[data-src]').forEach(image=>{
+    image.src=image.dataset.src;
+    image.removeAttribute('data-src');
+});
+window.addEventListener('load',()=>{
+    if('requestIdleCallback' in window)requestIdleCallback(prepareHeroBackgrounds,{timeout:3000});
+    else setTimeout(prepareHeroBackgrounds,1500);
+},{once:true});
+
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.querySelectorAll('.hero-backgrounds').forEach(container=>{const images=[...container.querySelectorAll('img')];if(images.length<2)return;let index=0;setInterval(()=>{if(document.hidden)return;const next=(index+1)%images.length;if(!images[next].src)return;images[index].classList.remove('active');index=next;images[index].classList.add('active')},10000)})}
 
 const galleryItems=[...document.querySelectorAll('[data-gallery-item]')];
 if(galleryItems.length){

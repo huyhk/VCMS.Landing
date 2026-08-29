@@ -45,7 +45,7 @@ public class MediaStorageService(IWebHostEnvironment environment, ApplicationDbC
         var extension = keepPng ? ".png" : ".webp";
         var contentType = keepPng ? "image/png" : "image/webp";
         using var image = SKImage.FromBitmap(resized);
-        using var encoded = image.Encode(outputFormat, keepPng ? 100 : 82)
+        using var encoded = image.Encode(outputFormat, keepPng ? 100 : GetQuality(profile))
             ?? throw new InvalidOperationException("Không thể tối ưu file ảnh.");
 
         var now = DateTime.UtcNow;
@@ -86,6 +86,13 @@ public class MediaStorageService(IWebHostEnvironment environment, ApplicationDbC
         ImageUploadProfile.Logo => (1000, 500),
         ImageUploadProfile.Favicon => (256, 256),
         _ => (1920, 1920)
+    };
+
+    private static int GetQuality(ImageUploadProfile profile) => profile switch
+    {
+        ImageUploadProfile.HeroBackground => 74,
+        ImageUploadProfile.SectionImage => 76,
+        _ => 80
     };
 
     private static SKBitmap ApplyOrientation(SKBitmap source, SKEncodedOrigin origin)

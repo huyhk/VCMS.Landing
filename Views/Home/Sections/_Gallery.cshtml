@@ -17,7 +17,9 @@
                        data-gallery-item
                        data-gallery-group="@contentSection.SectionKey"
                        aria-label="Phóng to hình ảnh">
-                        <img src="@image.MediaAsset.RelativeUrl" width="@image.MediaAsset.Width" height="@image.MediaAsset.Height" alt="@contentSection.Title" loading="lazy">
+                        <img src="@Url.Action("Thumbnail", "Media", new { id = image.MediaAssetId })"
+                             width="@image.MediaAsset.Width" height="@image.MediaAsset.Height"
+                             alt="@contentSection.Title" loading="lazy" decoding="async">
                     </a>
                 }
             </div>
