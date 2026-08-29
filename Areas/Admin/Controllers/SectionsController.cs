@@ -44,7 +44,8 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             Eyebrow = payload.Eyebrow, Title = payload.Title, Subtitle = payload.Subtitle, Content = payload.Content,
             ImageUrl = payload.ImageUrl, PrimaryButtonText = payload.PrimaryButtonText, PrimaryButtonUrl = payload.PrimaryButtonUrl,
             SecondaryButtonText = payload.SecondaryButtonText, SecondaryButtonUrl = payload.SecondaryButtonUrl,
-            IsEnabled = slot.IsEnabled
+            IsEnabled = slot.IsEnabled,
+            HasItems = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is not null
         };
         model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
         model.GalleryImages = await LoadMediaAsync(slot.SectionKey, "Gallery");
@@ -139,6 +140,133 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         return RedirectToAction(nameof(Edit), new { id = slot.Id });
     }
 
+    public async Task<IActionResult> Items(int id)
+    {
+        var slot = await FindActiveSlotAsync(id);
+        if (slot is null) return NotFound();
+        if (sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is null) return NotFound();
+        var items = await db.SectionItems.AsNoTracking().Include(x => x.MediaAsset)
+            .Where(x => x.SectionKey == slot.SectionKey).OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync();
+        return View(new SectionItemListViewModel(slot, items));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditItem(int sectionId, long? id)
+    {
+        var slot = await FindActiveSlotAsync(sectionId);
+        if (slot is null) return NotFound();
+        var itemSchema = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson);
+        if (itemSchema is null) return NotFound();
+        SectionItem? item = null;
+        if (id.HasValue)
+        {
+            item = await db.SectionItems.AsNoTracking().Include(x => x.MediaAsset)
+                .FirstOrDefaultAsync(x => x.Id == id && x.SectionKey == slot.SectionKey);
+            if (item is null) return NotFound();
+        }
+        return View(new SectionItemEditViewModel
+        {
+            Id = item?.Id, TemplateSectionId = slot.Id, SectionKey = slot.SectionKey,
+            DisplayName = slot.DisplayName, Fields = itemSchema.Fields,
+            AllowedHtmlTags = GetAllowedItemTags(itemSchema),
+            Values = DeserializeItemValues(item?.ContentJson), MediaAsset = item?.MediaAsset,
+            IsEnabled = item?.IsEnabled ?? true
+        });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveItem(SectionItemEditViewModel model)
+    {
+        var slot = await FindActiveSlotAsync(model.TemplateSectionId);
+        if (slot is null) return NotFound();
+        var itemSchema = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson);
+        if (itemSchema is null) return NotFound();
+        model.SectionKey = slot.SectionKey; model.DisplayName = slot.DisplayName; model.Fields = itemSchema.Fields;
+        model.AllowedHtmlTags = GetAllowedItemTags(itemSchema);
+        model.Values ??= new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var field in itemSchema.Fields)
+        {
+            model.Values.TryGetValue(field.Key, out var value);
+            value = value?.Trim();
+            if (field.Value.Required && string.IsNullOrWhiteSpace(value) && field.Value.Editor != "image")
+                ModelState.AddModelError($"Values[{field.Key}]", $"{field.Value.Label} là bắt buộc.");
+            if (field.Value.Editor == "html") value = htmlSanitizer.Sanitize(value, field.Value.HtmlPolicy);
+            if (field.Value.Editor != "image") values[field.Key] = value;
+        }
+
+        SectionItem? item = null;
+        if (model.Id.HasValue)
+        {
+            item = await db.SectionItems.Include(x => x.MediaAsset)
+                .FirstOrDefaultAsync(x => x.Id == model.Id && x.SectionKey == slot.SectionKey);
+            if (item is null) return NotFound();
+            model.MediaAsset = item.MediaAsset;
+        }
+        if (!ModelState.IsValid) return View("EditItem", model);
+
+        try
+        {
+            if (model.MediaFile is { Length: > 0 })
+            {
+                var asset = await mediaStorage.SaveImageAsync(model.MediaFile,
+                    User.FindFirstValue(ClaimTypes.NameIdentifier), ImageUploadProfile.SectionImage, HttpContext.RequestAborted);
+                model.MediaAsset = asset;
+                if (item is not null) item.MediaAssetId = asset.Id;
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(nameof(model.MediaFile), ex.Message); return View("EditItem", model);
+        }
+
+        if (item is null)
+        {
+            var nextOrder = (await db.SectionItems.Where(x => x.SectionKey == slot.SectionKey)
+                .MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
+            item = new SectionItem { SectionKey = slot.SectionKey, SortOrder = nextOrder, MediaAssetId = model.MediaAsset?.Id };
+            db.SectionItems.Add(item);
+        }
+        item.ContentJson = JsonSerializer.Serialize(values);
+        item.IsEnabled = model.IsEnabled;
+        item.UpdatedAtUtc = DateTime.UtcNow;
+        item.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await db.SaveChangesAsync();
+        TempData["Message"] = "Đã lưu mục nội dung.";
+        return RedirectToAction(nameof(Items), new { id = slot.Id });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> MoveItem(long id, int direction)
+    {
+        var item = await db.SectionItems.FirstOrDefaultAsync(x => x.Id == id);
+        if (item is null) return NotFound();
+        var slot = await FindActiveSlotByKeyAsync(item.SectionKey);
+        if (slot is null) return NotFound();
+        var ordered = await db.SectionItems.Where(x => x.SectionKey == item.SectionKey)
+            .OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync();
+        var index = ordered.FindIndex(x => x.Id == id); var target = index + Math.Sign(direction);
+        if (index >= 0 && target >= 0 && target < ordered.Count)
+        {
+            (ordered[index], ordered[target]) = (ordered[target], ordered[index]);
+            for (var i = 0; i < ordered.Count; i++) ordered[i].SortOrder = (i + 1) * 10;
+            await db.SaveChangesAsync();
+        }
+        return RedirectToAction(nameof(Items), new { id = slot.Id });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteItem(long id)
+    {
+        var item = await db.SectionItems.FirstOrDefaultAsync(x => x.Id == id);
+        if (item is null) return NotFound();
+        var slot = await FindActiveSlotByKeyAsync(item.SectionKey);
+        if (slot is null) return NotFound();
+        db.SectionItems.Remove(item); await db.SaveChangesAsync();
+        TempData["Message"] = "Đã xóa mục nội dung. File ảnh trong Media Library vẫn được giữ lại.";
+        return RedirectToAction(nameof(Items), new { id = slot.Id });
+    }
+
     private async Task PrepareForViewAsync(SectionContentEditViewModel model, TemplateSection slot)
     {
         model.SectionKey = slot.SectionKey; model.SectionType = slot.SectionDefinition.SectionType; model.DisplayName = slot.DisplayName;
@@ -147,6 +275,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
         model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
         model.GalleryImages = await LoadMediaAsync(slot.SectionKey, "Gallery");
+        model.HasItems = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is not null;
     }
 
     private async Task<IReadOnlyList<SectionMedia>> LoadBackgroundsAsync(string sectionKey) => await db.SectionMedia.AsNoTracking()
@@ -156,4 +285,33 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
     private async Task<IReadOnlyList<SectionMedia>> LoadMediaAsync(string sectionKey, string role) => await db.SectionMedia.AsNoTracking()
         .Include(x => x.MediaAsset).Where(x => x.SectionKey == sectionKey && x.Role == role)
         .OrderBy(x => x.SortOrder).ToListAsync();
+
+    private async Task<TemplateSection?> FindActiveSlotAsync(int id)
+    {
+        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
+        return await db.TemplateSections.Include(x => x.SectionDefinition)
+            .FirstOrDefaultAsync(x => x.Id == id && x.TemplateId == activeTemplateId);
+    }
+
+    private async Task<TemplateSection?> FindActiveSlotByKeyAsync(string sectionKey)
+    {
+        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
+        return await db.TemplateSections.Include(x => x.SectionDefinition)
+            .FirstOrDefaultAsync(x => x.SectionKey == sectionKey && x.TemplateId == activeTemplateId);
+    }
+
+    private static Dictionary<string, string?> DeserializeItemValues(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return new(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            return new Dictionary<string, string?>(
+                JsonSerializer.Deserialize<Dictionary<string, string?>>(json) ?? new(), StringComparer.OrdinalIgnoreCase);
+        }
+        catch (JsonException) { return new(StringComparer.OrdinalIgnoreCase); }
+    }
+
+    private IReadOnlyDictionary<string, IReadOnlySet<string>> GetAllowedItemTags(SectionItemsSchema schema) =>
+        schema.Fields.Where(x => x.Value.Editor == "html").ToDictionary(
+            x => x.Key, x => htmlSanitizer.GetAllowedTags(x.Value.HtmlPolicy), StringComparer.OrdinalIgnoreCase);
 }

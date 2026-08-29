@@ -1,0 +1,30 @@
+@model SectionRenderViewModel
+@using System.Text.Json
+@{
+    var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
+    items ??= Array.Empty<SectionItem>();
+    static Dictionary<string,string?> Values(string json) => JsonSerializer.Deserialize<Dictionary<string,string?>>(json) ?? new();
+}
+<section id="@contentSection.SectionKey" class="section process-section @contentSection.LayoutVariant">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
+        </div>
+        <div class="process-list">
+            @for (var index = 0; index < items.Count; index++)
+            {
+                var values = Values(items[index].ContentJson);
+                values.TryGetValue("title", out var title);
+                values.TryGetValue("content", out var content);
+                <article>
+                    <span class="process-number">@(index + 1 < 10 ? $"0{index + 1}" : (index + 1).ToString())</span>
+                    <h3>@title</h3>
+                    <p>@content</p>
+                </article>
+            }
+        </div>
+    </div>
+</section>

@@ -81,8 +81,27 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted)
             .OrderBy(x => x.SortOrder).ToListAsync();
         var sectionMedia = sectionMediaRows.GroupBy(x => x.SectionKey).ToDictionary(x => x.Key, x => (IReadOnlyList<SectionMedia>)x.ToList());
+        var sectionItemRows = await db.SectionItems.AsNoTracking().Include(x => x.MediaAsset)
+            .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled)
+            .OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync();
+        foreach (var item in sectionItemRows)
+        {
+            var slot = slots.First(x => x.SectionKey == item.SectionKey);
+            var itemSchema = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson);
+            if (itemSchema is null) continue;
+            try
+            {
+                var values = JsonSerializer.Deserialize<Dictionary<string, string?>>(item.ContentJson) ?? new();
+                foreach (var field in itemSchema.Fields.Where(x => x.Value.Editor == "html"))
+                    if (values.TryGetValue(field.Key, out var value)) values[field.Key] = htmlSanitizer.Sanitize(value, field.Value.HtmlPolicy);
+                item.ContentJson = JsonSerializer.Serialize(values);
+            }
+            catch (JsonException) { item.ContentJson = "{}"; }
+        }
+        var sectionItems = sectionItemRows.GroupBy(x => x.SectionKey)
+            .ToDictionary(x => x.Key, x => (IReadOnlyList<SectionItem>)x.ToList());
         var turnstileSiteKey = turnstileOptions.Value.IsEnabled ? turnstileOptions.Value.SiteKey : null;
-        return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings, brandingMedia, sectionMedia));
+        return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings, brandingMedia, sectionMedia, sectionItems));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]

@@ -16,4 +16,5 @@ public class MediaAsset
     public DateTime UploadedAtUtc { get; set; } = DateTime.UtcNow;
     public bool IsDeleted { get; set; }
     public ICollection<SectionMedia> SectionUsages { get; set; } = new List<SectionMedia>();
+    public ICollection<SectionItem> SectionItemUsages { get; set; } = new List<SectionItem>();
 }

@@ -69,7 +69,10 @@ public static class DbInitializer
             new DeveloperSection("content", "Nội dung và hình ảnh", "Content", RichContentSchema),
             new DeveloperSection("stats", "Số liệu", "Stats", StructuredContentSchema),
             new DeveloperSection("cta", "Kêu gọi hành động", "Cta", NavigableTextContentSchema),
-            new DeveloperSection("gallery", "Thư viện hình ảnh", "Gallery", GalleryContentSchema)
+            new DeveloperSection("gallery", "Thư viện hình ảnh", "Gallery", GalleryContentSchema),
+            new DeveloperSection("faq", "Câu hỏi thường gặp", "Faq", FaqContentSchema),
+            new DeveloperSection("testimonials", "Ý kiến khách hàng", "Testimonials", TestimonialsContentSchema),
+            new DeveloperSection("process", "Quy trình", "Process", ProcessContentSchema)
         };
         var existingDefinitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
         foreach (var item in developerSections)
@@ -214,6 +217,18 @@ public static class DbInitializer
 
     private const string GalleryContentSchema = """
         {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"}},"settings":{"layout":{"editor":"select","default":"grid","options":[{"value":"grid","label":"Lưới hình ảnh"},{"value":"featured","label":"Một ảnh lớn, các ảnh nhỏ"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string FaqContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"question":{"label":"Câu hỏi","editor":"text","required":true},"answer":{"label":"Câu trả lời","editor":"html","htmlPolicy":"RichContent","required":true}}},"settings":{"layout":{"editor":"select","default":"single-column","options":[{"value":"single-column","label":"Một cột"},{"value":"two-columns","label":"Hai cột"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string TestimonialsContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"name":{"label":"Tên khách hàng","editor":"text","required":true},"position":{"label":"Chức danh / đơn vị","editor":"text"},"quote":{"label":"Ý kiến khách hàng","editor":"textarea","required":true},"image":{"label":"Ảnh đại diện","editor":"image"}}},"settings":{"layout":{"editor":"select","default":"grid","options":[{"value":"grid","label":"Dạng lưới"},{"value":"featured","label":"Một ý kiến nổi bật"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        """;
+
+    private const string ProcessContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"}},"items":{"fields":{"title":{"label":"Tên bước","editor":"text","required":true},"content":{"label":"Mô tả","editor":"textarea","required":true}}},"settings":{"layout":{"editor":"select","default":"horizontal","options":[{"value":"horizontal","label":"Theo chiều ngang"},{"value":"vertical","label":"Theo chiều dọc"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private const string StructuredContentSchema = """

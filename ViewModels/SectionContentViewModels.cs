@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using LandingCms.Models;
+using LandingCms.Services;
 
 namespace LandingCms.ViewModels;
 
@@ -29,6 +30,25 @@ public class SectionContentEditViewModel
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }
     [StringLength(80)] public string? SecondaryButtonText { get; set; }
     [StringLength(300)] public string? SecondaryButtonUrl { get; set; }
+    public bool IsEnabled { get; set; } = true;
+    public bool HasItems { get; set; }
+}
+
+public record SectionItemListViewModel(TemplateSection Slot, IReadOnlyList<SectionItem> Items);
+
+public class SectionItemEditViewModel
+{
+    public long? Id { get; set; }
+    public int TemplateSectionId { get; set; }
+    public string SectionKey { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public Dictionary<string, string?> Values { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, SectionFieldSchema> Fields { get; set; } =
+        new Dictionary<string, SectionFieldSchema>(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, IReadOnlySet<string>> AllowedHtmlTags { get; set; } =
+        new Dictionary<string, IReadOnlySet<string>>(StringComparer.OrdinalIgnoreCase);
+    public IFormFile? MediaFile { get; set; }
+    public MediaAsset? MediaAsset { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 

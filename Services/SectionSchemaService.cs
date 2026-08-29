@@ -4,8 +4,15 @@ namespace LandingCms.Services;
 
 public sealed class SectionFieldSchema
 {
+    public string Label { get; set; } = "Nội dung";
     public string Editor { get; set; } = "textarea";
     public string? HtmlPolicy { get; set; }
+    public bool Required { get; set; }
+}
+
+public sealed class SectionItemsSchema
+{
+    public Dictionary<string, SectionFieldSchema> Fields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed class SectionSettingOption
@@ -32,6 +39,7 @@ public sealed class SectionSchemaDocument
     public Dictionary<string, SectionFieldSchema> Fields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, SectionSettingSchema> Settings { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public SectionNavigationSchema Navigation { get; set; } = new();
+    public SectionItemsSchema? Items { get; set; }
 }
 
 public interface ISectionSchemaService
@@ -39,6 +47,7 @@ public interface ISectionSchemaService
     SectionFieldSchema GetField(string? schemaJson, string fieldName);
     SectionSettingSchema? GetSetting(string? schemaJson, string settingName);
     SectionNavigationSchema GetNavigation(string? schemaJson);
+    SectionItemsSchema? GetItems(string? schemaJson);
     string? ResolveSetting(string? schemaJson, string? settingsJson, string settingName);
 }
 
@@ -67,6 +76,7 @@ public sealed class SectionSchemaService : ISectionSchemaService
     }
 
     public SectionNavigationSchema GetNavigation(string? schemaJson) => ParseSchema(schemaJson)?.Navigation ?? new();
+    public SectionItemsSchema? GetItems(string? schemaJson) => ParseSchema(schemaJson)?.Items;
 
     public string? ResolveSetting(string? schemaJson, string? settingsJson, string settingName)
     {

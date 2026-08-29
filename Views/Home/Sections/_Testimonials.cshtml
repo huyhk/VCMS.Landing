@@ -1,0 +1,39 @@
+@model SectionRenderViewModel
+@using System.Text.Json
+@{
+    var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
+    items ??= Array.Empty<SectionItem>();
+    static Dictionary<string,string?> Values(string json) => JsonSerializer.Deserialize<Dictionary<string,string?>>(json) ?? new();
+}
+<section id="@contentSection.SectionKey" class="section testimonials-section @contentSection.LayoutVariant">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
+        </div>
+        <div class="testimonial-grid">
+            @foreach (var item in items)
+            {
+                var values = Values(item.ContentJson);
+                values.TryGetValue("name", out var name);
+                values.TryGetValue("position", out var position);
+                values.TryGetValue("quote", out var quote);
+                <article class="testimonial-card">
+                    <p class="testimonial-quote">“@quote”</p>
+                    <div class="testimonial-person">
+                        @if (item.MediaAsset is not null)
+                        {
+                            <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })" alt="@name" loading="lazy">
+                        }
+                        <div>
+                            <strong>@name</strong>
+                            <span>@position</span>
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    </div>
+</section>

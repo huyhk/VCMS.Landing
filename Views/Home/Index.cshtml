@@ -57,6 +57,15 @@
             case "Gallery":
                 @await Html.PartialAsync("~/Views/Home/Sections/_Gallery.cshtml", renderModel)
                 break;
+            case "Faq":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Faq.cshtml", renderModel)
+                break;
+            case "Testimonials":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Testimonials.cshtml", renderModel)
+                break;
+            case "Process":
+                @await Html.PartialAsync("~/Views/Home/Sections/_Process.cshtml", renderModel)
+                break;
         }
     }
 </main>

@@ -60,3 +60,7 @@
     </div>
     <div class="form-actions"><button class="button" type="submit">Lưu thay đổi</button></div>
 </form>
+@if(Model.HasItems)
+{
+    <section class="panel repeater-callout"><div><h2>Danh sách nội dung</h2><p>Thêm, chỉnh sửa và sắp xếp các mục con của section này.</p></div><a class="button button-secondary" asp-action="Items" asp-route-id="@Model.TemplateSectionId">Quản lý danh sách</a></section>
+}

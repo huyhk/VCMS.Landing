@@ -10,4 +10,5 @@ public record HomeViewModel(
     string? TurnstileSiteKey,
     IReadOnlyDictionary<string, string> ExtendedSettings,
     IReadOnlyDictionary<string, MediaAsset> BrandingMedia,
-    IReadOnlyDictionary<string, IReadOnlyList<SectionMedia>> SectionMedia);
+    IReadOnlyDictionary<string, IReadOnlyList<SectionMedia>> SectionMedia,
+    IReadOnlyDictionary<string, IReadOnlyList<SectionItem>> SectionItems);

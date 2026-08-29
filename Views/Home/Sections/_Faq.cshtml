@@ -1,0 +1,29 @@
+@model SectionRenderViewModel
+@using System.Text.Json
+@{
+    var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
+    items ??= Array.Empty<SectionItem>();
+    static Dictionary<string,string?> Values(string json) => JsonSerializer.Deserialize<Dictionary<string,string?>>(json) ?? new();
+}
+<section id="@contentSection.SectionKey" class="section faq-section @contentSection.LayoutVariant">
+    <div class="container">
+        <div class="section-heading">
+            <p class="eyebrow">@contentSection.Eyebrow</p>
+            <h2>@contentSection.Title</h2>
+            <p>@contentSection.Subtitle</p>
+        </div>
+        <div class="faq-list">
+            @foreach (var item in items)
+            {
+                var values = Values(item.ContentJson);
+                values.TryGetValue("question", out var question);
+                values.TryGetValue("answer", out var answer);
+                <details>
+                    <summary>@question<span aria-hidden="true">+</span></summary>
+                    <div class="faq-answer rich-content">@Html.Raw(answer)</div>
+                </details>
+            }
+        </div>
+    </div>
+</section>
