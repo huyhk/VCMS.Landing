@@ -12,7 +12,13 @@
             <div class="gallery-grid">
                 @foreach (var image in images)
                 {
-                    <a href="@image.MediaAsset.RelativeUrl" target="_blank" rel="noopener" class="gallery-item"><img src="@image.MediaAsset.RelativeUrl" width="@image.MediaAsset.Width" height="@image.MediaAsset.Height" alt="@contentSection.Title" loading="lazy"></a>
+                    <a href="@image.MediaAsset.RelativeUrl"
+                       class="gallery-item"
+                       data-gallery-item
+                       data-gallery-group="@contentSection.SectionKey"
+                       aria-label="Phóng to hình ảnh">
+                        <img src="@image.MediaAsset.RelativeUrl" width="@image.MediaAsset.Width" height="@image.MediaAsset.Height" alt="@contentSection.Title" loading="lazy">
+                    </a>
                 }
             </div>
         }
