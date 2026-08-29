@@ -25,10 +25,7 @@ const prepareHeroBackgrounds=()=>document.querySelectorAll('.hero-backgrounds im
     image.src=image.dataset.src;
     image.removeAttribute('data-src');
 });
-window.addEventListener('load',()=>{
-    if('requestIdleCallback' in window)requestIdleCallback(prepareHeroBackgrounds,{timeout:3000});
-    else setTimeout(prepareHeroBackgrounds,1500);
-},{once:true});
+setTimeout(prepareHeroBackgrounds,6000);
 
 if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.querySelectorAll('.hero-backgrounds').forEach(container=>{const images=[...container.querySelectorAll('img')];if(images.length<2)return;let index=0;setInterval(()=>{if(document.hidden)return;const next=(index+1)%images.length;if(!images[next].src)return;images[index].classList.remove('active');index=next;images[index].classList.add('active')},10000)})}
 

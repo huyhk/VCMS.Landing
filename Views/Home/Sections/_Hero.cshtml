@@ -15,13 +15,13 @@
                 if (index == 0)
                 {
                     <img class="active"
-                         src="@background.MediaAsset.RelativeUrl"
+                         src="@Url.Action("Hero", "Media", new { id = background.MediaAssetId })"
                          style="object-position:@background.FocalPointX% @background.FocalPointY%"
                          alt="" aria-hidden="true" loading="eager" fetchpriority="high">
                 }
                 else
                 {
-                    <img data-src="@background.MediaAsset.RelativeUrl"
+                    <img data-src="@Url.Action("Hero", "Media", new { id = background.MediaAssetId })"
                          style="object-position:@background.FocalPointX% @background.FocalPointY%"
                          alt="" aria-hidden="true" loading="lazy">
                 }

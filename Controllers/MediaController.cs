@@ -9,7 +9,7 @@ namespace LandingCms.Controllers;
 [Route("media")]
 public sealed class MediaController(ApplicationDbContext db, IWebHostEnvironment environment) : Controller
 {
-    private static readonly ConcurrentDictionary<long, SemaphoreSlim> ThumbnailLocks = new();
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> VariantLocks = new();
     private const int ThumbnailMaxWidth = 800;
     private const int ThumbnailMaxHeight = 600;
 
@@ -17,15 +17,8 @@ public sealed class MediaController(ApplicationDbContext db, IWebHostEnvironment
     [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> Thumbnail(long id, CancellationToken cancellationToken)
     {
-        var asset = await db.MediaAssets.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
-        if (asset is null || !asset.RelativeUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
-            return NotFound();
-
-        var uploadsRoot = Path.GetFullPath(Path.Combine(environment.WebRootPath, "uploads"));
-        var sourcePath = Path.GetFullPath(Path.Combine(environment.WebRootPath, asset.RelativeUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)));
-        if (!sourcePath.StartsWith(uploadsRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || !System.IO.File.Exists(sourcePath))
-            return NotFound();
+        var sourcePath = await ResolveSourcePathAsync(id, cancellationToken);
+        if (sourcePath is null) return NotFound();
 
         var thumbnailPath = Path.Combine(
             Path.GetDirectoryName(sourcePath)!,
@@ -33,12 +26,12 @@ public sealed class MediaController(ApplicationDbContext db, IWebHostEnvironment
 
         if (!System.IO.File.Exists(thumbnailPath))
         {
-            var thumbnailLock = ThumbnailLocks.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
+            var thumbnailLock = VariantLocks.GetOrAdd($"thumbnail:{id}", _ => new SemaphoreSlim(1, 1));
             await thumbnailLock.WaitAsync(cancellationToken);
             try
             {
                 if (!System.IO.File.Exists(thumbnailPath))
-                    await CreateThumbnailAsync(sourcePath, thumbnailPath, cancellationToken);
+                    await CreateVariantAsync(sourcePath, thumbnailPath, ThumbnailMaxWidth, ThumbnailMaxHeight, 72, cancellationToken);
             }
             finally
             {
@@ -50,16 +43,58 @@ public sealed class MediaController(ApplicationDbContext db, IWebHostEnvironment
         return PhysicalFile(thumbnailPath, "image/webp");
     }
 
-    private static async Task CreateThumbnailAsync(string sourcePath, string destinationPath, CancellationToken cancellationToken)
+    [HttpGet("{id:long}/hero")]
+    [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Any)]
+    public async Task<IActionResult> Hero(long id, CancellationToken cancellationToken)
+    {
+        var sourcePath = await ResolveSourcePathAsync(id, cancellationToken);
+        if (sourcePath is null) return NotFound();
+
+        var heroPath = Path.Combine(
+            Path.GetDirectoryName(sourcePath)!,
+            Path.GetFileNameWithoutExtension(sourcePath) + ".hero.webp");
+        if (!System.IO.File.Exists(heroPath))
+        {
+            var heroLock = VariantLocks.GetOrAdd($"hero:{id}", _ => new SemaphoreSlim(1, 1));
+            await heroLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (!System.IO.File.Exists(heroPath))
+                    await CreateVariantAsync(sourcePath, heroPath, 1600, 1000, 62, cancellationToken);
+            }
+            finally
+            {
+                heroLock.Release();
+            }
+        }
+
+        Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        return PhysicalFile(heroPath, "image/webp");
+    }
+
+    private async Task<string?> ResolveSourcePathAsync(long id, CancellationToken cancellationToken)
+    {
+        var asset = await db.MediaAssets.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        if (asset is null || !asset.RelativeUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
+            return null;
+        var uploadsRoot = Path.GetFullPath(Path.Combine(environment.WebRootPath, "uploads"));
+        var sourcePath = Path.GetFullPath(Path.Combine(environment.WebRootPath, asset.RelativeUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)));
+        return sourcePath.StartsWith(uploadsRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(sourcePath)
+            ? sourcePath
+            : null;
+    }
+
+    private static async Task CreateVariantAsync(string sourcePath, string destinationPath, int maxWidth, int maxHeight, int quality, CancellationToken cancellationToken)
     {
         using var source = SKBitmap.Decode(sourcePath) ?? throw new InvalidOperationException("Không thể tạo thumbnail cho hình ảnh.");
-        var scale = Math.Min(1d, Math.Min((double)ThumbnailMaxWidth / source.Width, (double)ThumbnailMaxHeight / source.Height));
+        var scale = Math.Min(1d, Math.Min((double)maxWidth / source.Width, (double)maxHeight / source.Height));
         var width = Math.Max(1, (int)Math.Round(source.Width * scale));
         var height = Math.Max(1, (int)Math.Round(source.Height * scale));
         using var resized = scale < 1 ? source.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium) : source.Copy();
         if (resized is null) throw new InvalidOperationException("Không thể thay đổi kích thước thumbnail.");
         using var image = SKImage.FromBitmap(resized);
-        using var encoded = image.Encode(SKEncodedImageFormat.Webp, 72) ?? throw new InvalidOperationException("Không thể mã hóa thumbnail.");
+        using var encoded = image.Encode(SKEncodedImageFormat.Webp, quality) ?? throw new InvalidOperationException("Không thể mã hóa biến thể hình ảnh.");
         await using var output = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.Read, 81920, true);
         encoded.SaveTo(output);
         await output.FlushAsync(cancellationToken);
