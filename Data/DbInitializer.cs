@@ -186,6 +186,7 @@ public static class DbInitializer
             await db.SaveChangesAsync();
         }
         await SeedSettingsAsync(db);
+        await SeedThemesAsync(db);
     }
 
     private static async Task BackfillPageSectionsAsync(ApplicationDbContext db)
@@ -258,6 +259,86 @@ public static class DbInitializer
         await db.SaveChangesAsync();
     }
 
+    private static async Task SeedThemesAsync(ApplicationDbContext db)
+    {
+        var developerThemes = new[]
+        {
+            new DeveloperTheme("ocean", "Ocean", "Xanh dương hiện đại, sáng và tin cậy.", 10, new()
+            {
+                ["brand"]="#2563eb", ["brandHover"]="#1d4ed8", ["brandContrast"]="#ffffff",
+                ["pageBackground"]="#ffffff", ["surface"]="#ffffff", ["surfaceAlt"]="#f3f7ff",
+                ["text"]="#101828", ["textMuted"]="#667085", ["border"]="#dbe4f0",
+                ["headerBackground"]="rgba(255,255,255,.94)", ["headerText"]="#172033",
+                ["heroBackground"]="#eef4ff", ["heroText"]="#101828", ["heroMuted"]="#526176",
+                ["contrastBackground"]="#111827", ["contrastText"]="#ffffff",
+                ["footerBackground"]="#0b1220", ["footerText"]="#ffffff", ["highlight"]="#dbeafe"
+            }),
+            new DeveloperTheme("emerald", "Emerald", "Xanh lá tự nhiên, cân bằng và bền vững.", 20, new()
+            {
+                ["brand"]="#07875b", ["brandHover"]="#056b49", ["brandContrast"]="#ffffff",
+                ["pageBackground"]="#fbfdf9", ["surface"]="#ffffff", ["surfaceAlt"]="#eef7ef",
+                ["text"]="#15231c", ["textMuted"]="#5c6d63", ["border"]="#d2e2d7",
+                ["headerBackground"]="rgba(251,253,249,.94)", ["headerText"]="#15231c",
+                ["heroBackground"]="#e4f4e8", ["heroText"]="#14251c", ["heroMuted"]="#53675a",
+                ["contrastBackground"]="#123326", ["contrastText"]="#ffffff",
+                ["footerBackground"]="#0c241a", ["footerText"]="#ffffff", ["highlight"]="#c8f1d8"
+            }),
+            new DeveloperTheme("sunset", "Sunset", "Cam đất ấm áp, thân thiện và giàu năng lượng.", 30, new()
+            {
+                ["brand"]="#e0522d", ["brandHover"]="#bd3e20", ["brandContrast"]="#ffffff",
+                ["pageBackground"]="#fffaf5", ["surface"]="#ffffff", ["surfaceAlt"]="#fff0e5",
+                ["text"]="#2b1c18", ["textMuted"]="#75615a", ["border"]="#ead7cd",
+                ["headerBackground"]="rgba(255,250,245,.95)", ["headerText"]="#2b1c18",
+                ["heroBackground"]="#fde5d4", ["heroText"]="#301b14", ["heroMuted"]="#76584d",
+                ["contrastBackground"]="#3a211b", ["contrastText"]="#fffaf5",
+                ["footerBackground"]="#291713", ["footerText"]="#fffaf5", ["highlight"]="#ffd3b8"
+            }),
+            new DeveloperTheme("monochrome", "Monochrome", "Đen trắng tối giản, sắc nét và tập trung vào nội dung.", 40, new()
+            {
+                ["brand"]="#171717", ["brandHover"]="#3f3f3f", ["brandContrast"]="#ffffff",
+                ["pageBackground"]="#ffffff", ["surface"]="#ffffff", ["surfaceAlt"]="#f2f2f0",
+                ["text"]="#111111", ["textMuted"]="#626262", ["border"]="#d4d4d1",
+                ["headerBackground"]="rgba(255,255,255,.95)", ["headerText"]="#111111",
+                ["heroBackground"]="#e9e9e5", ["heroText"]="#111111", ["heroMuted"]="#555555",
+                ["contrastBackground"]="#111111", ["contrastText"]="#ffffff",
+                ["footerBackground"]="#111111", ["footerText"]="#ffffff", ["highlight"]="#dddd3e"
+            }),
+            new DeveloperTheme("midnight", "Midnight", "Nền tối cao cấp với điểm nhấn tím hiện đại.", 50, new()
+            {
+                ["brand"]="#7c6cff", ["brandHover"]="#978cff", ["brandContrast"]="#ffffff",
+                ["pageBackground"]="#0e1118", ["surface"]="#171c26", ["surfaceAlt"]="#121721",
+                ["text"]="#f4f6fb", ["textMuted"]="#a7b0c0", ["border"]="#303847",
+                ["headerBackground"]="rgba(14,17,24,.94)", ["headerText"]="#f4f6fb",
+                ["heroBackground"]="#171c2d", ["heroText"]="#ffffff", ["heroMuted"]="#b9c1d1",
+                ["contrastBackground"]="#7c6cff", ["contrastText"]="#ffffff",
+                ["footerBackground"]="#080a10", ["footerText"]="#ffffff", ["highlight"]="#272e52"
+            })
+        };
+
+        var existing = await db.ThemeDefinitions.ToDictionaryAsync(x => x.Key);
+        foreach (var item in developerThemes)
+        {
+            if (!existing.TryGetValue(item.Key, out var theme))
+            {
+                theme = new ThemeDefinition { Key = item.Key };
+                db.ThemeDefinitions.Add(theme);
+                existing[item.Key] = theme;
+            }
+            theme.Name = item.Name;
+            theme.Description = item.Description;
+            theme.SortOrder = item.SortOrder;
+            theme.TokensJson = JsonSerializer.Serialize(item.Tokens);
+            theme.IsEnabled = true;
+        }
+        await db.SaveChangesAsync();
+
+        if (!await db.SiteThemeSettings.AnyAsync())
+        {
+            db.SiteThemeSettings.Add(new SiteThemeSetting { ActiveThemeId = existing["ocean"].Id });
+            await db.SaveChangesAsync();
+        }
+    }
+
     private const string TextContentSchema = """
         {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"navigation":{"allowed":false,"defaultVisible":false}}
         """;
@@ -323,4 +404,5 @@ public static class DbInitializer
 
     private sealed record DeveloperSection(string Key, string Name, string SectionType, string SchemaJson);
     private sealed record DeveloperSetting(string Key, string Name, string Group, string ValueType, string Description, int SortOrder);
+    private sealed record DeveloperTheme(string Key, string Name, string Description, int SortOrder, Dictionary<string, string> Tokens);
 }

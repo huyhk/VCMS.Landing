@@ -1,0 +1,53 @@
+@model IReadOnlyList<LandingCms.ViewModels.ThemeListItemViewModel>
+@{
+    ViewData["Title"] = "Theme màu";
+}
+<div class="page-title">
+    <div>
+        <h1>Theme màu</h1>
+        <p>Chọn hệ màu cho toàn bộ website. Theme hoạt động độc lập với template bố cục.</p>
+    </div>
+</div>
+<div class="theme-grid">
+@foreach (var colorTheme in Model)
+{
+    var tokens = colorTheme.Tokens;
+    var brand = tokens.GetValueOrDefault("brand", "#2563eb");
+    var page = tokens.GetValueOrDefault("pageBackground", "#ffffff");
+    var surface = tokens.GetValueOrDefault("surface", "#ffffff");
+    var text = tokens.GetValueOrDefault("text", "#101828");
+    var contrast = tokens.GetValueOrDefault("contrastBackground", "#111827");
+    var highlight = tokens.GetValueOrDefault("highlight", "#dbeafe");
+    <article class="theme-card @(colorTheme.IsActive ? "active" : null)">
+        <div class="theme-preview" style="--preview-brand:@brand;--preview-page:@page;--preview-surface:@surface;--preview-text:@text;--preview-contrast:@contrast;--preview-highlight:@highlight">
+            <div class="theme-preview-header"><span></span><i></i><i></i><b></b></div>
+            <div class="theme-preview-hero"><small></small><strong></strong><em></em><button type="button"></button></div>
+            <div class="theme-preview-cards"><span></span><span></span><span></span></div>
+            <div class="theme-preview-footer"></div>
+        </div>
+        <div class="theme-info">
+            <div>
+                <h2>@colorTheme.Theme.Name</h2>
+                <p>@colorTheme.Theme.Description</p>
+                <div class="theme-swatches" aria-label="Bảng màu">
+                    @foreach (var color in new[] { brand, page, surface, text, contrast, highlight })
+                    {
+                        <span style="background:@color" title="@color"></span>
+                    }
+                </div>
+            </div>
+            @if (colorTheme.IsActive)
+            {
+                <span class="status status-success">Đang dùng</span>
+            }
+            else
+            {
+                <form asp-action="Activate" method="post">
+                    <input type="hidden" name="id" value="@colorTheme.Theme.Id" />
+                    <button class="button" type="submit">Áp dụng</button>
+                </form>
+            }
+        </div>
+    </article>
+}
+</div>

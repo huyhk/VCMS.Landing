@@ -15,6 +15,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TemplateSection> TemplateSections => Set<TemplateSection>();
     public DbSet<SectionContent> SectionContents => Set<SectionContent>();
     public DbSet<SiteTemplateSetting> SiteTemplateSettings => Set<SiteTemplateSetting>();
+    public DbSet<ThemeDefinition> ThemeDefinitions => Set<ThemeDefinition>();
+    public DbSet<SiteThemeSetting> SiteThemeSettings => Set<SiteThemeSetting>();
     public DbSet<ContactSubmission> ContactSubmissions => Set<ContactSubmission>();
     public DbSet<SettingDefinition> SettingDefinitions => Set<SettingDefinition>();
     public DbSet<SettingValue> SettingValues => Set<SettingValue>();
@@ -28,6 +30,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     {
         base.OnModelCreating(builder);
         builder.Entity<PageTemplate>().HasIndex(x => x.Key).IsUnique();
+        builder.Entity<ThemeDefinition>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<SectionDefinition>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<PageSection>().HasIndex(x => x.SectionKey).IsUnique();
         builder.Entity<PageSection>().HasOne(x => x.SectionDefinition).WithMany(x => x.PageSections)
@@ -57,5 +60,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(x => x.ActiveTemplate).WithMany().HasForeignKey(x => x.ActiveTemplateId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<SiteTemplateSetting>()
             .HasOne(x => x.DraftTemplate).WithMany().HasForeignKey(x => x.DraftTemplateId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<SiteThemeSetting>()
+            .HasOne(x => x.ActiveTheme).WithMany().HasForeignKey(x => x.ActiveThemeId).OnDelete(DeleteBehavior.Restrict);
     }
 }

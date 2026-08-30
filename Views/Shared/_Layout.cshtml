@@ -5,6 +5,8 @@
         ? null
         : TemplateStyleProvider.GetInlineCss(templateStylesheet);
     var bodyClass = ViewData["BodyClass"] as string;
+    var themeCss = ViewData["ThemeCss"] as string;
+    var themeKey = ViewData["ThemeKey"] as string;
 }
 <!doctype html>
 <html lang="vi">
@@ -37,6 +39,10 @@
     else
     {
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    }
+    @if (!string.IsNullOrWhiteSpace(themeCss))
+    {
+        <style data-color-theme="@themeKey">@Html.Raw(themeCss)</style>
     }
 </head>
 <body class="@bodyClass">@RenderBody()<script src="~/js/site.js" asp-append-version="true" defer></script>@await RenderSectionAsync("Scripts", required: false)</body>

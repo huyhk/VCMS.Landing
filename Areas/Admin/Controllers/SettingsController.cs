@@ -14,7 +14,9 @@ public class SettingsController(ApplicationDbContext db) : Controller
     {
         if (!ModelState.IsValid) return View("Index", model);
         var item = await db.SiteSettings.FirstAsync();
+        var legacyPrimaryColor = item.PrimaryColor;
         db.Entry(item).CurrentValues.SetValues(model);
+        item.PrimaryColor = legacyPrimaryColor;
         await db.SaveChangesAsync();
         TempData["Message"] = "Đã lưu cấu hình website.";
         return RedirectToAction(nameof(Index));

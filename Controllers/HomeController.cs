@@ -11,7 +11,8 @@ using Microsoft.Extensions.Options;
 namespace LandingCms.Controllers;
 public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger,
     IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas,
-    ICloudflareTurnstileValidator turnstileValidator, IOptions<CloudflareTurnstileOptions> turnstileOptions) : Controller
+    ICloudflareTurnstileValidator turnstileValidator, IOptions<CloudflareTurnstileOptions> turnstileOptions,
+    IThemeCssService themeCss) : Controller
 {
     public async Task<IActionResult> Index()
     {
@@ -19,6 +20,9 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         ViewData["Title"] = string.IsNullOrWhiteSpace(settings.SeoTitle) ? settings.SiteName : settings.SeoTitle;
         ViewData["Description"] = settings.SeoDescription;
         ViewData["Keywords"] = settings.SeoKeywords;
+        var activeTheme = await db.SiteThemeSettings.AsNoTracking().Include(x => x.ActiveTheme).FirstAsync();
+        ViewData["ThemeCss"] = themeCss.BuildCss(activeTheme.ActiveTheme.TokensJson);
+        ViewData["ThemeKey"] = activeTheme.ActiveTheme.Key;
         var templateSetting = await db.SiteTemplateSettings.AsNoTracking()
             .Include(x => x.ActiveTemplate).FirstAsync();
         var slots = await db.TemplateSections.AsNoTracking()
