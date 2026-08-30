@@ -42,6 +42,7 @@ builder.Services.AddHttpClient<ICloudflareTurnstileValidator, CloudflareTurnstil
 builder.Services.AddScoped<IMediaStorageService, MediaStorageService>();
 builder.Services.AddSingleton<IContentHtmlSanitizer, ContentHtmlSanitizer>();
 builder.Services.AddSingleton<ISectionSchemaService, SectionSchemaService>();
+builder.Services.AddSingleton<ITemplateStyleProvider, TemplateStyleProvider>();
 builder.Services.AddRateLimiter(options => options.AddPolicy("contact", context =>
     RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",

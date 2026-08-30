@@ -1,3 +1,10 @@
+@inject LandingCms.Services.ITemplateStyleProvider TemplateStyleProvider
+@{
+    var templateStylesheet = ViewData["TemplateStylesheet"] as string;
+    var inlineTemplateCss = templateStylesheet is null
+        ? null
+        : TemplateStyleProvider.GetInlineCss(templateStylesheet);
+}
 <!doctype html>
 <html lang="vi">
 <head>
@@ -17,8 +24,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-   @if (ViewData["TemplateStylesheet"] is string templateStylesheet &&
-     templateStylesheet.StartsWith("~/css/bundles/", StringComparison.Ordinal))
+    @if (!string.IsNullOrEmpty(inlineTemplateCss))
+    {
+        <style data-template-styles="inline">@Html.Raw(inlineTemplateCss)</style>
+    }
+    else if (templateStylesheet is not null &&
+        templateStylesheet.StartsWith("~/css/bundles/", StringComparison.Ordinal))
     {
         <link rel="stylesheet" href="@templateStylesheet" asp-append-version="true" />
     }
