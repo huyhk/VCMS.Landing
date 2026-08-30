@@ -33,3 +33,5 @@ function Write-CssBundle([string] $outputName, [string] $templateStyle) {
 Write-CssBundle "corporate.bundle.css" "templates/corporate.css"
 Write-CssBundle "minimal.bundle.css" "templates/minimal.css"
 Write-CssBundle "editorial.bundle.css" "templates/editorial.css"
+Write-CssBundle "full-width.bundle.css" "templates/full-width.css"
+Write-CssBundle "conversion.bundle.css" "templates/conversion.css"

@@ -16,7 +16,9 @@ public sealed class TemplateStyleProvider(
         {
             ["~/css/bundles/corporate.bundle.css"] = "corporate.bundle.css",
             ["~/css/bundles/minimal.bundle.css"] = "minimal.bundle.css",
-            ["~/css/bundles/editorial.bundle.css"] = "editorial.bundle.css"
+            ["~/css/bundles/editorial.bundle.css"] = "editorial.bundle.css",
+            ["~/css/bundles/full-width.bundle.css"] = "full-width.bundle.css",
+            ["~/css/bundles/conversion.bundle.css"] = "conversion.bundle.css"
         };
 
     private readonly ConcurrentDictionary<string, string> cache = new(StringComparer.Ordinal);

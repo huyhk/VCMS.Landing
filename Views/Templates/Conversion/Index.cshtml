@@ -1,0 +1,7 @@
+@model HomeViewModel
+@{
+    Layout = "_Layout";
+    ViewData["BodyClass"] = "template-conversion";
+    ViewData["TemplateStylesheet"] = "~/css/bundles/conversion.bundle.css";
+}
+@await Html.PartialAsync("~/Views/Home/Index.cshtml", Model)
