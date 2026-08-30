@@ -21,10 +21,13 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="app_offline.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Target Name="BuildPhysicalCssBundles" BeforeTargets="Build;Publish">
-    <Exec Condition="$([MSBuild]::IsOSPlatform('Windows'))"
-          Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\build-css-bundles.ps1&quot;" />
-    <Exec Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
-          Command="sh &quot;$(MSBuildProjectDirectory)/tools/build-css-bundles.sh&quot;" />
+    <Exec Condition="$([MSBuild]::IsOSPlatform('Windows'))" Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\tools\build-css-bundles.ps1&quot;" />
+    <Exec Condition="!$([MSBuild]::IsOSPlatform('Windows'))" Command="sh &quot;$(MSBuildProjectDirectory)/tools/build-css-bundles.sh&quot;" />
   </Target>
 </Project>

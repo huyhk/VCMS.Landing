@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be Right Back!</title>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif, system-ui;
+            background: linear-gradient(135deg, #fdfbf7 0%, #eee8f5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .box {
+            text-align: center;
+            max-width: 450px;
+            padding: 2.5rem;
+        }
+
+        .illustration {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #4a154b;
+            margin: 0 0 0.75rem 0;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="illustration">☕</div>
+        <h1>Taking a Quick Break</h1>
+        <p>Our team is polishing up some details behind the scenes. Grab a coffee and check back with us in a few minutes!</p>
+    </div>
+</body>
+</html>
