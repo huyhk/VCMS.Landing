@@ -13,13 +13,13 @@
 {
     var tokens = colorTheme.Tokens;
     var brand = tokens.GetValueOrDefault("brand", "#2563eb");
-    var page = tokens.GetValueOrDefault("pageBackground", "#ffffff");
+        var pageBackground = tokens.GetValueOrDefault("pageBackground", "#ffffff");
     var surface = tokens.GetValueOrDefault("surface", "#ffffff");
     var text = tokens.GetValueOrDefault("text", "#101828");
     var contrast = tokens.GetValueOrDefault("contrastBackground", "#111827");
     var highlight = tokens.GetValueOrDefault("highlight", "#dbeafe");
     <article class="theme-card @(colorTheme.IsActive ? "active" : null)">
-        <div class="theme-preview" style="--preview-brand:@brand;--preview-page:@page;--preview-surface:@surface;--preview-text:@text;--preview-contrast:@contrast;--preview-highlight:@highlight">
+            <div class="theme-preview" style="--preview-brand:@brand;--preview-page:@pageBackground;--preview-surface:@surface;--preview-text:@text;--preview-contrast:@contrast;--preview-highlight:@highlight">
             <div class="theme-preview-header"><span></span><i></i><i></i><b></b></div>
             <div class="theme-preview-hero"><small></small><strong></strong><em></em><button type="button"></button></div>
             <div class="theme-preview-cards"><span></span><span></span><span></span></div>
@@ -30,7 +30,7 @@
                 <h2>@colorTheme.Theme.Name</h2>
                 <p>@colorTheme.Theme.Description</p>
                 <div class="theme-swatches" aria-label="Bảng màu">
-                    @foreach (var color in new[] { brand, page, surface, text, contrast, highlight })
+                        @foreach (var color in new[] { brand, pageBackground, surface, text, contrast, highlight })
                     {
                         <span style="background:@color" title="@color"></span>
                     }
