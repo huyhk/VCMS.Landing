@@ -15,7 +15,10 @@ public class SectionLibraryController(ApplicationDbContext db) : Controller
         var sections = await db.PageSections.AsNoTracking()
             .Include(x => x.SectionDefinition).Include(x => x.TemplateSections)
             .OrderBy(x => x.IsArchived).ThenBy(x => x.DisplayName).ToListAsync();
-        var contentKeys = await db.SectionContents.AsNoTracking().Select(x => x.SectionKey).ToHashSetAsync();
+        var contentKeys = (await db.SectionContents.AsNoTracking()
+            .Select(x => x.SectionKey)
+            .ToListAsync())
+            .ToHashSet(StringComparer.Ordinal);
         return View(sections.Select(x => new PageSectionListItemViewModel(
             x, x.TemplateSections.Count, contentKeys.Contains(x.SectionKey))).ToList());
     }

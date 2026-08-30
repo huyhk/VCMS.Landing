@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace VCMS.Landing.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260830144319_AddPageSections")]
+    [Migration("20260830145740_AddPageSections")]
     partial class AddPageSections
     {
         /// <inheritdoc />
@@ -309,6 +309,41 @@ namespace VCMS.Landing.Migrations
                         .IsUnique();
 
                     b.ToTable("MediaAssets");
+                });
+
+            modelBuilder.Entity("LandingCms.Models.PageSection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SectionDefinitionId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SectionKey")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SectionDefinitionId");
+
+                    b.HasIndex("SectionKey")
+                        .IsUnique();
+
+                    b.ToTable("PageSections");
                 });
 
             modelBuilder.Entity("LandingCms.Models.PageTemplate", b =>
@@ -714,6 +749,9 @@ namespace VCMS.Landing.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("PageSectionId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("SectionDefinitionId")
                         .HasColumnType("INTEGER");
 
@@ -743,7 +781,12 @@ namespace VCMS.Landing.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PageSectionId");
+
                     b.HasIndex("SectionDefinitionId");
+
+                    b.HasIndex("TemplateId", "PageSectionId")
+                        .IsUnique();
 
                     b.HasIndex("TemplateId", "SectionKey")
                         .IsUnique();
@@ -906,6 +949,17 @@ namespace VCMS.Landing.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("LandingCms.Models.PageSection", b =>
+                {
+                    b.HasOne("LandingCms.Models.SectionDefinition", "SectionDefinition")
+                        .WithMany("PageSections")
+                        .HasForeignKey("SectionDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SectionDefinition");
+                });
+
             modelBuilder.Entity("LandingCms.Models.SectionContent", b =>
                 {
                     b.HasOne("LandingCms.Models.SectionDefinition", "SectionDefinition")
@@ -969,6 +1023,11 @@ namespace VCMS.Landing.Migrations
 
             modelBuilder.Entity("LandingCms.Models.TemplateSection", b =>
                 {
+                    b.HasOne("LandingCms.Models.PageSection", "PageSection")
+                        .WithMany("TemplateSections")
+                        .HasForeignKey("PageSectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("LandingCms.Models.SectionDefinition", "SectionDefinition")
                         .WithMany("TemplateSections")
                         .HasForeignKey("SectionDefinitionId")
@@ -980,6 +1039,8 @@ namespace VCMS.Landing.Migrations
                         .HasForeignKey("TemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("PageSection");
 
                     b.Navigation("SectionDefinition");
 
@@ -1063,6 +1124,11 @@ namespace VCMS.Landing.Migrations
                     b.Navigation("SectionUsages");
                 });
 
+            modelBuilder.Entity("LandingCms.Models.PageSection", b =>
+                {
+                    b.Navigation("TemplateSections");
+                });
+
             modelBuilder.Entity("LandingCms.Models.PageTemplate", b =>
                 {
                     b.Navigation("Sections");
@@ -1072,6 +1138,8 @@ namespace VCMS.Landing.Migrations
 
             modelBuilder.Entity("LandingCms.Models.SectionDefinition", b =>
                 {
+                    b.Navigation("PageSections");
+
                     b.Navigation("TemplateSections");
                 });
 
