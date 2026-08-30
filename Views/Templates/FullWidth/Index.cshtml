@@ -1,0 +1,7 @@
+@model HomeViewModel
+@{
+    Layout = "_Layout";
+    ViewData["BodyClass"] = "template-full-width";
+    ViewData["TemplateStylesheet"] = "~/css/bundles/full-width.bundle.css";
+}
+@await Html.PartialAsync("~/Views/Home/Index.cshtml", Model)

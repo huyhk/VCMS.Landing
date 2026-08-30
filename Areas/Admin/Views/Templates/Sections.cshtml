@@ -1,6 +1,6 @@
 @model TemplateComposerViewModel
 @{ ViewData["Title"] = "Cấu hình section — " + Model.Template.Name; }
-<div class="page-title"><div><h1>Cấu hình section</h1><p>Template <strong>@Model.Template.Name</strong>@if(Model.IsActive){<span> · đang sử dụng</span>}</p></div><div><a class="button button-secondary" asp-action="Index">Quay lại</a> <a class="button" asp-action="CreateSection" asp-route-templateId="@Model.Template.Id">+ Thêm section</a></div></div>
+<div class="page-title"><div><h1>Cấu hình section</h1><p>Template <strong>@Model.Template.Name</strong>@if(Model.IsActive){<span> · đang sử dụng</span>}</p></div><div><a class="button button-secondary" asp-action="Index">Quay lại</a> <a class="button" asp-action="CreateSection" asp-route-templateId="@Model.Template.Id">+ Thêm từ thư viện</a></div></div>
 <section class="panel"><table><thead><tr><th>Thứ tự</th><th>Section</th><th>Definition</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
 @for(var i=0;i<Model.Sections.Count;i++)
 {

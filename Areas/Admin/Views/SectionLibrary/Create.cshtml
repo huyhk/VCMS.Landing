@@ -1,0 +1,15 @@
+@model PageSectionCreateViewModel
+@{ ViewData["Title"] = "Tạo section"; }
+<div class="page-title"><div><h1>Tạo section</h1><p>Section có thể tồn tại mà chưa thuộc template nào.</p></div><a class="button button-secondary" asp-action="Index">Quay lại</a></div>
+<form method="get" asp-action="Create" class="panel form-panel definition-picker">
+    <label>Section definition</label>
+    <select name="definitionId" onchange="this.form.submit()">
+        @foreach (var definition in Model.Definitions) { <option value="@definition.Id" selected="@(definition.Id == Model.SectionDefinitionId)">@definition.Name — @definition.SectionType</option> }
+    </select>
+</form>
+<form asp-action="Create" method="post" class="panel form-panel composer-form">
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+    <input asp-for="SectionDefinitionId" type="hidden">
+    <div class="form-grid"><div class="full"><label asp-for="DisplayName">Tên quản trị</label><input asp-for="DisplayName"><span asp-validation-for="DisplayName"></span></div></div>
+    <div class="form-actions"><button class="button" type="submit">Tạo section</button></div>
+</form>

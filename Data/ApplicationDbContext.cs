@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SiteSetting> SiteSettings => Set<SiteSetting>();
     public DbSet<PageTemplate> PageTemplates => Set<PageTemplate>();
     public DbSet<SectionDefinition> SectionDefinitions => Set<SectionDefinition>();
+    public DbSet<PageSection> PageSections => Set<PageSection>();
     public DbSet<TemplateSection> TemplateSections => Set<TemplateSection>();
     public DbSet<SectionContent> SectionContents => Set<SectionContent>();
     public DbSet<SiteTemplateSetting> SiteTemplateSettings => Set<SiteTemplateSetting>();
@@ -28,7 +29,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(builder);
         builder.Entity<PageTemplate>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<SectionDefinition>().HasIndex(x => x.Key).IsUnique();
+        builder.Entity<PageSection>().HasIndex(x => x.SectionKey).IsUnique();
+        builder.Entity<PageSection>().HasOne(x => x.SectionDefinition).WithMany(x => x.PageSections)
+            .HasForeignKey(x => x.SectionDefinitionId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<TemplateSection>().HasIndex(x => new { x.TemplateId, x.SectionKey }).IsUnique();
+        builder.Entity<TemplateSection>().HasIndex(x => new { x.TemplateId, x.PageSectionId }).IsUnique();
+        builder.Entity<TemplateSection>().HasOne(x => x.PageSection).WithMany(x => x.TemplateSections)
+            .HasForeignKey(x => x.PageSectionId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<TemplateSection>().Property(x => x.IsEnabled).HasDefaultValue(true);
         builder.Entity<TemplateSection>().Property(x => x.ShowInNavigation).HasDefaultValue(false);
         builder.Entity<SectionContent>().HasIndex(x => x.SectionKey).IsUnique();

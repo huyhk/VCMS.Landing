@@ -141,59 +141,44 @@ public static class DbInitializer
             await db.SaveChangesAsync();
         }
 
-        var minimalTemplate = await db.PageTemplates.FirstOrDefaultAsync(x => x.Key == "minimal");
-        if (minimalTemplate is null)
+        async Task EnsureDerivedTemplateAsync(string key, string name, string description, string viewPath)
         {
-            minimalTemplate = new PageTemplate
+            var derivedTemplate = await db.PageTemplates.FirstOrDefaultAsync(x => x.Key == key);
+            if (derivedTemplate is null)
             {
-                Key = "minimal", Name = "Minimal", Description = "Layout tối giản, tập trung vào nội dung và CTA.",
-                ViewPath = "~/Views/Templates/Minimal/Index.cshtml", Version = "1.0", IsEnabled = true
-            };
-            db.PageTemplates.Add(minimalTemplate);
+                derivedTemplate = new PageTemplate { Key = key };
+                db.PageTemplates.Add(derivedTemplate);
+            }
+            derivedTemplate.Name = name;
+            derivedTemplate.Description = description;
+            derivedTemplate.ViewPath = viewPath;
+            derivedTemplate.Version = "1.0";
+            derivedTemplate.IsEnabled = true;
             await db.SaveChangesAsync();
-        }
-        if (!await db.TemplateSections.AnyAsync(x => x.TemplateId == minimalTemplate.Id))
-        {
-            var sourceSlots = await db.TemplateSections.AsNoTracking().Where(x => x.TemplateId == template.Id).ToListAsync();
-            foreach (var slot in sourceSlots)
-                db.TemplateSections.Add(new TemplateSection
-                {
-                    TemplateId = minimalTemplate.Id, SectionDefinitionId = slot.SectionDefinitionId,
-                    SectionKey = slot.SectionKey, DisplayName = slot.DisplayName, SortOrder = slot.SortOrder,
-                    IsRequired = slot.IsRequired, IsEnabledByDefault = slot.IsEnabledByDefault,
-                    IsEnabled = slot.IsEnabled,
-                    ShowInNavigation = slot.ShowInNavigation, NavigationLabel = slot.NavigationLabel,
-                    ViewPath = slot.ViewPath, SettingsJson = slot.SettingsJson
-                });
-            await db.SaveChangesAsync();
+
+            if (!await db.TemplateSections.AnyAsync(x => x.TemplateId == derivedTemplate.Id))
+            {
+                var sourceSlots = await db.TemplateSections.AsNoTracking().Where(x => x.TemplateId == template.Id).ToListAsync();
+                foreach (var slot in sourceSlots)
+                    db.TemplateSections.Add(new TemplateSection
+                    {
+                        TemplateId = derivedTemplate.Id, SectionDefinitionId = slot.SectionDefinitionId,
+                        SectionKey = slot.SectionKey, DisplayName = slot.DisplayName, SortOrder = slot.SortOrder,
+                        IsRequired = slot.IsRequired, IsEnabledByDefault = slot.IsEnabledByDefault,
+                        IsEnabled = slot.IsEnabled,
+                        ShowInNavigation = slot.ShowInNavigation, NavigationLabel = slot.NavigationLabel,
+                        ViewPath = slot.ViewPath, SettingsJson = slot.SettingsJson
+                    });
+                await db.SaveChangesAsync();
+            }
         }
 
-        var editorialTemplate = await db.PageTemplates.FirstOrDefaultAsync(x => x.Key == "editorial");
-        if (editorialTemplate is null)
-        {
-            editorialTemplate = new PageTemplate
-            {
-                Key = "editorial", Name = "Editorial", Description = "Bố cục bất đối xứng, typography lớn và hình ảnh giàu tính biên tập.",
-                ViewPath = "~/Views/Templates/Editorial/Index.cshtml", Version = "1.0", IsEnabled = true
-            };
-            db.PageTemplates.Add(editorialTemplate);
-            await db.SaveChangesAsync();
-        }
-        if (!await db.TemplateSections.AnyAsync(x => x.TemplateId == editorialTemplate.Id))
-        {
-            var sourceSlots = await db.TemplateSections.AsNoTracking().Where(x => x.TemplateId == template.Id).ToListAsync();
-            foreach (var slot in sourceSlots)
-                db.TemplateSections.Add(new TemplateSection
-                {
-                    TemplateId = editorialTemplate.Id, SectionDefinitionId = slot.SectionDefinitionId,
-                    SectionKey = slot.SectionKey, DisplayName = slot.DisplayName, SortOrder = slot.SortOrder,
-                    IsRequired = slot.IsRequired, IsEnabledByDefault = slot.IsEnabledByDefault,
-                    IsEnabled = slot.IsEnabled,
-                    ShowInNavigation = slot.ShowInNavigation, NavigationLabel = slot.NavigationLabel,
-                    ViewPath = slot.ViewPath, SettingsJson = slot.SettingsJson
-                });
-            await db.SaveChangesAsync();
-        }
+        await EnsureDerivedTemplateAsync("minimal", "Minimal", "Bố cục tối giản, tập trung vào nội dung và khoảng trắng.", "~/Views/Templates/Minimal/Index.cshtml");
+        await EnsureDerivedTemplateAsync("editorial", "Editorial", "Bố cục bất đối xứng, typography lớn và hình ảnh giàu tính biên tập.", "~/Views/Templates/Editorial/Index.cshtml");
+        await EnsureDerivedTemplateAsync("full-width", "Full Width", "Bố cục tràn cạnh, ưu tiên hình ảnh lớn và chuyển tiếp mạnh giữa các section.", "~/Views/Templates/FullWidth/Index.cshtml");
+        await EnsureDerivedTemplateAsync("conversion", "Conversion", "Bố cục cô đọng, ưu tiên bằng chứng, lời kêu gọi hành động và form liên hệ.", "~/Views/Templates/Conversion/Index.cshtml");
+
+        await BackfillPageSectionsAsync(db);
 
         if (!await db.SiteTemplateSettings.AnyAsync())
         {
@@ -201,6 +186,40 @@ public static class DbInitializer
             await db.SaveChangesAsync();
         }
         await SeedSettingsAsync(db);
+    }
+
+    private static async Task BackfillPageSectionsAsync(ApplicationDbContext db)
+    {
+        var pageSections = await db.PageSections.ToDictionaryAsync(x => x.SectionKey);
+        var slots = await db.TemplateSections.OrderBy(x => x.Id).ToListAsync();
+        foreach (var slot in slots)
+        {
+            if (!pageSections.TryGetValue(slot.SectionKey, out var pageSection))
+            {
+                pageSection = new PageSection
+                {
+                    SectionKey = slot.SectionKey,
+                    DisplayName = slot.DisplayName,
+                    SectionDefinitionId = slot.SectionDefinitionId
+                };
+                db.PageSections.Add(pageSection);
+                pageSections[slot.SectionKey] = pageSection;
+            }
+            slot.PageSection = pageSection;
+        }
+
+        var knownKeys = pageSections.Keys.ToArray();
+        var orphanContents = await db.SectionContents
+            .Where(x => !knownKeys.Contains(x.SectionKey)).ToListAsync();
+        foreach (var content in orphanContents)
+            db.PageSections.Add(new PageSection
+            {
+                SectionKey = content.SectionKey,
+                DisplayName = content.SectionKey,
+                SectionDefinitionId = content.SectionDefinitionId
+            });
+
+        await db.SaveChangesAsync();
     }
 
     private static async Task SeedSettingsAsync(ApplicationDbContext db)
@@ -228,7 +247,8 @@ public static class DbInitializer
         }
         await db.SaveChangesAsync();
 
-        var templates = await db.PageTemplates.Where(x => x.Key == "corporate" || x.Key == "minimal" || x.Key == "editorial").ToListAsync();
+        var templateKeys = new[] { "corporate", "minimal", "editorial", "full-width", "conversion" };
+        var templates = await db.PageTemplates.Where(x => templateKeys.Contains(x.Key)).ToListAsync();
         var developerKeys = developerSettings.Select(x => x.Key).ToHashSet(StringComparer.Ordinal);
         var links = await db.TemplateSettings.Where(x => templates.Select(t => t.Id).Contains(x.TemplateId)).ToListAsync();
         foreach (var template in templates)

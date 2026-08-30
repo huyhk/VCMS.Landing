@@ -10,5 +10,6 @@ public class SectionDefinition
     [Required, StringLength(80)] public string SectionType { get; set; } = "";
     public string SchemaJson { get; set; } = "{}";
     public bool IsEnabled { get; set; } = true;
+    public ICollection<PageSection> PageSections { get; set; } = new List<PageSection>();
     public ICollection<TemplateSection> TemplateSections { get; set; } = new List<TemplateSection>();
 }
