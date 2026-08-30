@@ -1,0 +1,33 @@
+@model IReadOnlyList<PageSectionListItemViewModel>
+@{ ViewData["Title"] = "Thư viện section"; }
+<div class="page-title">
+    <div><h1>Thư viện section</h1><p>Tạo nội dung độc lập, sau đó chủ động gắn vào một hoặc nhiều template.</p></div>
+    <a class="button" asp-action="Create">+ Tạo section</a>
+</div>
+<section class="panel">
+    <table>
+        <thead><tr><th>Section</th><th>Loại</th><th>Nội dung</th><th>Template sử dụng</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><strong>@item.Section.DisplayName</strong><small>#@item.Section.SectionKey</small></td>
+                <td>@item.Section.SectionDefinition.Name<small>@item.Section.SectionDefinition.SectionType</small></td>
+                <td>@(item.HasContent ? "Đã khởi tạo" : "Chưa có")</td>
+                <td>@item.TemplateCount</td>
+                <td><span class="status @(!item.Section.IsArchived ? "on" : "off")">@(!item.Section.IsArchived ? "Sẵn sàng" : "Đã lưu trữ")</span></td>
+                <td><div class="row-actions">
+                    @if (item.Section.IsArchived)
+                    {
+                        <form asp-action="Restore" method="post"><input type="hidden" name="id" value="@item.Section.Id"><button type="submit">Khôi phục</button></form>
+                    }
+                    else
+                    {
+                        <form asp-action="Archive" method="post" onsubmit="return confirm('Lưu trữ section này?')"><input type="hidden" name="id" value="@item.Section.Id"><button class="danger-link" type="submit">Lưu trữ</button></form>
+                    }
+                </div></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>

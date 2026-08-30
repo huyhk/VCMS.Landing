@@ -21,6 +21,7 @@
         <a asp-area="Admin" asp-controller="Sections" asp-action="Index">Nội dung landing page</a>
         @if (User.IsInRole("SuperAdministrator"))
         {
+            <a asp-area="Admin" asp-controller="SectionLibrary" asp-action="Index">Thư viện section</a>
             <a asp-area="Admin" asp-controller="Templates" asp-action="Index">Giao diện</a>
         }
         @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator"))

@@ -45,34 +45,43 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
     }
 
     [HttpGet]
-    public async Task<IActionResult> CreateSection(int templateId, int? definitionId)
+    public async Task<IActionResult> CreateSection(int templateId, int? pageSectionId)
     {
         if (!await db.PageTemplates.AnyAsync(x => x.Id == templateId && x.IsEnabled)) return NotFound();
-        var definitions = await db.SectionDefinitions.AsNoTracking().Where(x => x.IsEnabled).OrderBy(x => x.Name).ToListAsync();
-        var selected = definitions.FirstOrDefault(x => x.Id == definitionId) ?? definitions.FirstOrDefault();
-        if (selected is null) return Problem("Chưa có SectionDefinition khả dụng.");
-        return View(await PrepareComposerModelAsync(new TemplateSectionComposerViewModel
+        var sections = await LoadAvailablePageSectionsAsync(templateId);
+        var selected = sections.FirstOrDefault(x => x.Id == pageSectionId) ?? sections.FirstOrDefault();
+        if (selected is null)
         {
-            TemplateId = templateId, SectionDefinitionId = selected.Id, DisplayName = selected.Name,
-            ShowInNavigation = sectionSchemas.GetNavigation(selected.SchemaJson).DefaultVisible
-        }, definitions));
+            TempData["Error"] = "Không còn section khả dụng. Hãy tạo section trong Thư viện section trước.";
+            return RedirectToAction(nameof(Sections), new { id = templateId });
+        }
+        return View(await PrepareCreateModelAsync(new TemplateSectionComposerViewModel
+        {
+            TemplateId = templateId, PageSectionId = selected.Id,
+            SectionDefinitionId = selected.SectionDefinitionId, DisplayName = selected.DisplayName,
+            ShowInNavigation = sectionSchemas.GetNavigation(selected.SectionDefinition.SchemaJson).DefaultVisible
+        }, sections));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateSection(TemplateSectionComposerViewModel model)
     {
         var template = await db.PageTemplates.FirstOrDefaultAsync(x => x.Id == model.TemplateId && x.IsEnabled);
-        var definition = await db.SectionDefinitions.FirstOrDefaultAsync(x => x.Id == model.SectionDefinitionId && x.IsEnabled);
-        if (template is null || definition is null) return NotFound();
+        var pageSection = await db.PageSections.Include(x => x.SectionDefinition)
+            .FirstOrDefaultAsync(x => x.Id == model.PageSectionId && !x.IsArchived);
+        if (template is null || pageSection is null || !pageSection.SectionDefinition.IsEnabled) return NotFound();
+        if (await db.TemplateSections.AnyAsync(x => x.TemplateId == template.Id && x.PageSectionId == pageSection.Id))
+            ModelState.AddModelError("", "Section này đã có trong template.");
+        var definition = pageSection.SectionDefinition;
+        model.SectionDefinitionId = definition.Id;
         ValidateLayout(definition, model);
         ValidateNavigation(definition, model);
-        if (!ModelState.IsValid) return View(await PrepareComposerModelAsync(model));
+        if (!ModelState.IsValid) return View(await PrepareCreateModelAsync(model));
         var nextOrder = (await db.TemplateSections.Where(x => x.TemplateId == template.Id).MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
-        var keyPrefix = definition.Key[..Math.Min(definition.Key.Length, 70)];
-        var sectionKey = $"{keyPrefix}-{Guid.NewGuid():N}"[..(keyPrefix.Length + 9)];
         db.TemplateSections.Add(new TemplateSection
         {
-            TemplateId = template.Id, SectionDefinitionId = definition.Id, SectionKey = sectionKey,
+            TemplateId = template.Id, PageSectionId = pageSection.Id,
+            SectionDefinitionId = definition.Id, SectionKey = pageSection.SectionKey,
             DisplayName = model.DisplayName.Trim(), SortOrder = nextOrder, IsEnabled = model.IsEnabled,
             IsEnabledByDefault = true, ShowInNavigation = model.ShowInNavigation,
             NavigationLabel = NormalizeNavigationLabel(model), SettingsJson = SerializeSettings(model.Layout)
@@ -154,6 +163,32 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
             model.NavigationAllowed = sectionSchemas.GetNavigation(definition.SchemaJson).Allowed;
         }
         return model;
+    }
+
+    private async Task<TemplateSectionComposerViewModel> PrepareCreateModelAsync(
+        TemplateSectionComposerViewModel model, IReadOnlyList<PageSection>? pageSections = null)
+    {
+        model.PageSections = pageSections ?? await LoadAvailablePageSectionsAsync(model.TemplateId);
+        var pageSection = model.PageSections.FirstOrDefault(x => x.Id == model.PageSectionId);
+        if (pageSection is not null)
+        {
+            model.SectionDefinitionId = pageSection.SectionDefinitionId;
+            model.DefinitionName = pageSection.SectionDefinition.Name;
+            var layout = sectionSchemas.GetSetting(pageSection.SectionDefinition.SchemaJson, "layout");
+            model.LayoutOptions = (IReadOnlyList<SectionSettingOption>?)layout?.Options ?? Array.Empty<SectionSettingOption>();
+            model.Layout ??= layout?.Default;
+            model.NavigationAllowed = sectionSchemas.GetNavigation(pageSection.SectionDefinition.SchemaJson).Allowed;
+        }
+        return model;
+    }
+
+    private async Task<IReadOnlyList<PageSection>> LoadAvailablePageSectionsAsync(int templateId)
+    {
+        var assignedIds = await db.TemplateSections.Where(x => x.TemplateId == templateId && x.PageSectionId != null)
+            .Select(x => x.PageSectionId!.Value).ToArrayAsync();
+        return await db.PageSections.AsNoTracking().Include(x => x.SectionDefinition)
+            .Where(x => !x.IsArchived && !assignedIds.Contains(x.Id))
+            .OrderBy(x => x.DisplayName).ToListAsync();
     }
 
 

@@ -178,12 +178,48 @@ public static class DbInitializer
         await EnsureDerivedTemplateAsync("full-width", "Full Width", "Bố cục tràn cạnh, ưu tiên hình ảnh lớn và chuyển tiếp mạnh giữa các section.", "~/Views/Templates/FullWidth/Index.cshtml");
         await EnsureDerivedTemplateAsync("conversion", "Conversion", "Bố cục cô đọng, ưu tiên bằng chứng, lời kêu gọi hành động và form liên hệ.", "~/Views/Templates/Conversion/Index.cshtml");
 
+        await BackfillPageSectionsAsync(db);
+
         if (!await db.SiteTemplateSettings.AnyAsync())
         {
             db.SiteTemplateSettings.Add(new SiteTemplateSetting { ActiveTemplateId = template.Id });
             await db.SaveChangesAsync();
         }
         await SeedSettingsAsync(db);
+    }
+
+    private static async Task BackfillPageSectionsAsync(ApplicationDbContext db)
+    {
+        var pageSections = await db.PageSections.ToDictionaryAsync(x => x.SectionKey);
+        var slots = await db.TemplateSections.OrderBy(x => x.Id).ToListAsync();
+        foreach (var slot in slots)
+        {
+            if (!pageSections.TryGetValue(slot.SectionKey, out var pageSection))
+            {
+                pageSection = new PageSection
+                {
+                    SectionKey = slot.SectionKey,
+                    DisplayName = slot.DisplayName,
+                    SectionDefinitionId = slot.SectionDefinitionId
+                };
+                db.PageSections.Add(pageSection);
+                pageSections[slot.SectionKey] = pageSection;
+            }
+            slot.PageSection = pageSection;
+        }
+
+        var knownKeys = pageSections.Keys.ToArray();
+        var orphanContents = await db.SectionContents
+            .Where(x => !knownKeys.Contains(x.SectionKey)).ToListAsync();
+        foreach (var content in orphanContents)
+            db.PageSections.Add(new PageSection
+            {
+                SectionKey = content.SectionKey,
+                DisplayName = content.SectionKey,
+                SectionDefinitionId = content.SectionDefinitionId
+            });
+
+        await db.SaveChangesAsync();
     }
 
     private static async Task SeedSettingsAsync(ApplicationDbContext db)

@@ -7,6 +7,8 @@ public class TemplateSection
     public int Id { get; set; }
     public int TemplateId { get; set; }
     public PageTemplate Template { get; set; } = null!;
+    public int? PageSectionId { get; set; }
+    public PageSection? PageSection { get; set; }
     public int SectionDefinitionId { get; set; }
     public SectionDefinition SectionDefinition { get; set; } = null!;
     [Required, StringLength(80)] public string SectionKey { get; set; } = "";
