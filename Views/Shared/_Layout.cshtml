@@ -4,6 +4,7 @@
     var inlineTemplateCss = templateStylesheet is null
         ? null
         : TemplateStyleProvider.GetInlineCss(templateStylesheet);
+    var bodyClass = ViewData["BodyClass"] as string;
 }
 <!doctype html>
 <html lang="vi">
@@ -38,5 +39,5 @@
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     }
 </head>
-<body>@RenderBody()<script src="~/js/site.js" asp-append-version="true" defer></script>@await RenderSectionAsync("Scripts", required: false)</body>
+<body class="@bodyClass">@RenderBody()<script src="~/js/site.js" asp-append-version="true" defer></script>@await RenderSectionAsync("Scripts", required: false)</body>
 </html>

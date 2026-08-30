@@ -32,3 +32,4 @@ function Write-CssBundle([string] $outputName, [string] $templateStyle) {
 [IO.Directory]::CreateDirectory($bundleRoot) | Out-Null
 Write-CssBundle "corporate.bundle.css" "templates/corporate.css"
 Write-CssBundle "minimal.bundle.css" "templates/minimal.css"
+Write-CssBundle "editorial.bundle.css" "templates/editorial.css"

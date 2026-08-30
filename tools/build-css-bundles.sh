@@ -40,3 +40,4 @@ write_bundle() {
 
 write_bundle "corporate.bundle.css" "templates/corporate.css"
 write_bundle "minimal.bundle.css" "templates/minimal.css"
+write_bundle "editorial.bundle.css" "templates/editorial.css"

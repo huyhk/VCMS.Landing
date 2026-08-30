@@ -168,6 +168,33 @@ public static class DbInitializer
             await db.SaveChangesAsync();
         }
 
+        var editorialTemplate = await db.PageTemplates.FirstOrDefaultAsync(x => x.Key == "editorial");
+        if (editorialTemplate is null)
+        {
+            editorialTemplate = new PageTemplate
+            {
+                Key = "editorial", Name = "Editorial", Description = "Bố cục bất đối xứng, typography lớn và hình ảnh giàu tính biên tập.",
+                ViewPath = "~/Views/Templates/Editorial/Index.cshtml", Version = "1.0", IsEnabled = true
+            };
+            db.PageTemplates.Add(editorialTemplate);
+            await db.SaveChangesAsync();
+        }
+        if (!await db.TemplateSections.AnyAsync(x => x.TemplateId == editorialTemplate.Id))
+        {
+            var sourceSlots = await db.TemplateSections.AsNoTracking().Where(x => x.TemplateId == template.Id).ToListAsync();
+            foreach (var slot in sourceSlots)
+                db.TemplateSections.Add(new TemplateSection
+                {
+                    TemplateId = editorialTemplate.Id, SectionDefinitionId = slot.SectionDefinitionId,
+                    SectionKey = slot.SectionKey, DisplayName = slot.DisplayName, SortOrder = slot.SortOrder,
+                    IsRequired = slot.IsRequired, IsEnabledByDefault = slot.IsEnabledByDefault,
+                    IsEnabled = slot.IsEnabled,
+                    ShowInNavigation = slot.ShowInNavigation, NavigationLabel = slot.NavigationLabel,
+                    ViewPath = slot.ViewPath, SettingsJson = slot.SettingsJson
+                });
+            await db.SaveChangesAsync();
+        }
+
         if (!await db.SiteTemplateSettings.AnyAsync())
         {
             db.SiteTemplateSettings.Add(new SiteTemplateSetting { ActiveTemplateId = template.Id });
@@ -201,7 +228,7 @@ public static class DbInitializer
         }
         await db.SaveChangesAsync();
 
-        var templates = await db.PageTemplates.Where(x => x.Key == "corporate" || x.Key == "minimal").ToListAsync();
+        var templates = await db.PageTemplates.Where(x => x.Key == "corporate" || x.Key == "minimal" || x.Key == "editorial").ToListAsync();
         var developerKeys = developerSettings.Select(x => x.Key).ToHashSet(StringComparer.Ordinal);
         var links = await db.TemplateSettings.Where(x => templates.Select(t => t.Id).Contains(x.TemplateId)).ToListAsync();
         foreach (var template in templates)

@@ -1,0 +1,7 @@
+@model HomeViewModel
+@{
+    Layout = "_Layout";
+    ViewData["BodyClass"] = "template-editorial";
+    ViewData["TemplateStylesheet"] = "~/css/bundles/editorial.bundle.css";
+}
+@await Html.PartialAsync("~/Views/Home/Index.cshtml", Model)

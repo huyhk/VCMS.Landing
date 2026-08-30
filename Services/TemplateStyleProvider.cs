@@ -15,7 +15,8 @@ public sealed class TemplateStyleProvider(
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["~/css/bundles/corporate.bundle.css"] = "corporate.bundle.css",
-            ["~/css/bundles/minimal.bundle.css"] = "minimal.bundle.css"
+            ["~/css/bundles/minimal.bundle.css"] = "minimal.bundle.css",
+            ["~/css/bundles/editorial.bundle.css"] = "editorial.bundle.css"
         };
 
     private readonly ConcurrentDictionary<string, string> cache = new(StringComparer.Ordinal);
