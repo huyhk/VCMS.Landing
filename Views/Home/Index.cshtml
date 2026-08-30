@@ -31,10 +31,10 @@
 </header>
 
 <main id="top">
-    @foreach (var section in Model.Sections)
+    @foreach (var pageSection in Model.Sections)
     {
-        var renderModel = new SectionRenderViewModel(section, Model);
-        switch (section.SectionType)
+        var renderModel = new SectionRenderViewModel(pageSection, Model);
+        switch (pageSection.SectionType)
         {
             case "Hero":
                 @await Html.PartialAsync("~/Views/Home/Sections/_Hero.cshtml", renderModel)
@@ -48,7 +48,7 @@
             case "Stats":
                 @await Html.PartialAsync("~/Views/Home/Sections/_Stats.cshtml", renderModel)
                 break;
-            case "Cta" when section.SectionKey == "contact":
+            case "Cta" when pageSection.SectionKey == "contact":
                 @await Html.PartialAsync("~/Views/Home/Sections/_Contact.cshtml", renderModel)
                 break;
             case "Cta":
