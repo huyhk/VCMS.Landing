@@ -30,23 +30,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 builder.Services.AddControllersWithViews();
-builder.Services.AddWebOptimizer(pipeline =>
-{
-    var sharedStyles = new[]
-    {
-        "css/site.css",
-        "css/contact.css",
-        "css/media.css",
-        "css/rich-content.css",
-        "css/mobile-navigation.css",
-        "css/content-variants.css",
-        "css/enhanced-sections.css"
-    };
-    pipeline.AddCssBundle("/css/bundles/corporate.bundle.css",
-        sharedStyles.Append("css/templates/corporate.css").ToArray());
-    pipeline.AddCssBundle("/css/bundles/minimal.bundle.css",
-        sharedStyles.Append("css/templates/minimal.css").ToArray());
-});
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddOptions<CloudflareTurnstileOptions>()
     .Bind(builder.Configuration.GetSection("CloudflareTurnstile"))
@@ -71,7 +54,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseHttpsRedirection();
-app.UseWebOptimizer();
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = context =>
