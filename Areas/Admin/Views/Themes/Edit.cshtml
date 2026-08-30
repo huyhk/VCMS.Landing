@@ -1,0 +1,69 @@
+@model LandingCms.ViewModels.ThemeEditorViewModel
+@{
+    ViewData["Title"] = "Thiết kế theme";
+}
+<div class="page-title">
+    <div><h1>Thiết kế theme</h1><p>Chọn màu và kiểu hiển thị. Khung bên phải sẽ thay đổi ngay khi điều chỉnh.</p></div>
+    <a class="button button-secondary" asp-action="Index">Quay lại danh sách</a>
+</div>
+<form asp-action="Edit" method="post" class="theme-designer" id="theme-designer">
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="BaseThemeId" type="hidden" />
+    <div class="theme-editor-fields">
+        <div asp-validation-summary="ModelOnly" class="validation"></div>
+        <section class="panel theme-field-group">
+            <h2>Thông tin theme</h2>
+            <label asp-for="Name">Tên theme</label><input asp-for="Name" /><span asp-validation-for="Name"></span>
+            <label asp-for="Description">Mô tả</label><textarea asp-for="Description" rows="3"></textarea><span asp-validation-for="Description"></span>
+        </section>
+        <section class="panel theme-field-group">
+            <h2>Thương hiệu và nội dung</h2>
+            <div class="color-field"><label asp-for="Brand">Màu thương hiệu</label><input asp-for="Brand" type="color" data-theme-token="brand" /><output>@Model.Brand</output></div>
+            <div class="color-field"><label asp-for="BrandHover">Màu khi rê chuột</label><input asp-for="BrandHover" type="color" data-theme-token="brand-hover" /><output>@Model.BrandHover</output></div>
+            <div class="color-field"><label asp-for="BrandContrast">Chữ trên nút</label><input asp-for="BrandContrast" type="color" data-theme-token="brand-contrast" /><output>@Model.BrandContrast</output></div>
+            <div class="color-field"><label asp-for="Text">Màu chữ chính</label><input asp-for="Text" type="color" data-theme-token="text" /><output>@Model.Text</output></div>
+            <div class="color-field"><label asp-for="TextMuted">Màu chữ phụ</label><input asp-for="TextMuted" type="color" data-theme-token="muted" /><output>@Model.TextMuted</output></div>
+            <div class="color-field"><label asp-for="Border">Đường viền</label><input asp-for="Border" type="color" data-theme-token="border" /><output>@Model.Border</output></div>
+        </section>
+        <section class="panel theme-field-group">
+            <h2>Nền website</h2>
+            <div class="color-field"><label asp-for="PageBackground">Nền trang</label><input asp-for="PageBackground" type="color" data-theme-token="page" /><output>@Model.PageBackground</output></div>
+            <div class="color-field"><label asp-for="Surface">Nền card</label><input asp-for="Surface" type="color" data-theme-token="surface" /><output>@Model.Surface</output></div>
+            <div class="color-field"><label asp-for="SurfaceAlt">Nền section phụ</label><input asp-for="SurfaceAlt" type="color" data-theme-token="surface-alt" /><output>@Model.SurfaceAlt</output></div>
+            <div class="color-field"><label asp-for="Highlight">Màu nhấn nhẹ</label><input asp-for="Highlight" type="color" data-theme-token="highlight" /><output>@Model.Highlight</output></div>
+        </section>
+        <section class="panel theme-field-group">
+            <h2>Header và Hero</h2>
+            <div class="color-field"><label asp-for="HeaderBackground">Nền header</label><input asp-for="HeaderBackground" type="color" data-theme-token="header" /><output>@Model.HeaderBackground</output></div>
+            <div class="color-field"><label asp-for="HeaderText">Chữ header</label><input asp-for="HeaderText" type="color" data-theme-token="header-text" /><output>@Model.HeaderText</output></div>
+            <div class="color-field"><label asp-for="HeroBackground">Nền Hero</label><input asp-for="HeroBackground" type="color" data-theme-token="hero" /><output>@Model.HeroBackground</output></div>
+            <div class="color-field"><label asp-for="HeroText">Chữ Hero</label><input asp-for="HeroText" type="color" data-theme-token="hero-text" /><output>@Model.HeroText</output></div>
+            <div class="color-field"><label asp-for="HeroMuted">Mô tả Hero</label><input asp-for="HeroMuted" type="color" data-theme-token="hero-muted" /><output>@Model.HeroMuted</output></div>
+        </section>
+        <section class="panel theme-field-group">
+            <h2>Khối tương phản và Footer</h2>
+            <div class="color-field"><label asp-for="ContrastBackground">Nền khối nổi bật</label><input asp-for="ContrastBackground" type="color" data-theme-token="contrast" /><output>@Model.ContrastBackground</output></div>
+            <div class="color-field"><label asp-for="ContrastText">Chữ khối nổi bật</label><input asp-for="ContrastText" type="color" data-theme-token="contrast-text" /><output>@Model.ContrastText</output></div>
+            <div class="color-field"><label asp-for="FooterBackground">Nền footer</label><input asp-for="FooterBackground" type="color" data-theme-token="footer" /><output>@Model.FooterBackground</output></div>
+            <div class="color-field"><label asp-for="FooterText">Chữ footer</label><input asp-for="FooterText" type="color" data-theme-token="footer-text" /><output>@Model.FooterText</output></div>
+        </section>
+        <section class="panel theme-field-group">
+            <h2>Phong cách hiển thị</h2>
+            <label asp-for="CornerStyle">Bo góc card</label><select asp-for="CornerStyle" data-theme-choice="corners"><option value="sharp">Vuông</option><option value="soft">Bo nhẹ</option><option value="rounded">Bo tròn</option></select>
+            <label asp-for="ButtonStyle">Kiểu nút</label><select asp-for="ButtonStyle" data-theme-choice="buttons"><option value="square">Vuông</option><option value="soft">Bo nhẹ</option><option value="pill">Dạng viên thuốc</option></select>
+            <label asp-for="ShadowStyle">Đổ bóng</label><select asp-for="ShadowStyle" data-theme-choice="shadow"><option value="none">Không đổ bóng</option><option value="soft">Nhẹ</option><option value="strong">Nổi bật</option></select>
+        </section>
+        <div class="form-actions"><button class="button button-secondary" type="submit">Lưu bản nháp</button><button class="button" type="submit" name="activate" value="true">Lưu và áp dụng</button><small>Có thể lưu thử nhiều lần trước khi áp dụng.</small></div>
+    </div>
+    <div class="theme-live-preview" aria-label="Xem trước theme">
+        <div class="preview-browser">
+            <div class="preview-browser-bar"><i></i><i></i><i></i><span>Xem trước website</span></div>
+            <div class="preview-site-header"><b>LOGO</b><nav><span>Dịch vụ</span><span>Giới thiệu</span><button>Liên hệ</button></nav></div>
+            <div class="preview-site-hero"><small>GIẢI PHÁP CHUYÊN NGHIỆP</small><h2>Thiết kế tạo nên sự khác biệt.</h2><p>Đây là bản xem trước màu sắc và phong cách của website.</p><button>Bắt đầu dự án</button></div>
+            <div class="preview-site-content"><h3>Dịch vụ của chúng tôi</h3><p>Nội dung rõ ràng, hiện đại và phù hợp với thương hiệu.</p><div><article><b>Tư vấn</b><span>Giải pháp phù hợp</span></article><article><b>Thiết kế</b><span>Trải nghiệm ấn tượng</span></article><article><b>Triển khai</b><span>Nhanh chóng, ổn định</span></article></div></div>
+            <div class="preview-site-contrast"><b>100+</b><span>Dự án đã triển khai</span></div>
+            <div class="preview-site-footer">© VCMS Landing</div>
+        </div>
+    </div>
+</form>
+<script src="~/js/theme-designer.js" asp-append-version="true"></script>

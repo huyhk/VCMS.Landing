@@ -27,7 +27,13 @@
         </div>
         <div class="theme-info">
             <div>
-                <h2>@colorTheme.Theme.Name</h2>
+                <h2>
+                    @colorTheme.Theme.Name
+                    @if (colorTheme.Theme.IsReadOnly)
+                    {
+                        <small class="theme-origin">Mẫu hệ thống</small>
+                    }
+                </h2>
                 <p>@colorTheme.Theme.Description</p>
                 <div class="theme-swatches" aria-label="Bảng màu">
                     @foreach (var color in new[] { brand, pageBackground, surface, text, contrast, highlight })
@@ -36,17 +42,31 @@
                     }
                 </div>
             </div>
-            @if (colorTheme.IsActive)
-            {
-                <span class="status status-success">Đang dùng</span>
-            }
-            else
-            {
-                <form asp-action="Activate" method="post">
+            <div class="theme-actions">
+                @if (colorTheme.IsActive) { <span class="status on">Đang dùng</span> }
+                @if (!colorTheme.Theme.IsReadOnly)
+                {
+                    <a class="button button-secondary" asp-action="Edit" asp-route-id="@colorTheme.Theme.Id">Chỉnh sửa</a>
+                }
+                <form asp-action="Clone" method="post">
                     <input type="hidden" name="id" value="@colorTheme.Theme.Id" />
-                    <button class="button" type="submit">Áp dụng</button>
+                    <button class="button button-secondary" type="submit">Tạo bản tùy chỉnh</button>
                 </form>
-            }
+                @if (!colorTheme.IsActive)
+                {
+                    <form asp-action="Activate" method="post">
+                        <input type="hidden" name="id" value="@colorTheme.Theme.Id" />
+                        <button class="button" type="submit">Áp dụng</button>
+                    </form>
+                }
+                @if (!colorTheme.Theme.IsReadOnly && !colorTheme.IsActive)
+                {
+                    <form asp-action="Archive" method="post" onsubmit="return confirm('Xóa theme tùy chỉnh này?')">
+                        <input type="hidden" name="id" value="@colorTheme.Theme.Id" />
+                        <button class="danger-link" type="submit">Xóa</button>
+                    </form>
+                }
+            </div>
         </div>
     </article>
 }
