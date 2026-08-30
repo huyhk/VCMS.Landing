@@ -14,6 +14,7 @@ write_bundle() {
     temp_path="$output_path.tmp"
 
     : > "$temp_path"
+    first_source=1
     for source_file in \
         site.css \
         contact.css \
@@ -30,10 +31,14 @@ write_bundle() {
             exit 1
         fi
 
+        if [ "$first_source" -eq 0 ]; then
+            printf '\n\n' >> "$temp_path"
+        fi
         printf '/* Source: /css/%s */\n' "$source_file" >> "$temp_path"
         sed -e '$a\' "$source_path" >> "$temp_path"
-        printf '\n' >> "$temp_path"
+        first_source=0
     done
+    printf '\n' >> "$temp_path"
 
     mv "$temp_path" "$output_path"
 }
