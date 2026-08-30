@@ -31,6 +31,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         base.OnModelCreating(builder);
         builder.Entity<PageTemplate>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<ThemeDefinition>().HasIndex(x => x.Key).IsUnique();
+        builder.Entity<ThemeDefinition>().HasOne(x => x.BaseTheme).WithMany(x => x.DerivedThemes)
+            .HasForeignKey(x => x.BaseThemeId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<SectionDefinition>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<PageSection>().HasIndex(x => x.SectionKey).IsUnique();
         builder.Entity<PageSection>().HasOne(x => x.SectionDefinition).WithMany(x => x.PageSections)

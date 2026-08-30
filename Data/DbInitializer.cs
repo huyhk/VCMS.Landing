@@ -329,6 +329,9 @@ public static class DbInitializer
             theme.SortOrder = item.SortOrder;
             theme.TokensJson = JsonSerializer.Serialize(item.Tokens);
             theme.IsEnabled = true;
+            theme.Source = "System";
+            theme.IsReadOnly = true;
+            theme.UpdatedAtUtc = DateTime.UtcNow;
         }
         await db.SaveChangesAsync();
 

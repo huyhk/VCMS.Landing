@@ -23,13 +23,21 @@ public sealed partial class ThemeCssService : IThemeCssService
             ["contrastBackground"] = "--contrast-bg", ["contrastText"] = "--contrast-text",
             ["footerBackground"] = "--footer-bg", ["footerText"] = "--footer-text", ["highlight"] = "--highlight"
         };
+    private static readonly IReadOnlyDictionary<string, string[]> AppearanceValues =
+        new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["cornerStyle"] = ["sharp", "soft", "rounded"],
+            ["buttonStyle"] = ["square", "soft", "pill"],
+            ["shadowStyle"] = ["none", "soft", "strong"]
+        };
 
     public IReadOnlyDictionary<string, string> GetTokens(string tokensJson)
     {
         try
         {
             var values = JsonSerializer.Deserialize<Dictionary<string, string>>(tokensJson) ?? new();
-            return values.Where(x => TokenVariables.ContainsKey(x.Key) && IsSafeColor(x.Value))
+            return values.Where(x => (TokenVariables.ContainsKey(x.Key) && IsSafeColor(x.Value)) ||
+                    (AppearanceValues.TryGetValue(x.Key, out var allowed) && allowed.Contains(x.Value, StringComparer.Ordinal)))
                 .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
         }
         catch (JsonException)
@@ -43,16 +51,20 @@ public sealed partial class ThemeCssService : IThemeCssService
         var tokens = GetTokens(tokensJson);
         var css = new StringBuilder(1400).Append(":root{");
         foreach (var token in tokens)
-            css.Append(TokenVariables[token.Key]).Append(':').Append(token.Value).Append(';');
+            if (TokenVariables.TryGetValue(token.Key, out var variable))
+                css.Append(variable).Append(':').Append(token.Value).Append(';');
+        css.Append("--radius-card:").Append(tokens.GetValueOrDefault("cornerStyle") switch { "sharp" => "0", "rounded" => "24px", _ => "12px" }).Append(';');
+        css.Append("--radius-button:").Append(tokens.GetValueOrDefault("buttonStyle") switch { "square" => "2px", "pill" => "999px", _ => "8px" }).Append(';');
+        css.Append("--theme-shadow:").Append(tokens.GetValueOrDefault("shadowStyle") switch { "none" => "none", "strong" => "0 18px 50px rgba(15,23,42,.2)", _ => "0 10px 30px rgba(15,23,42,.1)" }).Append(';');
         css.Append('}');
         css.Append("body{color:var(--ink);background:var(--page-bg)}");
         css.Append(".site-header{color:var(--header-text);background:var(--header-bg);border-bottom-color:var(--line)}");
         css.Append(".nav nav a,.menu-button{color:var(--header-text)}");
-        css.Append(".btn{color:var(--brand-contrast);background:var(--brand)}.btn:hover{background:var(--brand-hover)}");
+        css.Append(".btn{color:var(--brand-contrast);background:var(--brand);border-radius:var(--radius-button)}.btn:hover{background:var(--brand-hover)}");
         css.Append(".hero:not(.has-background){color:var(--hero-text);background:var(--hero-bg)}");
         css.Append(".hero:not(.has-background) .lead{color:var(--hero-muted)}");
         css.Append(".section{background:var(--page-bg)}.section-soft,.contact-section{background:var(--surface-alt)}");
-        css.Append(".service-card,.testimonial-card,.media-card,.pricing-card,.team-card,.partner-logo,.faq-list details,.contact-form{color:var(--ink);background:var(--surface);border-color:var(--line)}");
+        css.Append(".service-card,.testimonial-card,.media-card,.pricing-card,.team-card,.partner-logo,.faq-list details,.contact-form{color:var(--ink);background:var(--surface);border-color:var(--line);border-radius:var(--radius-card);box-shadow:var(--theme-shadow)}");
         css.Append(".stats{color:var(--contrast-text);background:var(--contrast-bg)}.stats h2,.stats-grid strong{color:var(--contrast-text)}");
         css.Append(".stats-grid span{color:color-mix(in srgb,var(--contrast-text) 72%,transparent)}");
         css.Append(".cta{color:var(--brand-contrast);background:var(--brand)}");
