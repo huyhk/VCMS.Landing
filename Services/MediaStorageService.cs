@@ -72,6 +72,15 @@ public class MediaStorageService(IWebHostEnvironment environment, ApplicationDbC
                     await ImageVariants.CreateAsync(resized, variantPath, width, ImageVariants.Quality("hero"), cancellationToken);
                 }
             }
+            else if (profile == ImageUploadProfile.Logo)
+            {
+                foreach (var width in ImageVariants.ThumbnailWidths)
+                {
+                    var variantPath = ImageVariants.GetPath(physicalPath, "thumbnail", width);
+                    createdFiles.Add(variantPath);
+                    await ImageVariants.CreateAsync(resized, variantPath, width, ImageVariants.Quality("thumbnail"), cancellationToken);
+                }
+            }
             var asset = new MediaAsset
             {
                 OriginalFileName = Path.GetFileName(file.FileName), StoredFileName = storedName,

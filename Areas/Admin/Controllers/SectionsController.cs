@@ -71,8 +71,29 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var mainImage = await db.SectionMedia.Include(x => x.MediaAsset)
+                .FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey && x.Role == "MainImage");
             if (model.ImageFile is { Length: > 0 })
-                model.ImageUrl = (await mediaStorage.SaveImageAsync(model.ImageFile, userId, ImageUploadProfile.SectionImage, HttpContext.RequestAborted)).RelativeUrl;
+            {
+                var asset = await mediaStorage.SaveImageAsync(model.ImageFile, userId, ImageUploadProfile.SectionImage, HttpContext.RequestAborted);
+                model.ImageUrl = asset.RelativeUrl;
+                if (mainImage is null)
+                {
+                    db.SectionMedia.Add(new SectionMedia
+                    {
+                        SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "MainImage", SortOrder = 0
+                    });
+                }
+                else
+                {
+                    mainImage.MediaAssetId = asset.Id;
+                }
+            }
+            else if (mainImage is not null && !string.Equals(model.ImageUrl, mainImage.MediaAsset.RelativeUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                // An explicitly entered external URL (or an empty value) takes precedence.
+                db.SectionMedia.Remove(mainImage);
+            }
             if (slot.SectionDefinition.SectionType == "Hero" && model.BackgroundFiles.Count > 0)
             {
                 var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Background").MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;

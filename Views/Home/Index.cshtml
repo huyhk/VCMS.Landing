@@ -1,4 +1,5 @@
 @model HomeViewModel
+@using LandingCms.Services
 @{
     Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
     Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
@@ -11,7 +12,9 @@
         <a class="brand" href="#top">
             @if (Model.BrandingMedia.TryGetValue("branding.logo_primary", out var logo))
             {
-                <img src="@logo.RelativeUrl" width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName">
+                var logoSource = ResponsiveImageSources.Build(Url, logo, "thumbnail", 320);
+                <img src="@logoSource.Src" srcset="@logoSource.SrcSet" sizes="190px"
+                     width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName" decoding="async">
             }
             else
             {

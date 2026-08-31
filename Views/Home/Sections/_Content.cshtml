@@ -1,12 +1,28 @@
 @model SectionRenderViewModel
+@using LandingCms.Services
 @{
     var contentSection = Model.Section;
+    Model.Page.SectionMedia.TryGetValue(contentSection.SectionKey, out var sectionMedia);
+    var mainImage = sectionMedia?.FirstOrDefault(x => x.Role == "MainImage");
+    var imageSource = mainImage is null
+        ? null
+        : ResponsiveImageSources.Build(Url, mainImage.MediaAsset, "thumbnail", 800);
 }
 
 <section id="@contentSection.SectionKey" class="section section-soft content-section @contentSection.LayoutVariant">
     <div class="container split">
         <div class="image-wrap">
-            <img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="lazy">
+            @if (imageSource is not null)
+            {
+                <img src="@imageSource.Src" srcset="@imageSource.SrcSet"
+                     sizes="(max-width: 800px) 100vw, 50vw"
+                     width="@mainImage!.MediaAsset.Width" height="@mainImage.MediaAsset.Height"
+                     alt="@contentSection.Title" loading="lazy" decoding="async">
+            }
+            else if (!string.IsNullOrWhiteSpace(contentSection.ImageUrl))
+            {
+                <img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="lazy" decoding="async">
+            }
             <div class="image-badge"><strong>8+</strong><span>năm kinh nghiệm</span></div>
         </div>
         <div class="content-wrap">

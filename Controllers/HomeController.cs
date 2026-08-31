@@ -84,6 +84,30 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         var sectionMediaRows = await db.SectionMedia.AsNoTracking().Include(x => x.MediaAsset)
             .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted)
             .OrderBy(x => x.SortOrder).ToListAsync();
+        var sectionsWithoutMainImage = sections
+            .Where(section => !sectionMediaRows.Any(media => media.SectionKey == section.SectionKey && media.Role == "MainImage")
+                && !string.IsNullOrWhiteSpace(section.ImageUrl)
+                && section.ImageUrl.StartsWith("/uploads/", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        if (sectionsWithoutMainImage.Count > 0)
+        {
+            var legacyUrls = sectionsWithoutMainImage.Select(x => x.ImageUrl!).Distinct().ToArray();
+            var legacyAssets = await db.MediaAssets.AsNoTracking()
+                .Where(x => legacyUrls.Contains(x.RelativeUrl) && !x.IsDeleted)
+                .ToDictionaryAsync(x => x.RelativeUrl, StringComparer.OrdinalIgnoreCase);
+            foreach (var section in sectionsWithoutMainImage)
+            {
+                if (!legacyAssets.TryGetValue(section.ImageUrl!, out var asset)) continue;
+                sectionMediaRows.Add(new SectionMedia
+                {
+                    SectionKey = section.SectionKey,
+                    MediaAssetId = asset.Id,
+                    MediaAsset = asset,
+                    Role = "MainImage",
+                    SortOrder = 0
+                });
+            }
+        }
         var sectionMedia = sectionMediaRows.GroupBy(x => x.SectionKey).ToDictionary(x => x.Key, x => (IReadOnlyList<SectionMedia>)x.ToList());
         var sectionItemRows = await db.SectionItems.AsNoTracking().Include(x => x.MediaAsset)
             .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled)
