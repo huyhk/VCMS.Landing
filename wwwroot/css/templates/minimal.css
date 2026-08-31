@@ -4,17 +4,15 @@
  * to be declared here.
  */
 
-:root {
-    --ink: #111;
-    --soft: #f7f7f5;
-}
-
 .site-header {
-    border-bottom: 2px solid #111;
+    color: var(--header-text);
+    background: var(--header-bg);
+    border-bottom: 2px solid var(--line);
 }
 
 .hero {
-    background: #f7f7f5;
+    color: var(--hero-text);
+    background: var(--hero-bg);
 }
 
 .hero h1 {
@@ -30,33 +28,34 @@
 }
 
 .service-card {
-    border-color: #111;
-    border-radius: 0;
+    border-color: var(--line);
+    border-radius: var(--radius-card);
 }
 
 .section-soft {
-    background: #f1f0eb;
+    background: var(--surface-alt);
 }
 
 .cta {
-    border-radius: 0;
-    background: #111;
+    border-radius: var(--radius-card);
+    background: var(--brand);
+    color: var(--brand-contrast);
 }
 
 .stats {
-    background: #e8ff47;
-    color: #111;
+    background: var(--contrast-bg);
+    color: var(--contrast-text);
 }
 
 .stats h2,
 .stats-grid strong {
-    color: #111;
+    color: var(--contrast-text);
 }
 
 .stats-grid span {
-    color: #444;
+    color: color-mix(in srgb,var(--contrast-text) 70%,transparent);
 }
 
 .stats-grid div {
-    border-color: #111;
+    border-color: color-mix(in srgb,var(--contrast-text) 24%,transparent);
 }
