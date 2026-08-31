@@ -1,7 +1,7 @@
 using LandingCms.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SkiaSharp;
+using LandingCms.Services;
 using System.Collections.Concurrent;
 
 namespace LandingCms.Controllers;
@@ -10,66 +10,48 @@ namespace LandingCms.Controllers;
 public sealed class MediaController(ApplicationDbContext db, IWebHostEnvironment environment) : Controller
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> VariantLocks = new();
-    private const int ThumbnailMaxWidth = 800;
-    private const int ThumbnailMaxHeight = 600;
-
     [HttpGet("{id:long}/thumbnail")]
     [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Any)]
-    public async Task<IActionResult> Thumbnail(long id, CancellationToken cancellationToken)
-    {
-        var sourcePath = await ResolveSourcePathAsync(id, cancellationToken);
-        if (sourcePath is null) return NotFound();
+    public Task<IActionResult> Thumbnail(long id, CancellationToken cancellationToken) =>
+        ServeVariantAsync(id, "thumbnail", 800, cancellationToken);
 
-        var thumbnailPath = Path.Combine(
-            Path.GetDirectoryName(sourcePath)!,
-            Path.GetFileNameWithoutExtension(sourcePath) + ".thumb.webp");
-
-        if (!System.IO.File.Exists(thumbnailPath))
-        {
-            var thumbnailLock = VariantLocks.GetOrAdd($"thumbnail:{id}", _ => new SemaphoreSlim(1, 1));
-            await thumbnailLock.WaitAsync(cancellationToken);
-            try
-            {
-                if (!System.IO.File.Exists(thumbnailPath))
-                    await CreateVariantAsync(sourcePath, thumbnailPath, ThumbnailMaxWidth, ThumbnailMaxHeight, 72, cancellationToken);
-            }
-            finally
-            {
-                thumbnailLock.Release();
-            }
-        }
-
-        Response.Headers.CacheControl = "public,max-age=31536000,immutable";
-        return PhysicalFile(thumbnailPath, "image/webp");
-    }
+    [HttpGet("{id:long}/thumbnail/{width:int}")]
+    [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Any)]
+    public Task<IActionResult> ThumbnailVariant(long id, int width, CancellationToken cancellationToken) =>
+        ServeVariantAsync(id, "thumbnail", width, cancellationToken);
 
     [HttpGet("{id:long}/hero")]
     [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Any)]
-    public async Task<IActionResult> Hero(long id, CancellationToken cancellationToken)
+    public Task<IActionResult> Hero(long id, CancellationToken cancellationToken) =>
+        ServeVariantAsync(id, "hero", 1600, cancellationToken);
+
+    [HttpGet("{id:long}/hero/{width:int}")]
+    [ResponseCache(Duration = 31536000, Location = ResponseCacheLocation.Any)]
+    public Task<IActionResult> HeroVariant(long id, int width, CancellationToken cancellationToken) =>
+        ServeVariantAsync(id, "hero", width, cancellationToken);
+
+    private async Task<IActionResult> ServeVariantAsync(long id, string profile, int width, CancellationToken cancellationToken)
     {
+        if (!ImageVariants.Supports(profile, width)) return NotFound();
         var sourcePath = await ResolveSourcePathAsync(id, cancellationToken);
         if (sourcePath is null) return NotFound();
-
-        var heroPath = Path.Combine(
-            Path.GetDirectoryName(sourcePath)!,
-            Path.GetFileNameWithoutExtension(sourcePath) + ".hero.webp");
-        if (!System.IO.File.Exists(heroPath))
+        var variantPath = ImageVariants.GetPath(sourcePath, profile, width);
+        if (!System.IO.File.Exists(variantPath))
         {
-            var heroLock = VariantLocks.GetOrAdd($"hero:{id}", _ => new SemaphoreSlim(1, 1));
-            await heroLock.WaitAsync(cancellationToken);
+            var variantLock = VariantLocks.GetOrAdd($"{profile}:{id}:{width}", _ => new SemaphoreSlim(1, 1));
+            await variantLock.WaitAsync(cancellationToken);
             try
             {
-                if (!System.IO.File.Exists(heroPath))
-                    await CreateVariantAsync(sourcePath, heroPath, 1600, 1000, 62, cancellationToken);
+                if (!System.IO.File.Exists(variantPath))
+                    await ImageVariants.CreateAsync(sourcePath, variantPath, width, ImageVariants.Quality(profile), cancellationToken);
             }
             finally
             {
-                heroLock.Release();
+                variantLock.Release();
             }
         }
-
         Response.Headers.CacheControl = "public,max-age=31536000,immutable";
-        return PhysicalFile(heroPath, "image/webp");
+        return PhysicalFile(variantPath, "image/webp");
     }
 
     private async Task<string?> ResolveSourcePathAsync(long id, CancellationToken cancellationToken)
@@ -85,18 +67,4 @@ public sealed class MediaController(ApplicationDbContext db, IWebHostEnvironment
             : null;
     }
 
-    private static async Task CreateVariantAsync(string sourcePath, string destinationPath, int maxWidth, int maxHeight, int quality, CancellationToken cancellationToken)
-    {
-        using var source = SKBitmap.Decode(sourcePath) ?? throw new InvalidOperationException("Không thể tạo thumbnail cho hình ảnh.");
-        var scale = Math.Min(1d, Math.Min((double)maxWidth / source.Width, (double)maxHeight / source.Height));
-        var width = Math.Max(1, (int)Math.Round(source.Width * scale));
-        var height = Math.Max(1, (int)Math.Round(source.Height * scale));
-        using var resized = scale < 1 ? source.Resize(new SKImageInfo(width, height), SKFilterQuality.Medium) : source.Copy();
-        if (resized is null) throw new InvalidOperationException("Không thể thay đổi kích thước thumbnail.");
-        using var image = SKImage.FromBitmap(resized);
-        using var encoded = image.Encode(SKEncodedImageFormat.Webp, quality) ?? throw new InvalidOperationException("Không thể mã hóa biến thể hình ảnh.");
-        await using var output = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.Read, 81920, true);
-        encoded.SaveTo(output);
-        await output.FlushAsync(cancellationToken);
-    }
 }

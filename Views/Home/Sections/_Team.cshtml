@@ -30,9 +30,12 @@
                 values.TryGetValue("bio", out var bio);
                 values.TryGetValue("profileUrl", out var profileUrl);
                 var safeProfileUrl = PublicLinkUrl.Normalize(profileUrl);
+                var imageSource = ResponsiveImageSources.Build(Url, item.MediaAsset!, "thumbnail", 800);
 
                 <article class="team-card">
-                    <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })" alt="@name" width="640" height="720" loading="lazy" decoding="async">
+                    <img src="@imageSource.Src" srcset="@imageSource.SrcSet"
+                         sizes="(max-width: 800px) 100vw, 33vw"
+                         alt="@name" width="640" height="720" loading="lazy" decoding="async">
                     <div class="team-copy">
                         <h3>
                             @if (safeProfileUrl is not null) { <a href="@safeProfileUrl">@name</a> }

@@ -34,7 +34,9 @@
                     <button class="media-player" type="button" data-media-player data-embed-url="@embedUrl" aria-label="Phát video: @title">
                         @if (item.MediaAsset is not null)
                         {
-                            <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })"
+                            var imageSource = ResponsiveImageSources.Build(Url, item.MediaAsset, "thumbnail", 800);
+                            <img src="@imageSource.Src" srcset="@imageSource.SrcSet"
+                                 sizes="(max-width: 800px) 100vw, 50vw"
                                  alt="@title" width="800" height="450" loading="lazy" decoding="async">
                         }
                         else

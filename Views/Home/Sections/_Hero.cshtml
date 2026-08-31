@@ -1,4 +1,5 @@
 @model SectionRenderViewModel
+@using LandingCms.Services
 @{
     var contentSection = Model.Section;
     Model.Page.SectionMedia.TryGetValue(contentSection.SectionKey, out var heroMedia);
@@ -12,16 +13,21 @@
             @for (var index = 0; index < backgrounds.Count; index++)
             {
                 var background = backgrounds[index];
+                var imageSource = ResponsiveImageSources.Build(Url, background.MediaAsset, "hero", 1280);
                 if (index == 0)
                 {
                     <img class="active"
-                         src="@Url.Action("Hero", "Media", new { id = background.MediaAssetId })"
+                         src="@imageSource.Src"
+                         srcset="@imageSource.SrcSet"
+                         sizes="100vw"
                          style="object-position:@background.FocalPointX% @background.FocalPointY%"
                          alt="" aria-hidden="true" loading="eager" fetchpriority="high">
                 }
                 else
                 {
-                    <img data-src="@Url.Action("Hero", "Media", new { id = background.MediaAssetId })"
+                    <img data-src="@imageSource.Src"
+                         data-srcset="@imageSource.SrcSet"
+                         data-sizes="100vw"
                          style="object-position:@background.FocalPointX% @background.FocalPointY%"
                          alt="" aria-hidden="true" loading="lazy">
                 }

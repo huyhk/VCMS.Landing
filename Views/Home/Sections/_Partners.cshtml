@@ -28,17 +28,18 @@
                 values.TryGetValue("name", out var name);
                 values.TryGetValue("url", out var url);
                 var safeUrl = PublicLinkUrl.Normalize(url);
+                var imageSource = ResponsiveImageSources.Build(Url, item.MediaAsset!, "thumbnail", 320);
 
                 @if (safeUrl is not null)
                 {
                     <a class="partner-logo" href="@safeUrl" aria-label="@name">
-                        <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })" alt="@name" width="240" height="120" loading="lazy" decoding="async">
+                        <img src="@imageSource.Src" srcset="@imageSource.SrcSet" sizes="180px" alt="@name" width="240" height="120" loading="lazy" decoding="async">
                     </a>
                 }
                 else
                 {
                     <div class="partner-logo">
-                        <img src="@Url.Action("Thumbnail", "Media", new { id = item.MediaAssetId })" alt="@name" width="240" height="120" loading="lazy" decoding="async">
+                        <img src="@imageSource.Src" srcset="@imageSource.SrcSet" sizes="180px" alt="@name" width="240" height="120" loading="lazy" decoding="async">
                     </div>
                 }
             }

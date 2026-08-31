@@ -22,6 +22,8 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu()}
 window.addEventListener('resize',()=>{if(window.innerWidth>800)closeMenu()});
 
 const prepareHeroBackgrounds=()=>document.querySelectorAll('.hero-backgrounds img[data-src]').forEach(image=>{
+    if(image.dataset.srcset){image.srcset=image.dataset.srcset;image.removeAttribute('data-srcset')}
+    if(image.dataset.sizes){image.sizes=image.dataset.sizes;image.removeAttribute('data-sizes')}
     image.src=image.dataset.src;
     image.removeAttribute('data-src');
 });

@@ -54,12 +54,23 @@ public class MediaStorageService(IWebHostEnvironment environment, ApplicationDbC
         Directory.CreateDirectory(physicalDirectory);
         var storedName = $"{Guid.NewGuid():N}{extension}";
         var physicalPath = Path.Combine(physicalDirectory, storedName);
+        var createdFiles = new List<string>();
         try
         {
             await using (var destination = new FileStream(physicalPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, true))
             {
                 encoded.SaveTo(destination);
                 await destination.FlushAsync(cancellationToken);
+            }
+            createdFiles.Add(physicalPath);
+            if (profile == ImageUploadProfile.HeroBackground)
+            {
+                foreach (var width in ImageVariants.HeroWidths)
+                {
+                    var variantPath = ImageVariants.GetPath(physicalPath, "hero", width);
+                    createdFiles.Add(variantPath);
+                    await ImageVariants.CreateAsync(resized, variantPath, width, ImageVariants.Quality("hero"), cancellationToken);
+                }
             }
             var asset = new MediaAsset
             {
@@ -74,7 +85,8 @@ public class MediaStorageService(IWebHostEnvironment environment, ApplicationDbC
         }
         catch
         {
-            if (File.Exists(physicalPath)) File.Delete(physicalPath);
+            foreach (var path in createdFiles)
+                if (File.Exists(path)) File.Delete(path);
             throw;
         }
     }
