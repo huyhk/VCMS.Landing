@@ -1,5 +1,7 @@
 @model HomeViewModel
 @using LandingCms.Services
+@using LandingCms
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PublicResource> PublicText
 @{
     Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
     Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
@@ -27,10 +29,10 @@
                 <a href="#@item.SectionKey">@item.Label</a>
             }
         </nav>
-        <a class="btn btn-small" href="#contact">Trao đổi dự án</a>
+        <a class="btn btn-small" href="#contact">@PublicText["Header.Contact"]</a>
         @if (Model.Languages.Count > 1)
         {
-            <div class="language-switcher" role="navigation" aria-label="Ngôn ngữ nội dung">
+            <div class="language-switcher" role="navigation" aria-label="@PublicText["Language.Navigation"]">
                 @foreach (var language in Model.Languages)
                 {
                     var languageUrl = language.IsDefault ? "/" : $"/{language.Code}";
@@ -110,7 +112,7 @@
             }
         </div>
         <div>
-            <strong>Liên hệ</strong>
+            <strong>@PublicText["Footer.Contact"]</strong>
             <a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a>
             <a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a>
             <span>@Model.Settings.Address</span>

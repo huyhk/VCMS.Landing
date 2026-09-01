@@ -21,4 +21,5 @@ public class TemplateSection
     [StringLength(50)] public string? NavigationLabel { get; set; }
     [StringLength(300)] public string? ViewPath { get; set; }
     public string SettingsJson { get; set; } = "{}";
+    public ICollection<TemplateSectionTranslation> Translations { get; set; } = new List<TemplateSectionTranslation>();
 }

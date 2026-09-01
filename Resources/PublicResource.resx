@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Contact.FullName" xml:space="preserve"><value>Họ và tên</value></data>
+  <data name="Contact.Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Contact.Phone" xml:space="preserve"><value>Điện thoại</value></data>
+  <data name="Contact.Message" xml:space="preserve"><value>Nội dung cần trao đổi</value></data>
+  <data name="Contact.Submit" xml:space="preserve"><value>Gửi liên hệ →</value></data>
+  <data name="Contact.Success" xml:space="preserve"><value>Cảm ơn bạn. Chúng tôi đã nhận được thông tin và sẽ liên hệ sớm.</value></data>
+  <data name="Contact.ValidationError" xml:space="preserve"><value>Vui lòng kiểm tra lại thông tin liên hệ.</value></data>
+  <data name="Contact.VerificationError" xml:space="preserve"><value>Không thể xác minh yêu cầu. Vui lòng thử lại.</value></data>
+  <data name="Header.Contact" xml:space="preserve"><value>Trao đổi dự án</value></data>
+  <data name="Footer.Contact" xml:space="preserve"><value>Liên hệ</value></data>
+  <data name="Language.Navigation" xml:space="preserve"><value>Ngôn ngữ nội dung</value></data>
+</root>

@@ -34,9 +34,11 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         var currentLanguage = ResolveLanguage(languages, language);
         if (currentLanguage is null) return NotFound();
         var content = await db.SectionContents.AsNoTracking().FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
-        var translation = content is null || currentLanguage.IsDefault ? null : await db.SectionContentTranslations.AsNoTracking()
+        var contentTranslation = content is null || currentLanguage.IsDefault ? null : await db.SectionContentTranslations.AsNoTracking()
             .FirstOrDefaultAsync(x => x.SectionContentId == content.Id && x.LanguageCode == currentLanguage.Code);
-        var contentJson = translation?.ContentJson ?? content?.ContentJson;
+        var navigationTranslation = currentLanguage.IsDefault ? null : await db.TemplateSectionTranslations.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.TemplateSectionId == slot.Id && x.LanguageCode == currentLanguage.Code);
+        var contentJson = contentTranslation?.ContentJson ?? content?.ContentJson;
         var payload = contentJson is null ? new SectionContentPayload() : JsonSerializer.Deserialize<SectionContentPayload>(contentJson) ?? new();
         var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
         if (contentField.Editor == "html")
@@ -44,7 +46,9 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         var model = new SectionContentEditViewModel
         {
             LanguageCode = currentLanguage.Code, Languages = languages, IsDefaultLanguage = currentLanguage.IsDefault,
-            HasTranslation = currentLanguage.IsDefault || translation is not null,
+            HasTranslation = currentLanguage.IsDefault || contentTranslation is not null,
+            ShowInNavigation = slot.ShowInNavigation,
+            NavigationLabel = navigationTranslation?.NavigationLabel ?? slot.NavigationLabel,
             TemplateSectionId = slot.Id, ContentId = content?.Id, SectionKey = slot.SectionKey,
             SectionType = slot.SectionDefinition.SectionType, DisplayName = slot.DisplayName,
             ContentEditor = contentField.Editor, ContentHtmlPolicy = contentField.HtmlPolicy,
@@ -72,6 +76,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (currentLanguage is null) return NotFound();
         model.LanguageCode = currentLanguage.Code; model.Languages = languages;
         model.IsDefaultLanguage = currentLanguage.IsDefault;
+        model.ShowInNavigation = slot.ShowInNavigation;
         var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
         model.ContentEditor = contentField.Editor; model.ContentHtmlPolicy = contentField.HtmlPolicy;
         model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
@@ -144,6 +149,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (currentLanguage.IsDefault)
         {
             content.ContentJson = translatedContentJson;
+            if (slot.ShowInNavigation) slot.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel) ? slot.DisplayName : model.NavigationLabel.Trim();
             if (canManageVisibility) slot.IsEnabled = model.IsEnabled;
             content.UpdatedAtUtc = DateTime.UtcNow;
             content.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -163,6 +169,19 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             translation.UpdatedAtUtc = DateTime.UtcNow;
             translation.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
             model.HasTranslation = true;
+            if (slot.ShowInNavigation)
+            {
+                var navigationTranslation = await db.TemplateSectionTranslations
+                    .FirstOrDefaultAsync(x => x.TemplateSectionId == slot.Id && x.LanguageCode == currentLanguage.Code);
+                if (navigationTranslation is null)
+                {
+                    navigationTranslation = new TemplateSectionTranslation { TemplateSectionId = slot.Id, LanguageCode = currentLanguage.Code };
+                    db.TemplateSectionTranslations.Add(navigationTranslation);
+                }
+                navigationTranslation.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel)
+                    ? slot.NavigationLabel ?? slot.DisplayName
+                    : model.NavigationLabel.Trim();
+            }
         }
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã lưu {slot.DisplayName} ({currentLanguage.Name}).";
@@ -469,6 +488,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
         model.GalleryImages = await LoadMediaAsync(slot.SectionKey, "Gallery");
         model.HasItems = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is not null;
+        model.ShowInNavigation = slot.ShowInNavigation;
         model.Languages = await LoadLanguagesAsync();
         var currentLanguage = ResolveLanguage(model.Languages, model.LanguageCode);
         model.IsDefaultLanguage = currentLanguage?.IsDefault ?? true;

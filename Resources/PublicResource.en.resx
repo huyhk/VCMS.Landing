@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Contact.FullName" xml:space="preserve"><value>Full name</value></data>
+  <data name="Contact.Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Contact.Phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Contact.Message" xml:space="preserve"><value>How can we help?</value></data>
+  <data name="Contact.Submit" xml:space="preserve"><value>Send message →</value></data>
+  <data name="Contact.Success" xml:space="preserve"><value>Thank you. We have received your message and will contact you shortly.</value></data>
+  <data name="Contact.ValidationError" xml:space="preserve"><value>Please check your contact information.</value></data>
+  <data name="Contact.VerificationError" xml:space="preserve"><value>We could not verify your request. Please try again.</value></data>
+  <data name="Header.Contact" xml:space="preserve"><value>Discuss your project</value></data>
+  <data name="Footer.Contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="Language.Navigation" xml:space="preserve"><value>Content language</value></data>
+</root>

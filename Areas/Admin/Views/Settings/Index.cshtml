@@ -1,3 +1,27 @@
-@model SiteSetting
+@model SiteSettingsEditViewModel
 @{ ViewData["Title"] = "Cấu hình website"; }
-<div class="page-title"><div><h1>Cấu hình website</h1><p>Thông tin chung, SEO và nhận diện thương hiệu.</p></div></div><form asp-action="Save" method="post" class="panel form-panel"><input asp-for="Id" type="hidden"><div class="form-grid"><div><label asp-for="SiteName">Tên website</label><input asp-for="SiteName"></div><div><label asp-for="LogoText">Chữ logo</label><input asp-for="LogoText"></div><div class="full"><label asp-for="CompanyName">Tên doanh nghiệp</label><input asp-for="CompanyName" placeholder="Tên pháp lý hoặc tên giao dịch của doanh nghiệp"><span asp-validation-for="CompanyName"></span></div><div class="full"><label asp-for="SeoTitle">Tiêu đề SEO</label><input asp-for="SeoTitle"></div><div class="full"><label asp-for="SeoDescription">Mô tả SEO</label><textarea asp-for="SeoDescription"></textarea></div><div class="full"><label asp-for="SeoKeywords">Từ khóa SEO</label><input asp-for="SeoKeywords" placeholder="Từ khóa 1, từ khóa 2, từ khóa 3"><span asp-validation-for="SeoKeywords"></span><small>Các từ khóa cách nhau bằng dấu phẩy.</small></div><div><label asp-for="Phone">Điện thoại</label><input asp-for="Phone"></div><div><label asp-for="Email">Email</label><input asp-for="Email"></div><div class="full"><label asp-for="Address">Địa chỉ</label><input asp-for="Address"></div><div class="full"><label asp-for="FooterText">Nội dung chân trang</label><input asp-for="FooterText"></div></div><div class="form-actions"><button class="button" type="submit">Lưu cấu hình</button></div></form>
+<div class="page-title"><div><h1>Cấu hình website</h1><p>Thông tin chung, SEO và nhận diện thương hiệu.</p></div></div>
+<div class="panel language-content-bar"><strong>Nội dung đang chỉnh sửa:</strong>@foreach(var language in Model.Languages){<a class="button @(language.Code == Model.LanguageCode ? "" : "button-secondary")" asp-action="Index" asp-route-language="@language.Code">@language.Name</a>}@if(!Model.IsDefaultLanguage && !Model.HasTranslation){<span class="status off">Đang hiển thị tiếng Việt để làm mẫu</span>}</div>
+<form asp-action="Save" method="post" class="panel form-panel">
+    <input asp-for="Id" type="hidden"><input asp-for="LanguageCode" type="hidden">
+    <div class="form-grid">
+        <div><label asp-for="SiteName">Tên website</label><input asp-for="SiteName"><span asp-validation-for="SiteName"></span></div>
+        <div><label asp-for="LogoText">Chữ logo</label><input asp-for="LogoText"></div>
+        <div class="full"><label asp-for="CompanyName">Tên doanh nghiệp</label><input asp-for="CompanyName" placeholder="Tên pháp lý hoặc tên giao dịch của doanh nghiệp"><span asp-validation-for="CompanyName"></span></div>
+        <div class="full"><label asp-for="SeoTitle">Tiêu đề SEO</label><input asp-for="SeoTitle"></div>
+        <div class="full"><label asp-for="SeoDescription">Mô tả SEO</label><textarea asp-for="SeoDescription"></textarea></div>
+        <div class="full"><label asp-for="SeoKeywords">Từ khóa SEO</label><input asp-for="SeoKeywords" placeholder="Từ khóa 1, từ khóa 2, từ khóa 3"><span asp-validation-for="SeoKeywords"></span><small>Các từ khóa cách nhau bằng dấu phẩy.</small></div>
+        @if(Model.IsDefaultLanguage)
+        {
+            <div><label asp-for="Phone">Điện thoại</label><input asp-for="Phone"></div>
+            <div><label asp-for="Email">Email</label><input asp-for="Email"></div>
+        }
+        else
+        {
+            <input asp-for="Phone" type="hidden"><input asp-for="Email" type="hidden">
+        }
+        <div class="full"><label asp-for="Address">Địa chỉ</label><input asp-for="Address"></div>
+        <div class="full"><label asp-for="FooterText">Nội dung chân trang</label><input asp-for="FooterText"></div>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">Lưu cấu hình</button></div>
+</form>

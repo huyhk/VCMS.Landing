@@ -9,6 +9,7 @@
         <div class="full"><label asp-for="Eyebrow">Nhãn nhỏ</label><input asp-for="Eyebrow"></div>
         <div class="full"><label asp-for="Title">Tiêu đề</label><input asp-for="Title"><span asp-validation-for="Title"></span></div>
         <div class="full"><label asp-for="Subtitle">Mô tả ngắn</label><textarea asp-for="Subtitle" rows="2"></textarea></div>
+        @if(Model.ShowInNavigation){<div class="full"><label asp-for="NavigationLabel">Nhãn trên menu</label><input asp-for="NavigationLabel" maxlength="50"><small>Nhãn ngắn hiển thị trên menu của ngôn ngữ đang chỉnh sửa.</small></div>}
         @if(Model.ContentEditor == "html")
         {
             <div class="full">

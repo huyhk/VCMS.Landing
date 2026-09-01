@@ -12,6 +12,8 @@ public class SectionContentEditViewModel
     public IReadOnlyList<ContentLanguage> Languages { get; set; } = Array.Empty<ContentLanguage>();
     public bool IsDefaultLanguage { get; set; } = true;
     public bool HasTranslation { get; set; }
+    public bool ShowInNavigation { get; set; }
+    [StringLength(50)] public string? NavigationLabel { get; set; }
     public int TemplateSectionId { get; set; }
     public int? ContentId { get; set; }
     public string SectionKey { get; set; } = "";

@@ -11,4 +11,6 @@ public class ContentLanguage
     public int SortOrder { get; set; }
     public ICollection<SectionContentTranslation> SectionContentTranslations { get; set; } = new List<SectionContentTranslation>();
     public ICollection<SectionItemTranslation> SectionItemTranslations { get; set; } = new List<SectionItemTranslation>();
+    public ICollection<TemplateSectionTranslation> TemplateSectionTranslations { get; set; } = new List<TemplateSectionTranslation>();
+    public ICollection<SiteSettingTranslation> SiteSettingTranslations { get; set; } = new List<SiteSettingTranslation>();
 }

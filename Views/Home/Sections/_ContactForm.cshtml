@@ -1,15 +1,17 @@
 @model HomeViewModel
+@using LandingCms
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PublicResource> PublicText
 @{ var fieldPrefix = $"contact-{Guid.NewGuid():N}"; }
 <form asp-controller="Home" asp-action="Contact" method="post" class="contact-form">
     <input type="hidden" name="culture" value="@Model.CurrentLanguage.Code">
     @if (TempData["ContactSuccess"] is string success) { <div class="form-message success">@success</div> }
     @if (TempData["ContactError"] is string error) { <div class="form-message error">@error</div> }
     <div class="honeypot" aria-hidden="true"><label for="@(fieldPrefix)-website">Website</label><input id="@(fieldPrefix)-website" name="Website" tabindex="-1" autocomplete="off"></div>
-    <div class="contact-row"><div><label for="@(fieldPrefix)-name">Họ và tên</label><input id="@(fieldPrefix)-name" name="Name" maxlength="150" autocomplete="name" required></div><div><label for="@(fieldPrefix)-email">Email</label><input id="@(fieldPrefix)-email" name="Email" type="email" maxlength="200" autocomplete="email" required></div></div>
-    <div><label for="@(fieldPrefix)-phone">Điện thoại</label><input id="@(fieldPrefix)-phone" name="Phone" type="tel" maxlength="50" autocomplete="tel"></div>
-    <div><label for="@(fieldPrefix)-message">Nội dung cần trao đổi</label><textarea id="@(fieldPrefix)-message" name="Message" rows="5" minlength="10" maxlength="4000" required></textarea></div>
+    <div class="contact-row"><div><label for="@(fieldPrefix)-name">@PublicText["Contact.FullName"]</label><input id="@(fieldPrefix)-name" name="Name" maxlength="150" autocomplete="name" required></div><div><label for="@(fieldPrefix)-email">@PublicText["Contact.Email"]</label><input id="@(fieldPrefix)-email" name="Email" type="email" maxlength="200" autocomplete="email" required></div></div>
+    <div><label for="@(fieldPrefix)-phone">@PublicText["Contact.Phone"]</label><input id="@(fieldPrefix)-phone" name="Phone" type="tel" maxlength="50" autocomplete="tel"></div>
+    <div><label for="@(fieldPrefix)-message">@PublicText["Contact.Message"]</label><textarea id="@(fieldPrefix)-message" name="Message" rows="5" minlength="10" maxlength="4000" required></textarea></div>
     @if (!string.IsNullOrWhiteSpace(Model.TurnstileSiteKey)) { <div class="cf-turnstile" data-sitekey="@Model.TurnstileSiteKey"></div> }
-    <button class="btn" type="submit">Gửi liên hệ →</button>
+    <button class="btn" type="submit">@PublicText["Contact.Submit"]</button>
 </form>
 @if (!string.IsNullOrWhiteSpace(Model.TurnstileSiteKey) && !Context.Items.ContainsKey("TurnstileScriptRendered"))
 {

@@ -7,12 +7,15 @@ using System.Text.Json;
 using LandingCms.Services;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Localization;
+using LandingCms;
+using System.Globalization;
 
 namespace LandingCms.Controllers;
 public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger,
     IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas,
     ICloudflareTurnstileValidator turnstileValidator, IOptions<CloudflareTurnstileOptions> turnstileOptions,
-    IThemeCssService themeCss) : Controller
+    IThemeCssService themeCss, IStringLocalizer<PublicResource> publicText) : Controller
 {
     public async Task<IActionResult> Index(string? culture)
     {
@@ -24,8 +27,27 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             ? defaultLanguage
             : languages.FirstOrDefault(x => x.Code == culture.ToLowerInvariant());
         if (currentLanguage is null) return NotFound();
+        var requestCulture = CultureInfo.GetCultureInfo(currentLanguage.Code);
+        CultureInfo.CurrentCulture = requestCulture;
+        CultureInfo.CurrentUICulture = requestCulture;
         ViewData["ContentLanguageCode"] = currentLanguage.Code;
         var settings = await db.SiteSettings.AsNoTracking().FirstAsync();
+        if (!currentLanguage.IsDefault)
+        {
+            var settingsTranslation = await db.SiteSettingTranslations.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.SiteSettingId == settings.Id && x.LanguageCode == currentLanguage.Code);
+            if (settingsTranslation is not null)
+            {
+                settings.SiteName = settingsTranslation.SiteName;
+                settings.CompanyName = settingsTranslation.CompanyName;
+                settings.LogoText = settingsTranslation.LogoText;
+                settings.SeoTitle = settingsTranslation.SeoTitle;
+                settings.SeoDescription = settingsTranslation.SeoDescription;
+                settings.SeoKeywords = settingsTranslation.SeoKeywords;
+                settings.Address = settingsTranslation.Address;
+                settings.FooterText = settingsTranslation.FooterText;
+            }
+        }
         ViewData["Title"] = string.IsNullOrWhiteSpace(settings.SeoTitle) ? settings.SiteName : settings.SeoTitle;
         ViewData["Description"] = settings.SeoDescription;
         ViewData["Keywords"] = settings.SeoKeywords;
@@ -69,11 +91,18 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
                 SortOrder = slot.SortOrder, IsPublished = true
             });
         }
+        var slotIds = slots.Select(x => x.Id).ToArray();
+        var navigationTranslations = currentLanguage.IsDefault
+            ? new Dictionary<int, string?>()
+            : await db.TemplateSectionTranslations.AsNoTracking()
+                .Where(x => x.LanguageCode == currentLanguage.Code && slotIds.Contains(x.TemplateSectionId))
+                .ToDictionaryAsync(x => x.TemplateSectionId, x => x.NavigationLabel);
         var renderedKeys = sections.Select(x => x.SectionKey).ToHashSet(StringComparer.Ordinal);
         var navigationItems = slots
             .Where(x => renderedKeys.Contains(x.SectionKey) && x.ShowInNavigation && sectionSchemas.GetNavigation(x.SectionDefinition.SchemaJson).Allowed)
             .Select(x => new NavigationItem(x.SectionKey,
-                string.IsNullOrWhiteSpace(x.NavigationLabel) ? x.DisplayName : x.NavigationLabel))
+                navigationTranslations.GetValueOrDefault(x.Id)
+                ?? (string.IsNullOrWhiteSpace(x.NavigationLabel) ? x.DisplayName : x.NavigationLabel)))
             .ToList();
         var viewPath = templateSetting.ActiveTemplate.ViewPath;
         if (!viewPath.StartsWith("~/Views/Templates/", StringComparison.Ordinal) ||
@@ -163,11 +192,11 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
     {
         var returnUrl = await GetContactReturnUrlAsync(culture);
         if (!string.IsNullOrWhiteSpace(model.Website)) return Redirect(returnUrl);
-        if (!ModelState.IsValid) { TempData["ContactError"] = "Vui lòng kiểm tra lại thông tin liên hệ."; return Redirect(returnUrl); }
+        if (!ModelState.IsValid) { TempData["ContactError"] = publicText["Contact.ValidationError"].Value; return Redirect(returnUrl); }
         var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
         if (!await turnstileValidator.ValidateAsync(turnstileToken, HttpContext.RequestAborted))
         {
-            TempData["ContactError"] = "Không thể xác minh yêu cầu. Vui lòng thử lại.";
+            TempData["ContactError"] = publicText["Contact.VerificationError"].Value;
             return Redirect(returnUrl);
         }
         var submission = new ContactSubmission
@@ -190,7 +219,7 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             logger.LogError(ex, "Could not send contact submission {SubmissionId}", submission.Id);
         }
         await db.SaveChangesAsync();
-        TempData["ContactSuccess"] = "Cảm ơn bạn. Chúng tôi đã nhận được thông tin và sẽ liên hệ sớm.";
+        TempData["ContactSuccess"] = publicText["Contact.Success"].Value;
         return Redirect(returnUrl);
     }
     private async Task<string> GetContactReturnUrlAsync(string? culture)
@@ -198,6 +227,12 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         if (string.IsNullOrWhiteSpace(culture)) return "/#contact";
         var language = await db.ContentLanguages.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Code == culture.ToLowerInvariant() && x.IsEnabled);
+        if (language is not null)
+        {
+            var requestCulture = CultureInfo.GetCultureInfo(language.Code);
+            CultureInfo.CurrentCulture = requestCulture;
+            CultureInfo.CurrentUICulture = requestCulture;
+        }
         return language is null || language.IsDefault ? "/#contact" : $"/{language.Code}/#contact";
     }
     public IActionResult Error() => View();
