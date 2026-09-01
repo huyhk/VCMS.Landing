@@ -3,6 +3,7 @@ using System;
 using LandingCms.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace VCMS.Landing.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260901102714_AddHomepageContentTranslations")]
+    partial class AddHomepageContentTranslations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -138,7 +141,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContactSubmissions", (string)null);
+                    b.ToTable("ContactSubmissions");
                 });
 
             modelBuilder.Entity("LandingCms.Models.ContentLanguage", b =>
@@ -167,7 +170,7 @@ namespace VCMS.Landing.Migrations
                         .IsUnique()
                         .HasFilter("\"IsDefault\" = 1");
 
-                    b.ToTable("ContentLanguages", (string)null);
+                    b.ToTable("ContentLanguages");
                 });
 
             modelBuilder.Entity("LandingCms.Models.ContentRevision", b =>
@@ -214,7 +217,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("EntityType", "EntityKey", "CreatedAtUtc");
 
-                    b.ToTable("ContentRevisions", (string)null);
+                    b.ToTable("ContentRevisions");
                 });
 
             modelBuilder.Entity("LandingCms.Models.LandingSection", b =>
@@ -281,7 +284,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LandingSections", (string)null);
+                    b.ToTable("LandingSections");
                 });
 
             modelBuilder.Entity("LandingCms.Models.MediaAsset", b =>
@@ -334,7 +337,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("RelativeUrl")
                         .IsUnique();
 
-                    b.ToTable("MediaAssets", (string)null);
+                    b.ToTable("MediaAssets");
                 });
 
             modelBuilder.Entity("LandingCms.Models.PageSection", b =>
@@ -369,7 +372,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("SectionKey")
                         .IsUnique();
 
-                    b.ToTable("PageSections", (string)null);
+                    b.ToTable("PageSections");
                 });
 
             modelBuilder.Entity("LandingCms.Models.PageTemplate", b =>
@@ -417,7 +420,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("PageTemplates", (string)null);
+                    b.ToTable("PageTemplates");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionContent", b =>
@@ -455,7 +458,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("SectionKey")
                         .IsUnique();
 
-                    b.ToTable("SectionContents", (string)null);
+                    b.ToTable("SectionContents");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionContentTranslation", b =>
@@ -482,7 +485,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("LanguageCode");
 
-                    b.ToTable("SectionContentTranslations", (string)null);
+                    b.ToTable("SectionContentTranslations");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionDefinition", b =>
@@ -518,7 +521,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("SectionDefinitions", (string)null);
+                    b.ToTable("SectionDefinitions");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionItem", b =>
@@ -558,7 +561,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("SectionKey", "SortOrder");
 
-                    b.ToTable("SectionItems", (string)null);
+                    b.ToTable("SectionItems");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionItemTranslation", b =>
@@ -585,7 +588,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("LanguageCode");
 
-                    b.ToTable("SectionItemTranslations", (string)null);
+                    b.ToTable("SectionItemTranslations");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionMedia", b =>
@@ -628,7 +631,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("SectionKey", "Role", "SortOrder");
 
-                    b.ToTable("SectionMedia", (string)null);
+                    b.ToTable("SectionMedia");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SettingDefinition", b =>
@@ -691,7 +694,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("SettingDefinitions", (string)null);
+                    b.ToTable("SettingDefinitions");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SettingValue", b =>
@@ -719,7 +722,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("SettingDefinitionId")
                         .IsUnique();
 
-                    b.ToTable("SettingValues", (string)null);
+                    b.ToTable("SettingValues");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SiteSetting", b =>
@@ -776,7 +779,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SiteSettings", (string)null);
+                    b.ToTable("SiteSettings");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SiteTemplateSetting", b =>
@@ -800,7 +803,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("DraftTemplateId");
 
-                    b.ToTable("SiteTemplateSettings", (string)null);
+                    b.ToTable("SiteTemplateSettings");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SiteThemeSetting", b =>
@@ -819,7 +822,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("ActiveThemeId");
 
-                    b.ToTable("SiteThemeSettings", (string)null);
+                    b.ToTable("SiteThemeSettings");
                 });
 
             modelBuilder.Entity("LandingCms.Models.TemplateSection", b =>
@@ -890,7 +893,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("TemplateId", "SectionKey")
                         .IsUnique();
 
-                    b.ToTable("TemplateSections", (string)null);
+                    b.ToTable("TemplateSections");
                 });
 
             modelBuilder.Entity("LandingCms.Models.TemplateSetting", b =>
@@ -917,7 +920,7 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("SettingDefinitionId");
 
-                    b.ToTable("TemplateSettings", (string)null);
+                    b.ToTable("TemplateSettings");
                 });
 
             modelBuilder.Entity("LandingCms.Models.ThemeDefinition", b =>
@@ -987,7 +990,7 @@ namespace VCMS.Landing.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("ThemeDefinitions", (string)null);
+                    b.ToTable("ThemeDefinitions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
