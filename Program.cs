@@ -3,7 +3,10 @@ using LandingCms.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using LandingCms.Services;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Globalization;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +33,25 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 builder.Services.AddLocalization();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        CultureInfo.GetCultureInfo("vi"),
+        CultureInfo.GetCultureInfo("en")
+    };
+    options.DefaultRequestCulture = new RequestCulture("vi");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders =
+    [
+        new RouteDataRequestCultureProvider
+        {
+            RouteDataStringKey = "culture",
+            UIRouteDataStringKey = "culture"
+        }
+    ];
+});
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddOptions<CloudflareTurnstileOptions>()
@@ -73,6 +95,7 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 app.UseRouting();
+app.UseRequestLocalization();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
