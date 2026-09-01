@@ -1,5 +1,8 @@
 @model SectionContentEditViewModel
-@{ ViewData["Title"] = "Chỉnh sửa " + Model.DisplayName; }
+@{
+    ViewData["Title"] = "Chỉnh sửa " + Model.DisplayName;
+    var currentLanguageName = Model.Languages.FirstOrDefault(x => x.Code == Model.LanguageCode)?.Name ?? Model.LanguageCode;
+}
 <div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Section <strong>#@Model.SectionKey</strong> · @Model.SectionType</p></div><div class="page-actions">@if(Model.IsDefaultLanguage){<a class="button button-secondary" asp-action="History" asp-route-id="@Model.TemplateSectionId">Lịch sử phiên bản</a>}<a class="button button-secondary" asp-action="Index">Quay lại</a></div></div>
 <div class="panel language-content-bar"><strong>Nội dung đang chỉnh sửa:</strong>@foreach(var language in Model.Languages){<a class="button @(language.Code == Model.LanguageCode ? "" : "button-secondary")" asp-action="Edit" asp-route-id="@Model.TemplateSectionId" asp-route-language="@language.Code">@language.Name</a>}@if(!Model.IsDefaultLanguage && !Model.HasTranslation){<span class="status off">Đang hiển thị nội dung tiếng Việt để làm mẫu</span>}</div>
 <form asp-action="Save" method="post" enctype="multipart/form-data" class="panel form-panel">
@@ -9,7 +12,17 @@
         <div class="full"><label asp-for="Eyebrow">Nhãn nhỏ</label><input asp-for="Eyebrow"></div>
         <div class="full"><label asp-for="Title">Tiêu đề</label><input asp-for="Title"><span asp-validation-for="Title"></span></div>
         <div class="full"><label asp-for="Subtitle">Mô tả ngắn</label><textarea asp-for="Subtitle" rows="2"></textarea></div>
-        @if(Model.ShowInNavigation){<div class="full"><label asp-for="NavigationLabel">Nhãn trên menu</label><input asp-for="NavigationLabel" maxlength="50"><small>Nhãn ngắn hiển thị trên menu của ngôn ngữ đang chỉnh sửa.</small></div>}
+        <div class="full">
+            <label asp-for="NavigationLabel">Nhãn trên menu (@currentLanguageName)</label>
+            <input asp-for="NavigationLabel" maxlength="50">
+            <small>
+                Nhãn ngắn hiển thị trên menu của ngôn ngữ đang chỉnh sửa.
+                @if (!Model.ShowInNavigation)
+                {
+                    <span>Section hiện chưa được bật xuất hiện trên menu; giá trị này vẫn được lưu để dùng khi bật.</span>
+                }
+            </small>
+        </div>
         @if(Model.ContentEditor == "html")
         {
             <div class="full">

@@ -149,7 +149,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (currentLanguage.IsDefault)
         {
             content.ContentJson = translatedContentJson;
-            if (slot.ShowInNavigation) slot.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel) ? slot.DisplayName : model.NavigationLabel.Trim();
+            slot.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel) ? slot.DisplayName : model.NavigationLabel.Trim();
             if (canManageVisibility) slot.IsEnabled = model.IsEnabled;
             content.UpdatedAtUtc = DateTime.UtcNow;
             content.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -169,19 +169,16 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             translation.UpdatedAtUtc = DateTime.UtcNow;
             translation.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
             model.HasTranslation = true;
-            if (slot.ShowInNavigation)
+            var navigationTranslation = await db.TemplateSectionTranslations
+                .FirstOrDefaultAsync(x => x.TemplateSectionId == slot.Id && x.LanguageCode == currentLanguage.Code);
+            if (navigationTranslation is null)
             {
-                var navigationTranslation = await db.TemplateSectionTranslations
-                    .FirstOrDefaultAsync(x => x.TemplateSectionId == slot.Id && x.LanguageCode == currentLanguage.Code);
-                if (navigationTranslation is null)
-                {
-                    navigationTranslation = new TemplateSectionTranslation { TemplateSectionId = slot.Id, LanguageCode = currentLanguage.Code };
-                    db.TemplateSectionTranslations.Add(navigationTranslation);
-                }
-                navigationTranslation.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel)
-                    ? slot.NavigationLabel ?? slot.DisplayName
-                    : model.NavigationLabel.Trim();
+                navigationTranslation = new TemplateSectionTranslation { TemplateSectionId = slot.Id, LanguageCode = currentLanguage.Code };
+                db.TemplateSectionTranslations.Add(navigationTranslation);
             }
+            navigationTranslation.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel)
+                ? slot.NavigationLabel ?? slot.DisplayName
+                : model.NavigationLabel.Trim();
         }
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã lưu {slot.DisplayName} ({currentLanguage.Name}).";
