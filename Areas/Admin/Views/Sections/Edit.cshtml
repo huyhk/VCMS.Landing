@@ -1,9 +1,10 @@
 @model SectionContentEditViewModel
 @{ ViewData["Title"] = "Chỉnh sửa " + Model.DisplayName; }
-<div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Section <strong>#@Model.SectionKey</strong> · @Model.SectionType</p></div><div class="page-actions"><a class="button button-secondary" asp-action="History" asp-route-id="@Model.TemplateSectionId">Lịch sử phiên bản</a><a class="button button-secondary" asp-action="Index">Quay lại</a></div></div>
+<div class="page-title"><div><h1>@ViewData["Title"]</h1><p>Section <strong>#@Model.SectionKey</strong> · @Model.SectionType</p></div><div class="page-actions">@if(Model.IsDefaultLanguage){<a class="button button-secondary" asp-action="History" asp-route-id="@Model.TemplateSectionId">Lịch sử phiên bản</a>}<a class="button button-secondary" asp-action="Index">Quay lại</a></div></div>
+<div class="panel language-content-bar"><strong>Nội dung đang chỉnh sửa:</strong>@foreach(var language in Model.Languages){<a class="button @(language.Code == Model.LanguageCode ? "" : "button-secondary")" asp-action="Edit" asp-route-id="@Model.TemplateSectionId" asp-route-language="@language.Code">@language.Name</a>}@if(!Model.IsDefaultLanguage && !Model.HasTranslation){<span class="status off">Đang hiển thị nội dung tiếng Việt để làm mẫu</span>}</div>
 <form asp-action="Save" method="post" enctype="multipart/form-data" class="panel form-panel">
     <div asp-validation-summary="ModelOnly" class="validation"></div>
-    <input asp-for="TemplateSectionId" type="hidden"><input asp-for="ContentId" type="hidden"><input asp-for="SectionKey" type="hidden"><input asp-for="SectionType" type="hidden"><input asp-for="DisplayName" type="hidden">
+    <input asp-for="LanguageCode" type="hidden"><input asp-for="TemplateSectionId" type="hidden"><input asp-for="ContentId" type="hidden"><input asp-for="SectionKey" type="hidden"><input asp-for="SectionType" type="hidden"><input asp-for="DisplayName" type="hidden">
     <div class="form-grid">
         <div class="full"><label asp-for="Eyebrow">Nhãn nhỏ</label><input asp-for="Eyebrow"></div>
         <div class="full"><label asp-for="Title">Tiêu đề</label><input asp-for="Title"><span asp-validation-for="Title"></span></div>
@@ -29,9 +30,16 @@
         {
             <div class="full"><label asp-for="Content">Nội dung</label><textarea asp-for="Content" rows="7"></textarea><small>Cards/Stats: mỗi dòng là một mục, phân cách tiêu đề và mô tả bằng ký tự |</small></div>
         }
-        <div class="full"><label>Ảnh chính của section</label><div id="section-image-preview" class="single-image-preview">@if(!string.IsNullOrWhiteSpace(Model.ImageUrl)){<img src="@Model.ImageUrl" alt=""><span>Ảnh hiện tại</span>}</div><input asp-for="ImageFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="section-image-preview"><small>Tự tối ưu tối đa 1400 × 1400 px. Có thể tiếp tục dùng URL ngoài ở trường bên dưới.</small></div>
-        <div class="full"><label asp-for="ImageUrl">URL hình ảnh</label><input asp-for="ImageUrl"></div>
-        @if(Model.SectionType == "Hero")
+        @if(Model.IsDefaultLanguage)
+        {
+            <div class="full"><label>Ảnh chính của section</label><div id="section-image-preview" class="single-image-preview">@if(!string.IsNullOrWhiteSpace(Model.ImageUrl)){<img src="@Model.ImageUrl" alt=""><span>Ảnh hiện tại</span>}</div><input asp-for="ImageFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="section-image-preview"><small>Tự tối ưu tối đa 1400 × 1400 px. Có thể tiếp tục dùng URL ngoài ở trường bên dưới.</small></div>
+            <div class="full"><label asp-for="ImageUrl">URL hình ảnh</label><input asp-for="ImageUrl"></div>
+        }
+        else
+        {
+            <input asp-for="ImageUrl" type="hidden">
+        }
+        @if(Model.IsDefaultLanguage && Model.SectionType == "Hero")
         {
             <div class="full"><label>Background Hero</label><input asp-for="BackgroundFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple data-images-preview="hero-background-preview"><small>Chọn nhiều ảnh; tự tối ưu tối đa 1920 × 1200 px và chuyển chậm theo thứ tự upload.</small><div id="hero-background-preview" class="media-thumbs upload-selection-preview"></div></div>
             @if(Model.Backgrounds.Count > 0)
@@ -39,7 +47,7 @@
                 <div class="full media-thumbs">@foreach(var media in Model.Backgrounds){<article><img src="@media.MediaAsset.RelativeUrl" alt=""><span>Thứ tự @media.SortOrder</span><button class="danger-link" type="submit" formaction="@Url.Action("DeleteBackground",new{id=media.Id})" onclick="return confirm('Gỡ ảnh này khỏi Hero?')">Gỡ ảnh</button></article>}</div>
             }
         }
-        @if(Model.SectionType == "Gallery")
+        @if(Model.IsDefaultLanguage && Model.SectionType == "Gallery")
         {
             <div class="full"><label>Hình ảnh trong thư viện</label><input asp-for="GalleryFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple data-images-preview="gallery-image-preview"><small>Có thể chọn nhiều ảnh. Ảnh được tự tối ưu và hiển thị theo thứ tự upload.</small><div id="gallery-image-preview" class="media-thumbs upload-selection-preview"></div></div>
             @if(Model.GalleryImages.Count > 0)
@@ -49,7 +57,7 @@
         }
         <div><label asp-for="PrimaryButtonText">Nút chính</label><input asp-for="PrimaryButtonText"></div><div><label asp-for="PrimaryButtonUrl">Liên kết nút chính</label><input asp-for="PrimaryButtonUrl"></div>
         <div><label asp-for="SecondaryButtonText">Nút phụ</label><input asp-for="SecondaryButtonText"></div><div><label asp-for="SecondaryButtonUrl">Liên kết nút phụ</label><input asp-for="SecondaryButtonUrl"></div>
-        @if(User.IsInRole("SuperAdministrator"))
+        @if(Model.IsDefaultLanguage && User.IsInRole("SuperAdministrator"))
         {
             <div class="check-row"><label><input asp-for="IsEnabled"> Hiển thị section trong template đang sử dụng</label><span asp-validation-for="IsEnabled"></span></div>
         }
@@ -62,5 +70,5 @@
 </form>
 @if(Model.HasItems)
 {
-    <section class="panel repeater-callout"><div><h2>Danh sách nội dung</h2><p>Thêm, chỉnh sửa và sắp xếp các mục con của section này.</p></div><a class="button button-secondary" asp-action="Items" asp-route-id="@Model.TemplateSectionId">Quản lý danh sách</a></section>
+    <section class="panel repeater-callout"><div><h2>Danh sách nội dung</h2><p>Thêm, chỉnh sửa và sắp xếp các mục con của section này.</p></div><a class="button button-secondary" asp-action="Items" asp-route-id="@Model.TemplateSectionId" asp-route-language="@Model.LanguageCode">Quản lý danh sách</a></section>
 }

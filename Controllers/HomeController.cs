@@ -14,8 +14,17 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
     ICloudflareTurnstileValidator turnstileValidator, IOptions<CloudflareTurnstileOptions> turnstileOptions,
     IThemeCssService themeCss) : Controller
 {
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? culture)
     {
+        var languages = await db.ContentLanguages.AsNoTracking()
+            .Where(x => x.IsEnabled).OrderBy(x => x.SortOrder).ToListAsync();
+        var defaultLanguage = languages.FirstOrDefault(x => x.IsDefault)
+            ?? throw new InvalidOperationException("Chưa cấu hình ngôn ngữ mặc định.");
+        var currentLanguage = string.IsNullOrWhiteSpace(culture)
+            ? defaultLanguage
+            : languages.FirstOrDefault(x => x.Code == culture.ToLowerInvariant());
+        if (currentLanguage is null) return NotFound();
+        ViewData["ContentLanguageCode"] = currentLanguage.Code;
         var settings = await db.SiteSettings.AsNoTracking().FirstAsync();
         ViewData["Title"] = string.IsNullOrWhiteSpace(settings.SeoTitle) ? settings.SiteName : settings.SeoTitle;
         ViewData["Description"] = settings.SeoDescription;
@@ -33,11 +42,18 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         var contents = await db.SectionContents.AsNoTracking()
             .Where(x => keys.Contains(x.SectionKey))
             .ToDictionaryAsync(x => x.SectionKey);
+        var contentIds = contents.Values.Select(x => x.Id).ToArray();
+        var contentTranslations = currentLanguage.IsDefault
+            ? new Dictionary<int, string>()
+            : await db.SectionContentTranslations.AsNoTracking()
+                .Where(x => contentIds.Contains(x.SectionContentId) && x.LanguageCode == currentLanguage.Code)
+                .ToDictionaryAsync(x => x.SectionContentId, x => x.ContentJson);
         var sections = new List<LandingSection>();
         foreach (var slot in slots)
         {
             if (!contents.TryGetValue(slot.SectionKey, out var content)) continue;
-            var payload = JsonSerializer.Deserialize<SectionContentPayload>(content.ContentJson) ?? new();
+            var contentJson = contentTranslations.GetValueOrDefault(content.Id) ?? content.ContentJson;
+            var payload = JsonSerializer.Deserialize<SectionContentPayload>(contentJson) ?? new();
             var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
             var contentIsHtml = contentField.Editor == "html";
             if (contentIsHtml)
@@ -112,6 +128,15 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         var sectionItemRows = await db.SectionItems.AsNoTracking().Include(x => x.MediaAsset)
             .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled)
             .OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync();
+        if (!currentLanguage.IsDefault && sectionItemRows.Count > 0)
+        {
+            var itemIds = sectionItemRows.Select(x => x.Id).ToArray();
+            var itemTranslations = await db.SectionItemTranslations.AsNoTracking()
+                .Where(x => itemIds.Contains(x.SectionItemId) && x.LanguageCode == currentLanguage.Code)
+                .ToDictionaryAsync(x => x.SectionItemId, x => x.ContentJson);
+            foreach (var item in sectionItemRows)
+                if (itemTranslations.TryGetValue(item.Id, out var translatedJson)) item.ContentJson = translatedJson;
+        }
         foreach (var item in sectionItemRows)
         {
             var slot = slots.First(x => x.SectionKey == item.SectionKey);
@@ -129,19 +154,21 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         var sectionItems = sectionItemRows.GroupBy(x => x.SectionKey)
             .ToDictionary(x => x.Key, x => (IReadOnlyList<SectionItem>)x.ToList());
         var turnstileSiteKey = turnstileOptions.Value.IsEnabled ? turnstileOptions.Value.SiteKey : null;
-        return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings, brandingMedia, sectionMedia, sectionItems));
+        return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings,
+            brandingMedia, sectionMedia, sectionItems, languages, currentLanguage));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]
-    public async Task<IActionResult> Contact(ContactFormViewModel model)
+    public async Task<IActionResult> Contact(ContactFormViewModel model, string? culture)
     {
-        if (!string.IsNullOrWhiteSpace(model.Website)) return Redirect("/#contact");
-        if (!ModelState.IsValid) { TempData["ContactError"] = "Vui lòng kiểm tra lại thông tin liên hệ."; return Redirect("/#contact"); }
+        var returnUrl = await GetContactReturnUrlAsync(culture);
+        if (!string.IsNullOrWhiteSpace(model.Website)) return Redirect(returnUrl);
+        if (!ModelState.IsValid) { TempData["ContactError"] = "Vui lòng kiểm tra lại thông tin liên hệ."; return Redirect(returnUrl); }
         var turnstileToken = Request.Form["cf-turnstile-response"].ToString();
         if (!await turnstileValidator.ValidateAsync(turnstileToken, HttpContext.RequestAborted))
         {
             TempData["ContactError"] = "Không thể xác minh yêu cầu. Vui lòng thử lại.";
-            return Redirect("/#contact");
+            return Redirect(returnUrl);
         }
         var submission = new ContactSubmission
         {
@@ -164,7 +191,14 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         }
         await db.SaveChangesAsync();
         TempData["ContactSuccess"] = "Cảm ơn bạn. Chúng tôi đã nhận được thông tin và sẽ liên hệ sớm.";
-        return Redirect("/#contact");
+        return Redirect(returnUrl);
+    }
+    private async Task<string> GetContactReturnUrlAsync(string? culture)
+    {
+        if (string.IsNullOrWhiteSpace(culture)) return "/#contact";
+        var language = await db.ContentLanguages.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Code == culture.ToLowerInvariant() && x.IsEnabled);
+        return language is null || language.IsDefault ? "/#contact" : $"/{language.Code}/#contact";
     }
     public IActionResult Error() => View();
 }

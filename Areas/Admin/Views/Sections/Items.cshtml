@@ -28,10 +28,11 @@
         <p>Thêm, sắp xếp hoặc ẩn từng mục nội dung.</p>
     </div>
     <div class="page-actions">
-        <a class="button button-secondary" asp-action="Edit" asp-route-id="@Model.Slot.Id">Quay lại section</a>
-        <a class="button" asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id">Thêm mục</a>
+        <a class="button button-secondary" asp-action="Edit" asp-route-id="@Model.Slot.Id" asp-route-language="@Model.CurrentLanguage.Code">Quay lại section</a>
+        @if(Model.CurrentLanguage.IsDefault){<a class="button" asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id" asp-route-language="@Model.CurrentLanguage.Code">Thêm mục</a>}
     </div>
 </div>
+<div class="panel language-content-bar"><strong>Nội dung đang chỉnh sửa:</strong>@foreach(var language in Model.Languages){<a class="button @(language.Code == Model.CurrentLanguage.Code ? "" : "button-secondary")" asp-action="Items" asp-route-id="@Model.Slot.Id" asp-route-language="@language.Code">@language.Name</a>}</div>
 
 <section class="panel repeater-panel">
     @if (Model.Items.Count == 0)
@@ -82,7 +83,7 @@
                     </div>
 
                     <div class="row-actions">
-                        <form asp-action="MoveItem" method="post">
+                        @if(Model.CurrentLanguage.IsDefault){<form asp-action="MoveItem" method="post">
                             <input type="hidden" name="id" value="@item.Id">
                             <input type="hidden" name="direction" value="-1">
                             <button type="submit" title="Di chuyển lên" aria-label="Di chuyển lên" disabled="@(index == 0)">↑</button>
@@ -91,12 +92,12 @@
                             <input type="hidden" name="id" value="@item.Id">
                             <input type="hidden" name="direction" value="1">
                             <button type="submit" title="Di chuyển xuống" aria-label="Di chuyển xuống" disabled="@(index == Model.Items.Count - 1)">↓</button>
-                        </form>
-                        <a class="item-edit-link" asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id" asp-route-id="@item.Id">Sửa</a>
-                        <form asp-action="DeleteItem" method="post" onsubmit="return confirm('Xóa mục nội dung này?')">
+                        </form>}
+                        <a class="item-edit-link" asp-action="EditItem" asp-route-sectionId="@Model.Slot.Id" asp-route-id="@item.Id" asp-route-language="@Model.CurrentLanguage.Code">Sửa</a>
+                        @if(Model.CurrentLanguage.IsDefault){<form asp-action="DeleteItem" method="post" onsubmit="return confirm('Xóa mục nội dung này?')">
                             <input type="hidden" name="id" value="@item.Id">
                             <button type="submit" class="danger-link">Xóa</button>
-                        </form>
+                        </form>}
                     </div>
                 </article>
             }

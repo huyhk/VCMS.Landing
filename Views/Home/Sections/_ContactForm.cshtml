@@ -1,6 +1,7 @@
 @model HomeViewModel
 @{ var fieldPrefix = $"contact-{Guid.NewGuid():N}"; }
 <form asp-controller="Home" asp-action="Contact" method="post" class="contact-form">
+    <input type="hidden" name="culture" value="@Model.CurrentLanguage.Code">
     @if (TempData["ContactSuccess"] is string success) { <div class="form-message success">@success</div> }
     @if (TempData["ContactError"] is string error) { <div class="form-message error">@error</div> }
     <div class="honeypot" aria-hidden="true"><label for="@(fieldPrefix)-website">Website</label><input id="@(fieldPrefix)-website" name="Website" tabindex="-1" autocomplete="off"></div>

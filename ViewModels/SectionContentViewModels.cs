@@ -8,6 +8,10 @@ public record SectionListItemViewModel(TemplateSection Slot, SectionContent? Con
 
 public class SectionContentEditViewModel
 {
+    public string LanguageCode { get; set; } = "vi";
+    public IReadOnlyList<ContentLanguage> Languages { get; set; } = Array.Empty<ContentLanguage>();
+    public bool IsDefaultLanguage { get; set; } = true;
+    public bool HasTranslation { get; set; }
     public int TemplateSectionId { get; set; }
     public int? ContentId { get; set; }
     public string SectionKey { get; set; } = "";
@@ -34,7 +38,11 @@ public class SectionContentEditViewModel
     public bool HasItems { get; set; }
 }
 
-public record SectionItemListViewModel(TemplateSection Slot, IReadOnlyList<SectionItem> Items);
+public record SectionItemListViewModel(
+    TemplateSection Slot,
+    IReadOnlyList<SectionItem> Items,
+    IReadOnlyList<ContentLanguage> Languages,
+    ContentLanguage CurrentLanguage);
 
 public record RevisionHistoryViewModel(
     TemplateSection Slot,
@@ -43,6 +51,10 @@ public record RevisionHistoryViewModel(
 
 public class SectionItemEditViewModel
 {
+    public string LanguageCode { get; set; } = "vi";
+    public IReadOnlyList<ContentLanguage> Languages { get; set; } = Array.Empty<ContentLanguage>();
+    public bool IsDefaultLanguage { get; set; } = true;
+    public bool HasTranslation { get; set; }
     public long? Id { get; set; }
     public int TemplateSectionId { get; set; }
     public string SectionKey { get; set; } = "";

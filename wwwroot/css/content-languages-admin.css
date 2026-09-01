@@ -1,0 +1,5 @@
+.language-content-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;padding:14px 18px}
+.language-content-bar strong{margin-right:4px}
+.language-content-bar .button{padding:8px 12px}
+.language-content-bar .status{margin-left:auto}
+@media(max-width:800px){.language-content-bar .status{width:100%;margin-left:0}}

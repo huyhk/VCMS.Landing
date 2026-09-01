@@ -76,6 +76,9 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
+app.MapControllerRoute(name: "localized-home", pattern: "{culture}",
+    defaults: new { controller = "Home", action = "Index" },
+    constraints: new { culture = "^[a-z]{2}(-[A-Z]{2})?$" });
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
 await DbInitializer.InitializeAsync(app.Services, app.Configuration);

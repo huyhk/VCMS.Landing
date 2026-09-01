@@ -25,6 +25,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SectionMedia> SectionMedia => Set<SectionMedia>();
     public DbSet<SectionItem> SectionItems => Set<SectionItem>();
     public DbSet<ContentRevision> ContentRevisions => Set<ContentRevision>();
+    public DbSet<ContentLanguage> ContentLanguages => Set<ContentLanguage>();
+    public DbSet<SectionContentTranslation> SectionContentTranslations => Set<SectionContentTranslation>();
+    public DbSet<SectionItemTranslation> SectionItemTranslations => Set<SectionItemTranslation>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -44,6 +47,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<TemplateSection>().Property(x => x.IsEnabled).HasDefaultValue(true);
         builder.Entity<TemplateSection>().Property(x => x.ShowInNavigation).HasDefaultValue(false);
         builder.Entity<SectionContent>().HasIndex(x => x.SectionKey).IsUnique();
+        builder.Entity<ContentLanguage>().HasIndex(x => x.IsDefault).IsUnique()
+            .HasFilter("\"IsDefault\" = 1");
+        builder.Entity<SectionContentTranslation>().HasKey(x => new { x.SectionContentId, x.LanguageCode });
+        builder.Entity<SectionContentTranslation>().HasOne(x => x.SectionContent).WithMany(x => x.Translations)
+            .HasForeignKey(x => x.SectionContentId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<SectionContentTranslation>().HasOne(x => x.Language).WithMany(x => x.SectionContentTranslations)
+            .HasForeignKey(x => x.LanguageCode).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<SectionItemTranslation>().HasKey(x => new { x.SectionItemId, x.LanguageCode });
+        builder.Entity<SectionItemTranslation>().HasOne(x => x.SectionItem).WithMany(x => x.Translations)
+            .HasForeignKey(x => x.SectionItemId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<SectionItemTranslation>().HasOne(x => x.Language).WithMany(x => x.SectionItemTranslations)
+            .HasForeignKey(x => x.LanguageCode).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<SettingDefinition>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<SettingValue>().HasIndex(x => x.SettingDefinitionId).IsUnique();
         builder.Entity<SettingDefinition>().HasOne(x => x.Value).WithOne(x => x.SettingDefinition)

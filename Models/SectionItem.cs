@@ -13,4 +13,5 @@ public class SectionItem
     public bool IsEnabled { get; set; } = true;
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
     [StringLength(450)] public string? UpdatedById { get; set; }
+    public ICollection<SectionItemTranslation> Translations { get; set; } = new List<SectionItemTranslation>();
 }

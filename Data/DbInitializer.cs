@@ -25,6 +25,13 @@ public static class DbInitializer
             if (!await roleManager.RoleExistsAsync(role))
                 await roleManager.CreateAsync(new IdentityRole(role));
 
+        if (!await db.ContentLanguages.AnyAsync())
+        {
+            db.ContentLanguages.AddRange(
+                new ContentLanguage { Code = "vi", Name = "Tiếng Việt", IsDefault = true, IsEnabled = true, SortOrder = 10 },
+                new ContentLanguage { Code = "en", Name = "English", IsDefault = false, IsEnabled = true, SortOrder = 20 });
+        }
+
         if (!await db.SiteSettings.AnyAsync())
             db.SiteSettings.Add(new SiteSetting { SiteName = "VCMS Landing Studio", CompanyName = "Công ty TNHH Nova Studio", LogoText = "VCMS", SeoTitle = "VCMS Landing Studio — Biến ý tưởng thành tăng trưởng", SeoDescription = "Giải pháp số tinh gọn cho doanh nghiệp hiện đại.", SeoKeywords = "thiết kế website, landing page, giải pháp số", Phone = "0900 000 000", Email = "hello@example.com", Address = "TP. Hồ Chí Minh", FooterText = "© 2026 Nova Studio. All rights reserved." });
 

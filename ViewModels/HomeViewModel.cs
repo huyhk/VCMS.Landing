@@ -11,4 +11,6 @@ public record HomeViewModel(
     IReadOnlyDictionary<string, string> ExtendedSettings,
     IReadOnlyDictionary<string, MediaAsset> BrandingMedia,
     IReadOnlyDictionary<string, IReadOnlyList<SectionMedia>> SectionMedia,
-    IReadOnlyDictionary<string, IReadOnlyList<SectionItem>> SectionItems);
+    IReadOnlyDictionary<string, IReadOnlyList<SectionItem>> SectionItems,
+    IReadOnlyList<ContentLanguage> Languages,
+    ContentLanguage CurrentLanguage);

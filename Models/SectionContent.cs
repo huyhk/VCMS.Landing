@@ -12,4 +12,5 @@ public class SectionContent
     public bool IsPublished { get; set; } = true;
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
     [StringLength(450)] public string? UpdatedById { get; set; }
+    public ICollection<SectionContentTranslation> Translations { get; set; } = new List<SectionContentTranslation>();
 }
