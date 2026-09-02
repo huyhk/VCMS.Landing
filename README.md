@@ -117,6 +117,9 @@ Không lưu mật khẩu quản trị trong `appsettings.json` hoặc commit và
 
 Production luôn kiểm tra license với VNS Licensing Server. Chỉ môi trường `Development` có thể bypass để developer chạy local. Cấu hình production bằng environment variables:
 
+Client được cung cấp bởi NuGet package `VNS.Licensing.Client.AspNetCore`; VCMS không chứa
+implementation licensing riêng.
+
 ```text
 Licensing__ServerUrl=https://licensing.example.com/
 Licensing__ProductCode=VCMS.LANDING

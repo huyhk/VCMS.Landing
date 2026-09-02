@@ -1,7 +1,7 @@
 using LandingCms.Data;
-using LandingCms.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VNS.Licensing.Client.AspNetCore;
 
 namespace LandingCms.Areas.Admin.Controllers;
 
@@ -18,4 +18,3 @@ public sealed class LicensingController(ILicenseState state, ILicenseValidationS
         return RedirectToAction(nameof(Index));
     }
 }
-
