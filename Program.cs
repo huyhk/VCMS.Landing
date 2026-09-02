@@ -59,9 +59,21 @@ builder.Services.AddOptions<CloudflareTurnstileOptions>()
     .Validate(options => options.HasSiteKey == options.HasSecretKey,
         "Cloudflare Turnstile requires both SiteKey and SecretKey.")
     .ValidateOnStart();
+builder.Services.AddOptions<LicensingOptions>()
+    .Bind(builder.Configuration.GetSection(LicensingOptions.SectionName));
 builder.Services.AddScoped<IContactEmailSender, ContactEmailSender>();
 builder.Services.AddHttpClient<ICloudflareTurnstileValidator, CloudflareTurnstileValidator>(client =>
     client.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddHttpClient("licensing", (services, client) =>
+{
+    var options = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<LicensingOptions>>().Value;
+    if (Uri.TryCreate(options.ServerUrl, UriKind.Absolute, out var serverUri))
+        client.BaseAddress = new Uri(serverUri.AbsoluteUri.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.RequestTimeoutSeconds, 2, 60));
+});
+builder.Services.AddSingleton<ILicenseState, LicenseState>();
+builder.Services.AddSingleton<ILicenseValidationService, LicenseValidationService>();
+builder.Services.AddHostedService<LicenseBackgroundService>();
 builder.Services.AddScoped<IMediaStorageService, MediaStorageService>();
 builder.Services.AddSingleton<IContentHtmlSanitizer, ContentHtmlSanitizer>();
 builder.Services.AddSingleton<ISectionSchemaService, SectionSchemaService>();
@@ -96,6 +108,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 app.UseRouting();
 app.UseRequestLocalization();
+app.UseMiddleware<LicenseEnforcementMiddleware>();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

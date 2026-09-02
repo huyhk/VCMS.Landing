@@ -1,0 +1,21 @@
+@model LicenseSnapshot
+@{
+    ViewData["Title"] = "Trạng thái license";
+    var statusClass = Model.LocalStatus is LocalLicenseStatus.Valid or LocalLicenseStatus.DevelopmentBypass ? "on" : "off";
+}
+<div class="page-title">
+    <div><h1>Trạng thái license</h1><p>Kết nối giữa website này và VNS Licensing Server.</p></div>
+    <form asp-action="Refresh" method="post"><button class="button" type="submit">Kiểm tra lại</button></form>
+</div>
+<section class="panel license-panel">
+    <dl>
+        <dt>Trạng thái local</dt><dd><span class="status @statusClass">@Model.LocalStatus</span></dd>
+        <dt>Trạng thái server</dt><dd>@Model.ServerStatus</dd>
+        <dt>Canonical URL</dt><dd>@(Model.CanonicalUrl ?? "—")</dd>
+        <dt>Domain được phép</dt><dd>@(Model.AllowedHosts.Count == 0 ? "—" : string.Join(", ", Model.AllowedHosts))</dd>
+        <dt>Lần kiểm tra online</dt><dd>@(Model.LastOnlineCheckUtc?.ToString("dd/MM/yyyy HH:mm:ss 'UTC'") ?? "Chưa kiểm tra")</dd>
+        <dt>Lần kiểm tra kế tiếp</dt><dd>@(Model.NextCheckUtc?.ToString("dd/MM/yyyy HH:mm:ss 'UTC'") ?? "—")</dd>
+        <dt>Thông báo</dt><dd>@(Model.Message ?? "License hợp lệ.")</dd>
+    </dl>
+</section>
+

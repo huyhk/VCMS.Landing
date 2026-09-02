@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="~/css/contacts-admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/revisions-admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/themes-admin.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/licensing-admin.css" asp-append-version="true">
 </head>
 <body>
 <aside>
@@ -26,6 +27,7 @@
             <a asp-area="Admin" asp-controller="SectionLibrary" asp-action="Index">Thư viện section</a>
             <a asp-area="Admin" asp-controller="Templates" asp-action="Index">Giao diện</a>
             <a asp-area="Admin" asp-controller="Themes" asp-action="Index">Theme màu</a>
+            <a asp-area="Admin" asp-controller="Licensing" asp-action="Index">License</a>
         }
         @if (User.IsInRole("SuperAdministrator") || User.IsInRole("Administrator"))
         {

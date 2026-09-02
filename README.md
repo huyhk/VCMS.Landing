@@ -112,3 +112,19 @@ Developer có thể khai báo layout variant trong `SectionDefinition.SchemaJson
 5. Cấu hình hai biến môi trường quản trị trước lần khởi động đầu tiên, sau đó có thể gỡ chúng.
 
 Không lưu mật khẩu quản trị trong `appsettings.json` hoặc commit vào Git.
+
+## VNS Licensing
+
+Production luôn kiểm tra license với VNS Licensing Server. Chỉ môi trường `Development` có thể bypass để developer chạy local. Cấu hình production bằng environment variables:
+
+```text
+Licensing__ServerUrl=https://licensing.example.com/
+Licensing__ProductCode=VCMS.LANDING
+Licensing__LicenseKey=VCMSLAND-...
+Licensing__CanonicalHost=customer.example.com
+Licensing__RefreshIntervalHours=24
+Licensing__GracePeriodHours=168
+Licensing__RequestTimeoutSeconds=10
+```
+
+Không commit `LicenseKey`. Website kiểm tra online theo lịch nền và lưu cache tại `App_Data/license-cache.json`. Khi License Server tạm gián đoạn, cache hợp lệ được dùng trong grace period. Trên domain không thuộc license, request public `GET/HEAD` được redirect `308` về canonical URL; Admin và request ghi dữ liệu trả `403`.
