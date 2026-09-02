@@ -69,7 +69,7 @@ builder.Services.AddHttpClient("licensing", (services, client) =>
     var options = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<LicensingOptions>>().Value;
     if (Uri.TryCreate(options.ServerUrl, UriKind.Absolute, out var serverUri))
         client.BaseAddress = new Uri(serverUri.AbsoluteUri.TrimEnd('/') + "/");
-    client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.RequestTimeoutSeconds, 2, 60));
+    client.Timeout = TimeSpan.FromSeconds(10);
 });
 builder.Services.AddSingleton<ILicenseState, LicenseState>();
 builder.Services.AddSingleton<ILicenseValidationService, LicenseValidationService>();

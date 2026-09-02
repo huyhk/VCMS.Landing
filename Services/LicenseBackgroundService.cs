@@ -1,10 +1,8 @@
-using Microsoft.Extensions.Options;
-
 namespace LandingCms.Services;
 
 public sealed class LicenseBackgroundService(
     ILicenseValidationService validation,
-    IOptions<LicensingOptions> options,
+    ILicenseState state,
     ILogger<LicenseBackgroundService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -13,9 +11,12 @@ public sealed class LicenseBackgroundService(
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
         catch (Exception ex) { logger.LogError(ex, "Không thể khởi tạo license validation."); }
 
-        using var timer = new PeriodicTimer(TimeSpan.FromHours(Math.Max(1, options.Value.RefreshIntervalHours)));
-        while (await timer.WaitForNextTickAsync(stoppingToken))
+        while (!stoppingToken.IsCancellationRequested)
         {
+            var nextCheck = state.Current.NextCheckUtc ?? DateTime.UtcNow.AddDays(1);
+            var delay = nextCheck - DateTime.UtcNow;
+            if (delay < TimeSpan.FromSeconds(5)) delay = TimeSpan.FromSeconds(5);
+            await Task.Delay(delay, stoppingToken);
             try { await validation.RefreshAsync(stoppingToken); }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
             catch (Exception ex) { logger.LogError(ex, "License background validation thất bại."); }

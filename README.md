@@ -121,10 +121,10 @@ Production luôn kiểm tra license với VNS Licensing Server. Chỉ môi trư�
 Licensing__ServerUrl=https://licensing.example.com/
 Licensing__ProductCode=VCMS.LANDING
 Licensing__LicenseKey=VCMSLAND-...
-Licensing__CanonicalHost=customer.example.com
-Licensing__RefreshIntervalHours=24
-Licensing__GracePeriodHours=168
-Licensing__RequestTimeoutSeconds=10
 ```
 
-Không commit `LicenseKey`. Website kiểm tra online theo lịch nền và lưu cache tại `App_Data/license-cache.json`. Khi License Server tạm gián đoạn, cache hợp lệ được dùng trong grace period. Trên domain không thuộc license, request public `GET/HEAD` được redirect `308` về canonical URL; Admin và request ghi dữ liệu trả `403`.
+Không commit `LicenseKey`. License Server quyết định thời điểm kiểm tra kế tiếp và trả về
+`canonicalUrl` cùng danh sách domain được phép; website không cấu hình canonical domain hay chu kỳ
+kiểm tra. Website lưu cache tại `App_Data/license-cache.json`. Khi License Server tạm gián đoạn,
+cache hợp lệ được dùng trong grace period. Trên domain không thuộc license, request public
+`GET/HEAD` được redirect `308` về canonical URL; Admin và request ghi dữ liệu trả `403`.
