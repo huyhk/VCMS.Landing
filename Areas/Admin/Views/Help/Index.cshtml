@@ -1,0 +1,243 @@
+@{
+    ViewData["Title"] = "Hướng dẫn sử dụng";
+}
+
+<div class="page-title help-page-title">
+    <div>
+        <span class="help-kicker">VCMS Landing · Phase 1</span>
+        <h1>Hướng dẫn sử dụng</h1>
+        <p>Cẩm nang quản lý nội dung, giao diện và vận hành landing page.</p>
+    </div>
+    <a class="button" href="/" target="_blank" rel="noopener">Xem website ↗</a>
+</div>
+
+<div class="help-layout">
+    <aside class="help-toc" aria-label="Mục lục hướng dẫn">
+        <strong>Mục lục</strong>
+        <a href="#bat-dau">Bắt đầu nhanh</a>
+        <a href="#vai-tro">Vai trò và quyền hạn</a>
+        <a href="#noi-dung">Chỉnh sửa nội dung</a>
+        <a href="#da-ngon-ngu">Nội dung đa ngôn ngữ</a>
+        <a href="#hinh-anh">Hình ảnh và media</a>
+        <a href="#danh-sach">Danh sách mục con</a>
+        <a href="#phien-ban">Lịch sử phiên bản</a>
+        <a href="#section-template">Section và template</a>
+        <a href="#theme">Theme màu</a>
+        <a href="#cau-hinh">Cấu hình website</a>
+        <a href="#tai-khoan">Tài khoản</a>
+        <a href="#lien-he">Liên hệ khách hàng</a>
+        <a href="#license">License</a>
+        <a href="#kiem-tra">Checklist bàn giao</a>
+        <a href="#su-co">Xử lý sự cố</a>
+    </aside>
+
+    <div class="help-content">
+        <section class="help-hero-note">
+            <strong>Nguyên tắc quan trọng</strong>
+            <p>Thay đổi nội dung trên template đang sử dụng có thể xuất hiện ngay trên website. Sau mỗi lần lưu, hãy mở “Xem website” và kiểm tra cả máy tính lẫn điện thoại.</p>
+        </section>
+
+        <section id="bat-dau" class="help-section">
+            <h2>1. Bắt đầu nhanh</h2>
+            <ol class="help-steps">
+                <li><span>1</span><div><strong>Đăng nhập</strong><p>Mở địa chỉ <code>/admin</code>, nhập tên đăng nhập và mật khẩu được cấp.</p></div></li>
+                <li><span>2</span><div><strong>Mở nội dung trang chủ</strong><p>Chọn <b>Nội dung landing page</b> để xem các section của template đang sử dụng.</p></div></li>
+                <li><span>3</span><div><strong>Chỉnh sửa và lưu</strong><p>Chọn một section, cập nhật nội dung rồi bấm <b>Lưu thay đổi</b>.</p></div></li>
+                <li><span>4</span><div><strong>Kiểm tra trang public</strong><p>Bấm <b>Xem website ↗</b>, kiểm tra nội dung, liên kết, hình ảnh và responsive.</p></div></li>
+            </ol>
+            <div class="help-tip"><strong>Mẹo:</strong> Nếu chỉ cập nhật nội dung hằng ngày, phần lớn công việc nằm trong “Nội dung landing page”.</div>
+        </section>
+
+        <section id="vai-tro" class="help-section">
+            <h2>2. Vai trò và quyền hạn</h2>
+            <div class="help-table-wrap">
+                <table class="help-table">
+                    <thead><tr><th>Vai trò</th><th>Phạm vi chính</th><th>Không thực hiện</th></tr></thead>
+                    <tbody>
+                    <tr><td><strong>Editor</strong></td><td>Chỉnh nội dung section, bản dịch, mục con và hình ảnh được phép.</td><td>Không đổi template/theme, không quản lý tài khoản và cấu hình hệ thống.</td></tr>
+                    <tr><td><strong>Administrator</strong></td><td>Quyền Editor, cấu hình website, setting values, tài khoản cấp dưới và liên hệ khách hàng.</td><td>Không quản lý SuperAdmin, template, theme, thư viện section và license.</td></tr>
+                    <tr><td><strong>Super Administrator</strong></td><td>Toàn quyền: section, template, theme, tài khoản, cấu hình và trạng thái license.</td><td>Nên hạn chế sử dụng cho công việc biên tập thường ngày.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Administrator không nhìn thấy tài khoản Super Administrator trong danh sách người dùng. Administrator chỉ có thể đặt lại mật khẩu cho Editor; Super Administrator có thể quản lý các tài khoản khác theo quyền hệ thống.</p>
+        </section>
+
+        <section id="noi-dung" class="help-section">
+            <h2>3. Chỉnh sửa nội dung landing page</h2>
+            <p>Vào <b>Nội dung landing page</b>. Danh sách chỉ hiển thị những section thuộc template đang được kích hoạt.</p>
+            <h3>Các trường thường gặp</h3>
+            <ul>
+                <li><b>Nhãn nhỏ:</b> dòng chữ ngắn phía trên tiêu đề.</li>
+                <li><b>Tiêu đề:</b> nội dung nổi bật chính của section.</li>
+                <li><b>Mô tả ngắn:</b> phần giới thiệu bên dưới tiêu đề.</li>
+                <li><b>Nhãn trên menu:</b> tên ngắn xuất hiện trên menu nếu section được bật trong menu.</li>
+                <li><b>Nút chính/Nút phụ:</b> chỉ hiển thị khi có cả nội dung nút và liên kết phù hợp.</li>
+            </ul>
+            <h3>Liên kết nút</h3>
+            <div class="help-examples">
+                <code>#contact</code><span>Cuộn đến section có khóa <b>contact</b></span>
+                <code>https://example.com</code><span>Mở một địa chỉ website</span>
+                <code>mailto:info@example.com</code><span>Mở ứng dụng gửi email</span>
+                <code>tel:0900000000</code><span>Gọi điện trên thiết bị hỗ trợ</span>
+            </div>
+            <h3>HTML Editor</h3>
+            <p>Một số section cho phép định dạng tiêu đề, chữ đậm/nghiêng, danh sách và liên kết. Các nút được phép phụ thuộc vào loại section do hệ thống định nghĩa. Nội dung dán từ Word nên được kiểm tra lại định dạng và dùng “Xóa định dạng” khi cần.</p>
+            <div class="help-warning"><strong>Lưu ý:</strong> Chỉ Super Administrator thay đổi trạng thái hiện/ẩn của section trong template đang sử dụng.</div>
+        </section>
+
+        <section id="da-ngon-ngu" class="help-section">
+            <h2>4. Nội dung đa ngôn ngữ</h2>
+            <ol>
+                <li>Mở section hoặc <b>Cấu hình website</b>.</li>
+                <li>Chọn ngôn ngữ trên thanh “Nội dung đang chỉnh sửa”.</li>
+                <li>Nếu chưa có bản dịch, hệ thống hiển thị nội dung tiếng Việt làm mẫu.</li>
+                <li>Nhập bản dịch và lưu. Không sửa nội dung mẫu nếu chưa muốn tạo bản dịch.</li>
+            </ol>
+            <p>Nội dung chữ, nhãn menu, tên website, SEO và footer có thể thay đổi theo ngôn ngữ. Hình ảnh, số điện thoại và email là dữ liệu dùng chung, thường chỉ chỉnh ở ngôn ngữ mặc định.</p>
+        </section>
+
+        <section id="hinh-anh" class="help-section">
+            <h2>5. Hình ảnh và media</h2>
+            <ul>
+                <li>Định dạng hỗ trợ: PNG, JPEG/JPG và WebP.</li>
+                <li>Ảnh được preview ngay sau khi chọn file.</li>
+                <li>Hệ thống tự resize, tối ưu và tạo kích thước responsive khi lưu.</li>
+                <li>Ảnh section được giới hạn tối đa khoảng 1400 × 1400 px.</li>
+                <li>Background Hero được tối ưu tối đa khoảng 1920 × 1200 px.</li>
+            </ul>
+            <h3>Hero nhiều background</h3>
+            <p>Có thể chọn nhiều ảnh cùng lúc. Ảnh thay đổi chậm theo thứ tự upload. Nên dùng các ảnh có cùng tỷ lệ và vùng chủ thể an toàn ở giữa để phù hợp cả desktop lẫn mobile.</p>
+            <h3>Gallery</h3>
+            <p>Có thể upload nhiều ảnh. Khách truy cập bấm vào ảnh để xem phóng lớn. Kiểm tra ảnh dọc và ảnh ngang trên mobile trước khi bàn giao.</p>
+            <h3>Video / Media</h3>
+            <p>Nhập URL media theo trường được cung cấp. Nếu hệ thống báo URL không hợp lệ, kiểm tra lại nguồn video và định dạng đường dẫn.</p>
+            <div class="help-tip"><strong>Khuyến nghị:</strong> Dù hệ thống tự tối ưu, không nên upload file ảnh gốc quá lớn khi không cần thiết.</div>
+        </section>
+
+        <section id="danh-sach" class="help-section">
+            <h2>6. Quản lý danh sách mục con</h2>
+            <p>Các loại Cards, FAQ, Testimonials, Process, Pricing, Partners, Team và một số Media có nút <b>Quản lý danh sách</b>.</p>
+            <ol>
+                <li>Bấm <b>Quản lý danh sách</b> trong trang chỉnh sửa section.</li>
+                <li>Chọn <b>Thêm mục</b>, nhập các trường do loại section yêu cầu rồi lưu.</li>
+                <li>Dùng nút ↑/↓ để sắp xếp.</li>
+                <li>Dùng trạng thái hiện/ẩn để tạm ngưng một mục mà không xóa nội dung.</li>
+            </ol>
+            <p>Việc thêm, xóa, sắp xếp và thay ảnh mục con thực hiện ở ngôn ngữ mặc định. Các ngôn ngữ khác dùng cùng cấu trúc và chỉ dịch phần chữ.</p>
+        </section>
+
+        <section id="phien-ban" class="help-section">
+            <h2>7. Lịch sử phiên bản và khôi phục</h2>
+            <p>Khi lưu nội dung ở ngôn ngữ mặc định, hệ thống lưu phiên bản gần nhất. Mở <b>Lịch sử phiên bản</b> để xem và khôi phục nội dung trước đó.</p>
+            <div class="help-warning"><strong>Trước khi khôi phục:</strong> Xác nhận đúng section hoặc đúng mục con. Sau khi khôi phục, mở trang public để kiểm tra kết quả.</div>
+        </section>
+
+        <section id="section-template" class="help-section">
+            <h2>8. Thư viện section và template</h2>
+            <p>Phần này chỉ dành cho Super Administrator.</p>
+            <h3>Thư viện section</h3>
+            <p>Section là nội dung dùng chung, có thể tồn tại độc lập và được gắn vào nhiều template. Khi chỉnh nội dung dùng chung, không cần sửa lại từng template.</p>
+            <ol>
+                <li>Vào <b>Thư viện section</b> → <b>Tạo section</b>.</li>
+                <li>Chọn Section Definition phù hợp và đặt tên quản trị dễ nhận biết.</li>
+                <li>Vào <b>Giao diện</b> → <b>Cấu hình section</b> → <b>Thêm từ thư viện</b>.</li>
+                <li>Thiết lập thứ tự, kiểu trình bày, trạng thái và việc xuất hiện trên menu.</li>
+            </ol>
+            <p>“Gỡ” section khỏi template không xóa nội dung trong thư viện. “Lưu trữ” dùng khi section không còn sử dụng; có thể khôi phục lại khi cần.</p>
+            <h3>Template</h3>
+            <p>Template quyết định bố cục trang. Các mẫu hiện có gồm Corporate, Minimal, Editorial, Full Width và Conversion. Trước khi bấm <b>Áp dụng</b>, kiểm tra template đích đã có đủ section cần thiết và trạng thái hiển thị chính xác.</p>
+            <div class="help-warning"><strong>Ảnh hưởng lớn:</strong> Đổi template tác động toàn bộ trang chủ. Nên thực hiện ngoài giờ truy cập cao và kiểm tra ngay sau khi áp dụng.</div>
+        </section>
+
+        <section id="theme" class="help-section">
+            <h2>9. Theme màu</h2>
+            <p>Theme kiểm soát hệ màu và hoạt động độc lập với template bố cục.</p>
+            <ul>
+                <li><b>Áp dụng:</b> kích hoạt một theme có sẵn.</li>
+                <li><b>Tạo bản tùy chỉnh:</b> clone theme hệ thống để chỉnh sửa an toàn.</li>
+                <li><b>Chỉnh sửa:</b> cập nhật màu thương hiệu, nền trang, bề mặt, chữ, vùng tương phản và điểm nhấn.</li>
+                <li><b>Xóa:</b> chỉ áp dụng với theme tùy chỉnh không được kích hoạt.</li>
+            </ul>
+            <p>Dùng khung preview để kiểm tra độ tương phản, nhưng vẫn phải xem trang thật trên desktop và mobile.</p>
+        </section>
+
+        <section id="cau-hinh" class="help-section">
+            <h2>10. Cấu hình website và setting values</h2>
+            <h3>Cấu hình website</h3>
+            <p>Administrator và Super Administrator có thể cập nhật tên website, chữ logo, tên doanh nghiệp, điện thoại, email, địa chỉ, footer và các trường SEO.</p>
+            <ul>
+                <li><b>Tiêu đề SEO:</b> tiêu đề ngắn, rõ chủ đề chính của trang.</li>
+                <li><b>Mô tả SEO:</b> mô tả tự nhiên nội dung và giá trị của website.</li>
+                <li><b>Từ khóa SEO:</b> nhập các cụm từ, phân cách bằng dấu phẩy.</li>
+            </ul>
+            <h3>Setting values</h3>
+            <p>Các key do Developer định nghĩa theo template. Người quản trị chỉ nhập value: logo, URL mạng xã hội, email hoặc nội dung bổ sung. Không thay đổi ý nghĩa của key.</p>
+        </section>
+
+        <section id="tai-khoan" class="help-section">
+            <h2>11. Tài khoản và mật khẩu</h2>
+            <p>Vào <b>Tài khoản & phân quyền</b> để thêm hoặc chỉnh sửa người dùng. Tên đăng nhập có thể là username thông thường, không bắt buộc là email.</p>
+            <ul>
+                <li>Mật khẩu tối thiểu 10 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.</li>
+                <li>Dùng “Tài khoản hoạt động” để khóa/mở tài khoản mà không xóa dữ liệu.</li>
+                <li>Người dùng tự đổi mật khẩu trong menu cạnh tên đăng nhập.</li>
+                <li>Administrator có thể reset mật khẩu Editor; Super Administrator có phạm vi quản lý cao hơn.</li>
+            </ul>
+        </section>
+
+        <section id="lien-he" class="help-section">
+            <h2>12. Liên hệ khách hàng</h2>
+            <p>Form liên hệ lưu yêu cầu vào database trước khi gửi email. Vì vậy, nếu SMTP lỗi, thông tin khách hàng vẫn còn trong Admin.</p>
+            <ul>
+                <li><b>Đã gửi:</b> email thông báo đã được gửi thành công.</li>
+                <li><b>Gửi lỗi:</b> dữ liệu đã lưu nhưng email thất bại.</li>
+                <li><b>Đang chờ:</b> yêu cầu chưa hoàn tất gửi.</li>
+            </ul>
+            <p>Dùng <b>Gửi lại</b> cho từng liên hệ hoặc <b>Gửi lại tất cả</b> sau khi SMTP hoạt động trở lại. Trang danh sách hiển thị tối đa 500 liên hệ mới nhất.</p>
+        </section>
+
+        <section id="license" class="help-section">
+            <h2>13. Trạng thái license</h2>
+            <p>Chỉ Super Administrator truy cập mục này. Trang hiển thị trạng thái local/server, canonical URL, domain được phép, lần kiểm tra gần nhất và lần kiểm tra kế tiếp.</p>
+            <p>Dùng <b>Kiểm tra lại</b> khi vừa thay đổi license trên VNS Licensing Server. Nếu license bị Suspended/Revoked rồi chuyển lại Active, website cũng tự kiểm tra lại theo lịch do server quy định.</p>
+            <div class="help-warning"><strong>Không chia sẻ:</strong> License key, SMTP password, OAuth secret và các secret cấu hình không được đưa vào ảnh chụp, email công khai hoặc source repository.</div>
+        </section>
+
+        <section id="kiem-tra" class="help-section">
+            <h2>14. Checklist trước khi bàn giao</h2>
+            <ul class="help-checklist">
+                <li>Kiểm tra tên doanh nghiệp, logo, điện thoại, email và địa chỉ.</li>
+                <li>Kiểm tra tiêu đề SEO, mô tả SEO và từ khóa cho từng ngôn ngữ.</li>
+                <li>Kiểm tra thứ tự, trạng thái và nhãn menu của các section.</li>
+                <li>Kiểm tra tất cả nút, liên kết nội bộ, email và số điện thoại.</li>
+                <li>Kiểm tra ảnh Hero, Gallery, Media trên desktop và mobile.</li>
+                <li>Gửi thử form liên hệ và xác nhận email đến Admin.</li>
+                <li>Kiểm tra chuyển đổi ngôn ngữ và nội dung fallback.</li>
+                <li>Kiểm tra tài khoản đúng vai trò và đổi mật khẩu ban đầu.</li>
+                <li>Kiểm tra canonical domain và trạng thái license.</li>
+            </ul>
+        </section>
+
+        <section id="su-co" class="help-section">
+            <h2>15. Xử lý sự cố thường gặp</h2>
+            <div class="help-faq">
+                <details><summary>Chọn ảnh nhưng chưa thấy preview</summary><p>Thử tải lại trang không dùng cache bằng <kbd>Ctrl</kbd> + <kbd>F5</kbd>, sau đó chọn lại file.</p></details>
+                <details><summary>Nội dung đã lưu nhưng chưa thấy trên trang chủ</summary><p>Kiểm tra đúng ngôn ngữ, đúng template đang sử dụng và section đang ở trạng thái “Đang hiện”. Sau đó mở lại trang public.</p></details>
+                <details><summary>Nút không xuất hiện</summary><p>Kiểm tra cả nội dung nút và URL. Một số template chỉ hiển thị nút khi hai giá trị đều hợp lệ.</p></details>
+                <details><summary>Email liên hệ gửi lỗi</summary><p>Thông tin vẫn được lưu. Kiểm tra SMTP/certificate rồi dùng “Gửi lại” hoặc “Gửi lại tất cả”.</p></details>
+                <details><summary>Website báo không thể xác minh license</summary><p>Super Administrator mở trang License và bấm “Kiểm tra lại”. Nếu vẫn lỗi, chuyển thông tin thời điểm và trạng thái hiển thị cho bộ phận kỹ thuật; không gửi license key qua kênh công khai.</p></details>
+                <details><summary>Không thấy chức năng được mô tả</summary><p>Tài khoản có thể không đủ quyền hoặc website đang dùng phiên bản khác. Kiểm tra vai trò với Administrator/Super Administrator.</p></details>
+            </div>
+        </section>
+
+        <section class="help-feedback">
+            <div>
+                <span class="help-kicker">Dùng thử Phase 1</span>
+                <h2>Gửi phản hồi hữu ích</h2>
+                <p>Khi báo lỗi, vui lòng ghi: tài khoản/vai trò, màn hình đang thao tác, các bước thực hiện, kết quả mong đợi, kết quả thực tế và ảnh chụp nếu có. Không chụp kèm mật khẩu hoặc secret.</p>
+            </div>
+            <a class="button button-secondary" href="#bat-dau">Về đầu hướng dẫn ↑</a>
+        </section>
+    </div>
+</div>
