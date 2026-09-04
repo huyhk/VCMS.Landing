@@ -50,9 +50,14 @@
                     }
                     else
                     {
+                        <form asp-action="SetDefault" method="post"
+                              onsubmit="return confirm('Đặt @language.Name làm ngôn ngữ mặc định? Nội dung ngôn ngữ sẽ được hoán đổi.');">
+                            <input type="hidden" name="code" value="@language.Code" />
+                            <button class="button" type="submit">Đặt mặc định</button>
+                        </form>
                         <form asp-action="Toggle" method="post">
                             <input type="hidden" name="code" value="@language.Code" />
-                            <button class="button @(language.IsEnabled ? "button-secondary" : null)" type="submit">
+                            <button class="button button-secondary" type="submit">
                                 @(language.IsEnabled ? "Tắt" : "Bật")
                             </button>
                         </form>
@@ -65,5 +70,5 @@
 </section>
 
 <div class="notice">
-    Tắt ngôn ngữ chỉ ẩn ngôn ngữ trên website và các màn hình nhập bản dịch. Dữ liệu đã dịch không bị xóa.
+    Tắt ngôn ngữ chỉ ẩn ngôn ngữ trên website và các màn hình nhập bản dịch. Dữ liệu đã dịch không bị xóa. Khi đổi ngôn ngữ mặc định, hệ thống tự hoán đổi nội dung gốc và bản dịch trong một transaction.
 </div>
