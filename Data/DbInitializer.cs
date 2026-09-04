@@ -25,11 +25,22 @@ public static class DbInitializer
             if (!await roleManager.RoleExistsAsync(role))
                 await roleManager.CreateAsync(new IdentityRole(role));
 
-        if (!await db.ContentLanguages.AnyAsync())
+        var developerLanguages = new[]
         {
-            db.ContentLanguages.AddRange(
-                new ContentLanguage { Code = "vi", Name = "Tiếng Việt", IsDefault = true, IsEnabled = true, SortOrder = 10 },
-                new ContentLanguage { Code = "en", Name = "English", IsDefault = false, IsEnabled = true, SortOrder = 20 });
+            new ContentLanguage { Code = "vi", Name = "Tiếng Việt", IsDefault = true, IsEnabled = true, SortOrder = 10 },
+            new ContentLanguage { Code = "en", Name = "English", IsDefault = false, IsEnabled = true, SortOrder = 20 },
+            new ContentLanguage { Code = "zh", Name = "中文", IsDefault = false, IsEnabled = false, SortOrder = 30 }
+        };
+        var existingLanguages = await db.ContentLanguages.ToDictionaryAsync(x => x.Code);
+        foreach (var developerLanguage in developerLanguages)
+        {
+            if (!existingLanguages.TryGetValue(developerLanguage.Code, out var language))
+            {
+                db.ContentLanguages.Add(developerLanguage);
+                continue;
+            }
+            language.Name = developerLanguage.Name;
+            language.SortOrder = developerLanguage.SortOrder;
         }
 
         if (!await db.SiteSettings.AnyAsync())
