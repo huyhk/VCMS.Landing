@@ -44,7 +44,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     var supportedCultures = new[]
     {
         CultureInfo.GetCultureInfo("vi"),
-        CultureInfo.GetCultureInfo("en")
+        CultureInfo.GetCultureInfo("en"),
+        CultureInfo.GetCultureInfo("zh")
     };
     options.DefaultRequestCulture = new RequestCulture("vi");
     options.SupportedCultures = supportedCultures;
