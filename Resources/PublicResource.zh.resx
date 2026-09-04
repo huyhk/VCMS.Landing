@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Contact.FullName" xml:space="preserve"><value>姓名</value></data>
+  <data name="Contact.Email" xml:space="preserve"><value>电子邮箱</value></data>
+  <data name="Contact.Phone" xml:space="preserve"><value>电话号码</value></data>
+  <data name="Contact.Message" xml:space="preserve"><value>请输入您的咨询内容</value></data>
+  <data name="Contact.Submit" xml:space="preserve"><value>发送信息 →</value></data>
+  <data name="Contact.Success" xml:space="preserve"><value>感谢您的留言。我们已收到您的信息，并会尽快与您联系。</value></data>
+  <data name="Contact.ValidationError" xml:space="preserve"><value>请检查您填写的联系信息。</value></data>
+  <data name="Contact.VerificationError" xml:space="preserve"><value>无法验证您的请求，请重试。</value></data>
+  <data name="Header.Contact" xml:space="preserve"><value>洽谈项目</value></data>
+  <data name="Footer.Contact" xml:space="preserve"><value>联系我们</value></data>
+  <data name="Language.Navigation" xml:space="preserve"><value>内容语言</value></data>
+</root>
