@@ -3,3 +3,5 @@
 .language-content-bar .button{padding:8px 12px}
 .language-content-bar .status{margin-left:auto}
 @media(max-width:800px){.language-content-bar .status{width:100%;margin-left:0}}
+
+.language-management{overflow-x:auto}.language-management table{width:100%;border-collapse:collapse}.language-management th,.language-management td{padding:13px 12px;text-align:left;border-bottom:1px solid #e5e7eb}.language-management th{font-size:12px;color:#667085;text-transform:uppercase}.language-actions{display:flex;justify-content:flex-end;gap:8px;white-space:nowrap}.language-actions form{margin:0}.language-actions .button:disabled{cursor:not-allowed;opacity:.55}.status.off{color:#667085;background:#f2f4f7}
