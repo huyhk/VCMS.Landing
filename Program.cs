@@ -11,6 +11,11 @@ using System.Threading.RateLimiting;
 using VNS.Licensing.Client.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = ContentPackageService.MaximumPackageBytes);
+builder.Services.Configure<Microsoft.AspNetCore.Builder.IISServerOptions>(options =>
+    options.MaxRequestBodySize = ContentPackageService.MaximumPackageBytes);
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+    options.MultipartBodyLengthLimit = ContentPackageService.MaximumPackageBytes);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -65,6 +70,7 @@ builder.Services.AddScoped<IContactEmailSender, ContactEmailSender>();
 builder.Services.AddHttpClient<ICloudflareTurnstileValidator, CloudflareTurnstileValidator>(client =>
     client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddScoped<IMediaStorageService, MediaStorageService>();
+builder.Services.AddScoped<IContentPackageService, ContentPackageService>();
 builder.Services.AddSingleton<IContentHtmlSanitizer, ContentHtmlSanitizer>();
 builder.Services.AddSingleton<ISectionSchemaService, SectionSchemaService>();
 builder.Services.AddSingleton<ITemplateStyleProvider, TemplateStyleProvider>();

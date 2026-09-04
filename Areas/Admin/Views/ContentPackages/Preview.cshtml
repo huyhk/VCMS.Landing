@@ -1,0 +1,56 @@
+@model LandingCms.Services.ContentPackageInspection
+@{
+    ViewData["Title"] = "Kiểm tra content package";
+    string Size(long bytes) => bytes >= 1024 * 1024
+        ? $"{bytes / 1024d / 1024d:N2} MB"
+        : $"{bytes / 1024d:N1} KB";
+}
+<div class="page-title">
+    <div>
+        <h1>Kiểm tra content package</h1>
+        <p>Package hợp lệ. Hãy kiểm tra phạm vi trước khi xác nhận khôi phục.</p>
+    </div>
+</div>
+
+<section class="panel package-preview">
+    <div class="package-preview-head">
+        <div>
+            <span class="status on">Package hợp lệ</span>
+            <h2>@(Model.Manifest.SiteName ?? "VCMS Landing")</h2>
+            <p>Export lúc @Model.Manifest.ExportedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · Schema @Model.Manifest.SchemaVersion</p>
+        </div>
+        <strong>@Size(Model.PackageBytes)</strong>
+    </div>
+    <div class="package-metrics">
+        <article><strong>@Model.Manifest.SectionCount</strong><span>Section</span></article>
+        <article><strong>@Model.SectionItemCount</strong><span>Item</span></article>
+        <article><strong>@Model.Manifest.MediaCount</strong><span>Media · @Size(Model.Manifest.MediaBytes)</span></article>
+        <article><strong>@Model.LanguageCount</strong><span>Ngôn ngữ</span></article>
+        <article><strong>@Model.TemplateCount</strong><span>Template</span></article>
+        <article><strong>@Model.ThemeCount</strong><span>Theme</span></article>
+    </div>
+    <dl class="package-details">
+        <div><dt>Template đang dùng</dt><dd>@(Model.Manifest.ActiveTemplateKey ?? "—")</dd></div>
+        <div><dt>Theme đang dùng</dt><dd>@(Model.Manifest.ActiveThemeKey ?? "—")</dd></div>
+    </dl>
+    @if (Model.Warnings.Count > 0)
+    {
+        <div class="package-warning">
+            @foreach (var warning in Model.Warnings) { <div>@warning</div> }
+        </div>
+    }
+    <div class="package-danger-zone">
+        <strong>Nội dung website hiện tại sẽ bị thay thế</strong>
+        <p>Hệ thống sẽ tự động sao lưu nội dung hiện tại trước khi import. Tài khoản, dữ liệu liên hệ, license và cấu hình secret được giữ nguyên.</p>
+    </div>
+    <div class="form-actions package-actions">
+        <form asp-action="Cancel" method="post">
+            <input type="hidden" name="token" value="@Model.Token">
+            <button class="button button-secondary" type="submit">Hủy</button>
+        </form>
+        <form asp-action="Import" method="post" onsubmit="return confirm('Khôi phục toàn bộ nội dung từ package này?');">
+            <input type="hidden" name="token" value="@Model.Token">
+            <button class="button package-restore-button" type="submit">Xác nhận khôi phục</button>
+        </form>
+    </div>
+</section>

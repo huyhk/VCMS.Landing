@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Sao lưu & khôi phục nội dung";
+}
+<div class="page-title">
+    <div>
+        <h1>Sao lưu & khôi phục nội dung</h1>
+        <p>Xuất hoặc khôi phục toàn bộ nội dung, bố cục, theme, đa ngôn ngữ và media của website.</p>
+    </div>
+</div>
+
+<div class="package-grid">
+    <section class="panel package-card">
+        <div class="package-icon">↓</div>
+        <h2>Export nội dung</h2>
+        <p>Tạo một VCMS Content Package có thể dùng để sao lưu hoặc chuyển nội dung sang website VCMS Landing khác.</p>
+        <ul>
+            <li>Bao gồm section, setting, template và theme</li>
+            <li>Bao gồm nội dung đa ngôn ngữ</li>
+            <li>Bao gồm toàn bộ media còn sử dụng</li>
+        </ul>
+        <a class="button" asp-action="Export">Tải content package</a>
+    </section>
+
+    <section class="panel package-card package-card-danger">
+        <div class="package-icon">↑</div>
+        <h2>Import và khôi phục</h2>
+        <p>Package sẽ được kiểm tra và hiển thị thông tin trước khi nội dung hiện tại bị thay thế.</p>
+        <form id="content-package-upload" asp-action="Preview" method="post" enctype="multipart/form-data" class="package-upload-form">
+            <label for="package">VCMS Content Package</label>
+            <input id="package" name="package" type="file" accept=".zip,.vcms" required>
+            <small>Tối đa 512 MB. Tài khoản, liên hệ khách hàng, license và secret không bị thay đổi.</small>
+            <button class="button" type="submit">Kiểm tra package</button>
+            <div class="package-progress" hidden aria-live="polite">
+                <div><span data-package-status>Đang tải package…</span><strong data-package-percent>0%</strong></div>
+                <progress max="100" value="0"></progress>
+            </div>
+        </form>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/content-package-upload.js" asp-append-version="true"></script>
+}
+
+<div class="package-notice">
+    <strong>Phạm vi an toàn</strong>
+    <span>Import chỉ thay thế dữ liệu nội dung website. Trước khi thực hiện, hệ thống tự tạo một bản sao lưu trong <code>App_Data/content-backups</code>.</span>
+</div>
