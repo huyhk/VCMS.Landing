@@ -1,0 +1,69 @@
+@model IReadOnlyList<LandingCms.Models.ContentLanguage>
+@{
+    ViewData["Title"] = "Ngôn ngữ";
+}
+
+<div class="page-title">
+    <div>
+        <h1>Ngôn ngữ nội dung</h1>
+        <p>Developer cung cấp danh sách ngôn ngữ và resource; SuperAdmin chọn ngôn ngữ được sử dụng trên website.</p>
+    </div>
+</div>
+
+<section class="panel language-management">
+    <table>
+        <thead>
+            <tr>
+                <th>Ngôn ngữ</th>
+                <th>Mã</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var language in Model)
+        {
+            <tr>
+                <td><strong>@language.Name</strong></td>
+                <td><code>@language.Code</code></td>
+                <td>
+                    @if (language.IsDefault)
+                    {
+                        <span class="status on">Mặc định</span>
+                    }
+                    else
+                    {
+                        <span>Ngôn ngữ bổ sung</span>
+                    }
+                </td>
+                <td>
+                    <span class="status @(language.IsEnabled ? "on" : "off")">
+                        @(language.IsEnabled ? "Đang bật" : "Đang tắt")
+                    </span>
+                </td>
+                <td class="language-actions">
+                    @if (language.IsDefault && language.IsEnabled)
+                    {
+                        <button class="button button-secondary" type="button" disabled
+                                title="Không thể tắt ngôn ngữ mặc định">Không thể tắt</button>
+                    }
+                    else
+                    {
+                        <form asp-action="Toggle" method="post">
+                            <input type="hidden" name="code" value="@language.Code" />
+                            <button class="button @(language.IsEnabled ? "button-secondary" : null)" type="submit">
+                                @(language.IsEnabled ? "Tắt" : "Bật")
+                            </button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
+
+<div class="notice">
+    Tắt ngôn ngữ chỉ ẩn ngôn ngữ trên website và các màn hình nhập bản dịch. Dữ liệu đã dịch không bị xóa.
+</div>
