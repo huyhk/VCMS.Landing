@@ -22,6 +22,20 @@
                         <small>Ảnh được tự resize và tối ưu khi lưu; logo PNG vẫn giữ nền trong suốt.</small>
                         <span class="field-validation-error">@Html.ValidationMessage("images[" + item.DefinitionId + "]")</span>
                     }
+                    else if(item.ValueType == "Select")
+                    {
+                        var options = item.Key switch
+                        {
+                            "layout.header" => new[] { ("standard", "Standard"), ("centered", "Centered"), ("transparent", "Transparent Hero"), ("compact", "Compact"), ("minimal", "Minimal") },
+                            "layout.header_behavior" => new[] { ("sticky", "Cố định khi cuộn"), ("static", "Cuộn cùng nội dung") },
+                            "layout.footer" => new[] { ("corporate", "Corporate"), ("contact", "Contact focused"), ("simple", "Simple"), ("minimal", "Minimal") },
+                            _ => Array.Empty<(string, string)>()
+                        };
+                        var selected = string.IsNullOrWhiteSpace(item.Value) ? options.FirstOrDefault().Item1 : item.Value;
+                        <select id="setting-@item.DefinitionId" name="values[@item.DefinitionId]">
+                            @foreach(var option in options){<option value="@option.Item1" selected="@(option.Item1 == selected ? "selected" : null)">@option.Item2</option>}
+                        </select>
+                    }
                     else if(item.ValueType == "MultilineText")
                     {
                         <textarea id="setting-@item.DefinitionId" name="values[@item.DefinitionId]" rows="4">@item.Value</textarea>

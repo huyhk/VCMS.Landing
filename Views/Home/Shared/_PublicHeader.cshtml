@@ -1,0 +1,33 @@
+@model HomeViewModel
+@using LandingCms.Services
+@using LandingCms
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PublicResource> PublicText
+@{
+    var layout = Model.ExtendedSettings.GetValueOrDefault("layout.header", "standard");
+    var behavior = Model.ExtendedSettings.GetValueOrDefault("layout.header_behavior", "sticky");
+}
+<header class="site-header header-@layout header-@behavior">
+    <div class="container nav">
+        <a class="brand" href="#top">
+            @if (Model.BrandingMedia.TryGetValue("branding.logo_primary", out var logo))
+            {
+                var source = ResponsiveImageSources.Build(Url, logo, "thumbnail", 320);
+                <img src="@source.Src" srcset="@source.SrcSet" sizes="190px" width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName" decoding="async">
+            }
+            else { @(Model.Settings.LogoText ?? Model.Settings.SiteName) }
+        </a>
+        <nav id="site-navigation">@foreach (var item in Model.NavigationItems){<a href="#@item.SectionKey">@item.Label</a>}</nav>
+        <a class="btn btn-small header-cta" href="#contact">@PublicText["Header.Contact"]</a>
+        @if (Model.Languages.Count > 1)
+        {
+            <div class="language-switcher" role="navigation" aria-label="@PublicText["Language.Navigation"]">
+                @foreach (var language in Model.Languages)
+                {
+                    var languageUrl = language.IsDefault ? "/" : $"/{language.Code}";
+                    <a href="@languageUrl" lang="@language.Code" hreflang="@language.Code" class="@(language.Code == Model.CurrentLanguage.Code ? "active" : null)">@language.Code.ToUpperInvariant()</a>
+                }
+            </div>
+        }
+        <button class="menu-button" type="button" aria-label="Mở menu" aria-controls="site-navigation" aria-expanded="false">☰</button>
+    </div>
+</header>

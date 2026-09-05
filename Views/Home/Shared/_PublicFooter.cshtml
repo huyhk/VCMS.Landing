@@ -1,0 +1,27 @@
+@model HomeViewModel
+@using LandingCms.Services
+@using LandingCms
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PublicResource> PublicText
+@{
+    var layout = Model.ExtendedSettings.GetValueOrDefault("layout.footer", "corporate");
+    Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
+    Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
+}
+<footer class="footer-@layout">
+    <div class="container footer-grid">
+        <div>
+            <a class="brand" href="#top">
+                @if (Model.BrandingMedia.TryGetValue("branding.logo_light", out var footerLogo) || Model.BrandingMedia.TryGetValue("branding.logo_primary", out footerLogo))
+                {
+                    var source = ResponsiveImageSources.Build(Url, footerLogo, "thumbnail", 320);
+                    <img src="@source.Src" srcset="@source.SrcSet" sizes="190px" width="@footerLogo.Width" height="@footerLogo.Height" alt="@Model.Settings.SiteName" loading="lazy" decoding="async">
+                }
+                else { @(Model.Settings.LogoText ?? Model.Settings.SiteName) }
+            </a>
+            <p>@Model.Settings.FooterText</p>
+            @if (!string.IsNullOrWhiteSpace(facebookUrl)){<a href="@facebookUrl" target="_blank" rel="noopener noreferrer">Facebook</a>}
+            @if (!string.IsNullOrWhiteSpace(zaloUrl)){<a href="@zaloUrl" target="_blank" rel="noopener noreferrer">Zalo</a>}
+        </div>
+        <div><strong>@PublicText["Footer.Contact"]</strong><a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a><a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a><span>@Model.Settings.Address</span></div>
+    </div>
+</footer>

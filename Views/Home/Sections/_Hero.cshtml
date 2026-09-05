@@ -37,7 +37,7 @@
     <div class="orb orb-one"></div>
     <div class="orb orb-two"></div>
     <div class="container hero-grid @contentSection.LayoutVariant">
-        <div>
+        <div class="hero-copy">
             <p class="eyebrow">@contentSection.Eyebrow</p>
             <h1>@contentSection.Title</h1>
             <p class="lead">@contentSection.Subtitle</p>
@@ -46,13 +46,17 @@
                 <a class="text-link" href="@contentSection.SecondaryButtonUrl">@contentSection.SecondaryButtonText</a>
             </div>
         </div>
-        @if (contentSection.LayoutVariant == "lead-form-right")
+        @if (contentSection.LayoutVariant == "lead-form-right" || contentSection.LayoutVariant == "lead-form-left")
         {
             <div class="hero-lead-form">
                 @await Html.PartialAsync("~/Views/Home/Sections/_ContactForm.cshtml", Model.Page)
             </div>
         }
-        else
+        else if ((contentSection.LayoutVariant == "split-left" || contentSection.LayoutVariant == "split-right") && !string.IsNullOrWhiteSpace(contentSection.ImageUrl))
+        {
+            <div class="hero-visual"><img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="eager" fetchpriority="high"></div>
+        }
+        else if (contentSection.LayoutVariant != "text-center" && contentSection.LayoutVariant != "text-right")
         {
         <div class="hero-art">
             <div class="art-card">

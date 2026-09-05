@@ -1,10 +1,15 @@
 @model SectionRenderViewModel
+@using System.Text.Json
+@using LandingCms.Services
 @{
     var contentSection = Model.Section;
+    Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var structuredItems);
+    structuredItems ??= Array.Empty<SectionItem>();
     var lines = (contentSection.Content ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+    static Dictionary<string,string?> Values(string json) => new(JsonSerializer.Deserialize<Dictionary<string,string?>>(json) ?? new(), StringComparer.OrdinalIgnoreCase);
 }
 
-<section id="@contentSection.SectionKey" class="section">
+<section id="@contentSection.SectionKey" class="section cards-section @contentSection.LayoutVariant">
     <div class="container">
         <div class="section-heading">
             <p class="eyebrow">@contentSection.Eyebrow</p>
@@ -12,15 +17,31 @@
             <p>@contentSection.Subtitle</p>
         </div>
         <div class="card-grid">
-            @for (var index = 0; index < lines.Length; index++)
+            @if (structuredItems.Count > 0)
             {
-                var parts = lines[index].Split('|', 2);
-                <article class="service-card">
-                    <span class="card-number">0@(index + 1)</span>
-                    <h3>@parts[0]</h3>
-                    <p>@(parts.Length > 1 ? parts[1] : "")</p>
-                    <span class="card-arrow">↗</span>
-                </article>
+                @for (var index = 0; index < structuredItems.Count; index++)
+                {
+                    var item = structuredItems[index]; var values = Values(item.ContentJson);
+                    values.TryGetValue("title", out var title); values.TryGetValue("content", out var content);
+                    values.TryGetValue("buttonText", out var buttonText); values.TryGetValue("buttonUrl", out var buttonUrl);
+                    <article class="service-card @(item.MediaAsset is not null ? "has-media" : null)">
+                        @if (item.MediaAsset is not null)
+                        {
+                            var imageSource = ResponsiveImageSources.Build(Url, item.MediaAsset, "thumbnail", 640);
+                            <div class="card-media"><img src="@imageSource.Src" srcset="@imageSource.SrcSet" sizes="(max-width:800px) 100vw, 33vw" width="@item.MediaAsset.Width" height="@item.MediaAsset.Height" alt="@title" loading="lazy" decoding="async"></div>
+                        }
+                        <div class="card-body"><span class="card-number">@(index + 1 < 10 ? $"0{index + 1}" : (index + 1).ToString())</span><h3>@title</h3><p>@content</p>
+                        @if (!string.IsNullOrWhiteSpace(buttonText) && !string.IsNullOrWhiteSpace(buttonUrl)){<a class="card-link" href="@buttonUrl">@buttonText <span>→</span></a>}</div>
+                    </article>
+                }
+            }
+            else
+            {
+                @for (var index = 0; index < lines.Length; index++)
+                {
+                    var parts = lines[index].Split('|', 2);
+                    <article class="service-card"><div class="card-body"><span class="card-number">@(index + 1 < 10 ? $"0{index + 1}" : (index + 1).ToString())</span><h3>@parts[0]</h3><p>@(parts.Length > 1 ? parts[1] : "")</p></div></article>
+                }
             }
         </div>
     </div>

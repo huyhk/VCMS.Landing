@@ -3,47 +3,10 @@
 @using LandingCms
 @inject Microsoft.Extensions.Localization.IStringLocalizer<PublicResource> PublicText
 @{
-    Model.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
-    Model.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
     Model.ExtendedSettings.TryGetValue("analytics.ga_measurement_id", out var gaId);
 }
 
-
-<header class="site-header">
-    <div class="container nav">
-        <a class="brand" href="#top">
-            @if (Model.BrandingMedia.TryGetValue("branding.logo_primary", out var logo))
-            {
-                var logoSource = ResponsiveImageSources.Build(Url, logo, "thumbnail", 320);
-                <img src="@logoSource.Src" srcset="@logoSource.SrcSet" sizes="190px"
-                     width="@logo.Width" height="@logo.Height" alt="@Model.Settings.SiteName" decoding="async">
-            }
-            else
-            {
-                @(Model.Settings.LogoText ?? Model.Settings.SiteName)
-            }
-        </a>
-        <nav id="site-navigation">
-            @foreach (var item in Model.NavigationItems)
-            {
-                <a href="#@item.SectionKey">@item.Label</a>
-            }
-        </nav>
-        <a class="btn btn-small" href="#contact">@PublicText["Header.Contact"]</a>
-        @if (Model.Languages.Count > 1)
-        {
-            <div class="language-switcher" role="navigation" aria-label="@PublicText["Language.Navigation"]">
-                @foreach (var language in Model.Languages)
-                {
-                    var languageUrl = language.IsDefault ? "/" : $"/{language.Code}";
-                    <a href="@languageUrl" lang="@language.Code" hreflang="@language.Code"
-                       class="@(language.Code == Model.CurrentLanguage.Code ? "active" : null)">@language.Code.ToUpperInvariant()</a>
-                }
-            </div>
-        }
-        <button class="menu-button" type="button" aria-label="Mở menu" aria-controls="site-navigation" aria-expanded="false">☰</button>
-    </div>
-</header>
+@await Html.PartialAsync("~/Views/Home/Shared/_PublicHeader.cshtml", Model)
 
 <main id="top">
     @foreach (var pageSection in Model.Sections)
@@ -97,29 +60,7 @@
     }
 </main>
 
-<footer>
-    <div class="container footer-grid">
-        <div>
-            <a class="brand" href="#top">@(Model.Settings.LogoText ?? Model.Settings.SiteName)</a>
-            <p>@Model.Settings.FooterText</p>
-            @if (!string.IsNullOrWhiteSpace(facebookUrl))
-            {
-                <a href="@facebookUrl" target="_blank" rel="noopener noreferrer">Facebook</a>
-            }
-            @if (!string.IsNullOrWhiteSpace(zaloUrl))
-            {
-                <a href="@zaloUrl" target="_blank" rel="noopener noreferrer">Zalo</a>
-            }
-        </div>
-        <div>
-            <strong>@PublicText["Footer.Contact"]</strong>
-            <a href="mailto:@Model.Settings.Email">@Model.Settings.Email</a>
-            <a href="tel:@Model.Settings.Phone">@Model.Settings.Phone</a>
-            <span>@Model.Settings.Address</span>
-        </div>
-@*         <a class="admin-link" href="/admin">Quản trị</a>
- *@    </div>
-</footer>
+@await Html.PartialAsync("~/Views/Home/Shared/_PublicFooter.cshtml", Model)
 
 @if (!string.IsNullOrWhiteSpace(gaId))
 {

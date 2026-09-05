@@ -84,6 +84,9 @@ public partial class TemplateSettingsController(ApplicationDbContext db, IMediaS
         "Url" => Uri.TryCreate(value, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps),
         "Email" => new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(value),
         "Boolean" => bool.TryParse(value, out _),
+        "Select" when definition.Key == "layout.header" => new[] { "standard", "centered", "transparent", "compact", "minimal" }.Contains(value),
+        "Select" when definition.Key == "layout.header_behavior" => new[] { "sticky", "static" }.Contains(value),
+        "Select" when definition.Key == "layout.footer" => new[] { "corporate", "contact", "simple", "minimal" }.Contains(value),
         _ when definition.Key == "analytics.ga_measurement_id" => GaIdRegex().IsMatch(value),
         _ when definition.Key == "analytics.gtm_container_id" => GtmIdRegex().IsMatch(value),
         _ => value.Length <= 10000

@@ -83,7 +83,7 @@ public static class DbInitializer
         var developerSections = new[]
         {
             new DeveloperSection("hero", "Hero", "Hero", HeroContentSchema),
-            new DeveloperSection("cards", "Danh sách thẻ", "Cards", StructuredContentSchema),
+            new DeveloperSection("cards", "Danh sách thẻ", "Cards", CardsContentSchema),
             new DeveloperSection("content", "Nội dung và hình ảnh", "Content", RichContentSchema),
             new DeveloperSection("stats", "Số liệu", "Stats", StructuredContentSchema),
             new DeveloperSection("cta", "Kêu gọi hành động", "Cta", NavigableTextContentSchema),
@@ -248,6 +248,9 @@ public static class DbInitializer
             new DeveloperSetting("branding.logo_primary", "Logo chính", "Nhận diện thương hiệu", "Image", "Logo dùng trên nền sáng.", 1),
             new DeveloperSetting("branding.logo_light", "Logo sáng", "Nhận diện thương hiệu", "Image", "Logo trắng/sáng dùng trên Hero hoặc nền tối.", 2),
             new DeveloperSetting("branding.favicon", "Favicon", "Nhận diện thương hiệu", "Image", "Icon hiển thị trên tab trình duyệt.", 3),
+            new DeveloperSetting("layout.header", "Kiểu Header", "Bố cục chung", "Select", "Standard, Centered, Transparent, Compact hoặc Minimal.", 4),
+            new DeveloperSetting("layout.header_behavior", "Cách cố định Header", "Bố cục chung", "Select", "Sticky hoặc cuộn cùng nội dung.", 5),
+            new DeveloperSetting("layout.footer", "Kiểu Footer", "Bố cục chung", "Select", "Corporate, Contact, Simple hoặc Minimal.", 6),
             new DeveloperSetting("social.facebook_url", "Trang Facebook", "Mạng xã hội", "Url", "URL trang Facebook của doanh nghiệp.", 10),
             new DeveloperSetting("social.zalo_url", "Tài khoản Zalo", "Mạng xã hội", "Url", "URL Zalo OA hoặc liên kết liên hệ Zalo.", 20),
             new DeveloperSetting("analytics.ga_measurement_id", "Google Analytics Measurement ID", "Phân tích", "Text", "Ví dụ: G-ABC123XYZ.", 30),
@@ -263,6 +266,13 @@ public static class DbInitializer
             }
             definition.Name = item.Name; definition.Group = item.Group; definition.ValueType = item.ValueType;
             definition.Description = item.Description; definition.SortOrder = item.SortOrder; definition.IsEnabled = true;
+            definition.DefaultValue = item.Key switch
+            {
+                "layout.header" => "standard",
+                "layout.header_behavior" => "sticky",
+                "layout.footer" => "corporate",
+                _ => definition.DefaultValue
+            };
         }
         await db.SaveChangesAsync();
 
@@ -365,7 +375,11 @@ public static class DbInitializer
         """;
 
     private const string HeroContentSchema = """
-        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"default","options":[{"value":"default","label":"Mặc định"},{"value":"lead-form-right","label":"Form liên hệ bên phải"}]}},"navigation":{"allowed":false,"defaultVisible":false}}
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"text-left","options":[{"value":"text-left","label":"Nội dung bên trái"},{"value":"text-center","label":"Nội dung ở giữa"},{"value":"text-right","label":"Nội dung bên phải"},{"value":"split-left","label":"Nội dung trái, hình phải"},{"value":"split-right","label":"Hình trái, nội dung phải"},{"value":"lead-form-right","label":"Nội dung trái, form phải"},{"value":"lead-form-left","label":"Form trái, nội dung phải"}]}},"navigation":{"allowed":false,"defaultVisible":false}}
+        """;
+
+    private const string CardsContentSchema = """
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"structured-list"}},"items":{"fields":{"title":{"label":"Tiêu đề","editor":"text","required":true},"content":{"label":"Mô tả","editor":"textarea"},"buttonText":{"label":"Nội dung nút","editor":"text"},"buttonUrl":{"label":"Liên kết nút","editor":"url"},"image":{"label":"Hình ảnh","editor":"image"}}},"settings":{"layout":{"editor":"select","default":"text-cards","options":[{"value":"text-cards","label":"Chỉ nội dung"},{"value":"image-top","label":"Hình phía trên"},{"value":"image-left","label":"Hình bên trái"},{"value":"overlay","label":"Nội dung trên hình"},{"value":"compact-list","label":"Danh sách thu gọn"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private const string GalleryContentSchema = """
