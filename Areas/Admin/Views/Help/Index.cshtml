@@ -4,7 +4,7 @@
 
 <div class="page-title help-page-title">
     <div>
-        <span class="help-kicker">VCMS Landing · Phase 1</span>
+        <span class="help-kicker">VCMS Landing · Hướng dẫn quản trị</span>
         <h1>Hướng dẫn sử dụng</h1>
         <p>Cẩm nang quản lý nội dung, giao diện và vận hành landing page.</p>
     </div>
@@ -22,8 +22,10 @@
         <a href="#danh-sach">Danh sách mục con</a>
         <a href="#phien-ban">Lịch sử phiên bản</a>
         <a href="#section-template">Section và template</a>
+        <a href="#header-footer">Header &amp; Footer</a>
         <a href="#theme">Theme màu</a>
         <a href="#cau-hinh">Cấu hình website</a>
+        <a href="#sao-luu">Sao lưu &amp; khôi phục</a>
         <a href="#tai-khoan">Tài khoản</a>
         <a href="#lien-he">Liên hệ khách hàng</a>
         <a href="#license">License</a>
@@ -139,9 +141,6 @@
                 <li>Dùng trạng thái hiện/ẩn để tạm ngưng một mục mà không xóa nội dung.</li>
             </ol>
             <p>Việc thêm, xóa, sắp xếp và thay ảnh mục con thực hiện ở ngôn ngữ mặc định. Các ngôn ngữ khác dùng cùng cấu trúc và chỉ dịch phần chữ.</p>
-            <div class="help-tip"><strong>Header/Footer:</strong> SuperAdmin mở <b>Header &amp; Footer</b>, chọn preset hoặc tự ghép các hàng, cột và thành phần Logo, menu, nút, ngôn ngữ, điện thoại, email, địa chỉ, mạng xã hội. Có thể đổi nền, chiều cao, độ rộng, căn lề, sticky/static và ẩn từng hàng trên mobile mà không sửa file <code>.cshtml</code>.</div>
-            <h3>Ảnh nền Header/Footer</h3>
-            <p>Trong hàng cần chỉnh, chọn nền <b>image</b>. Sau đó chọn ảnh đã có hoặc tải ảnh desktop mới; ảnh mobile là tùy chọn và nếu để trống sẽ dùng ảnh desktop. Có thể chọn phủ kín/hiển thị toàn bộ, vị trí ảnh, màu phủ và độ đậm màu phủ để chữ dễ đọc. Nếu media bị xóa hoặc không còn tồn tại, hàng tự trở về nền màu an toàn.</p>
         </section>
 
         <section id="phien-ban" class="help-section">
@@ -167,8 +166,41 @@
             <div class="help-warning"><strong>Ảnh hưởng lớn:</strong> Đổi template tác động toàn bộ trang chủ. Nên thực hiện ngoài giờ truy cập cao và kiểm tra ngay sau khi áp dụng.</div>
         </section>
 
+        <section id="header-footer" class="help-section">
+            <h2>9. Header &amp; Footer Builder</h2>
+            <p>Chỉ Super Administrator truy cập chức năng này. Cấu trúc Header/Footer được lưu theo template đang sử dụng, có thể thay đổi bố cục mà không cần tạo thêm phiên bản <code>.cshtml</code>.</p>
+            <h3>Cách tổ chức</h3>
+            <ul>
+                <li><b>Hàng:</b> một dải ngang của Header hoặc Footer; mỗi vùng có tối đa 5 hàng.</li>
+                <li><b>Cột:</b> chia nội dung trong một hàng; mỗi hàng có từ 1 đến 4 cột.</li>
+                <li><b>Thành phần:</b> Logo, menu chính, nút hành động, chọn ngôn ngữ, điện thoại, email, địa chỉ, mạng xã hội, thông tin doanh nghiệp, copyright hoặc văn bản tùy chỉnh.</li>
+            </ul>
+            <p>Dùng nút ↑/↓ để đổi thứ tự. Nút × chỉ xóa thành phần/cột/hàng đang chọn. Sau khi chỉnh xong phải bấm <b>Lưu cấu trúc</b>; thay đổi chưa lưu sẽ mất khi rời trang.</p>
+            <h3>Preset và cách hiển thị</h3>
+            <p>Preset thay thế cấu trúc đang chỉnh của riêng Header hoặc Footer. Header có thể chọn <b>Cố định khi cuộn</b> hoặc <b>Cuộn cùng nội dung</b>. Sau khi chọn preset, vẫn có thể chỉnh từng hàng, cột và thành phần trước khi lưu.</p>
+            <div class="help-warning"><strong>Lưu ý:</strong> Chọn preset không tự lưu. Nếu cấu trúc hiện tại đã tùy chỉnh nhiều, nên export content package trước khi thay thế.</div>
+            <h3>Nền của từng hàng</h3>
+            <p>Mỗi hàng có thể dùng nền bề mặt, màu thương hiệu, màu tương phản, trong suốt hoặc ảnh. Khi chọn <b>image</b>, nhóm <b>Ảnh nền của hàng</b> xuất hiện:</p>
+            <ul>
+                <li>Chọn media đã có hoặc tải ảnh desktop mới.</li>
+                <li>Ảnh mobile là tùy chọn; để trống thì hệ thống dùng ảnh desktop.</li>
+                <li><b>Phủ kín</b> phù hợp đa số background; <b>Hiển thị toàn bộ</b> giữ trọn ảnh nhưng có thể để khoảng trống.</li>
+                <li>Điều chỉnh vị trí ảnh, màu phủ và độ đậm để chữ luôn dễ đọc.</li>
+            </ul>
+            <p>Nếu media được tham chiếu không còn tồn tại, hàng tự dùng nền màu an toàn thay vì hiển thị background lỗi.</p>
+            <h3>Nội dung và đa ngôn ngữ</h3>
+            <p>Điện thoại, email, địa chỉ, logo và mạng xã hội lấy từ <b>Cấu hình website</b>/<b>Setting values</b>. Menu lấy từ các section đang bật hiển thị trên menu. Với nút hành động, thông tin doanh nghiệp, copyright và văn bản tùy chỉnh, nhập nội dung riêng cho từng ngôn ngữ đang bật; nội dung ngôn ngữ mặc định được dùng làm fallback.</p>
+            <h3>Kiểm tra sau khi lưu</h3>
+            <ol>
+                <li>Mở trang public bằng nút <b>Xem website</b>.</li>
+                <li>Kiểm tra Header ở đầu trang và khi cuộn.</li>
+                <li>Kiểm tra Footer, liên kết, nút hành động và từng ngôn ngữ.</li>
+                <li>Thu nhỏ trình duyệt hoặc dùng điện thoại để kiểm tra menu, hàng/thành phần bị ẩn và ảnh nền mobile.</li>
+            </ol>
+        </section>
+
         <section id="theme" class="help-section">
-            <h2>9. Theme màu</h2>
+            <h2>10. Theme màu</h2>
             <p>Theme kiểm soát hệ màu và hoạt động độc lập với template bố cục.</p>
             <ul>
                 <li><b>Áp dụng:</b> kích hoạt một theme có sẵn.</li>
@@ -180,7 +212,7 @@
         </section>
 
         <section id="cau-hinh" class="help-section">
-            <h2>10. Cấu hình website và setting values</h2>
+            <h2>11. Cấu hình website và setting values</h2>
             <h3>Cấu hình website</h3>
             <p>Administrator và Super Administrator có thể cập nhật tên website, chữ logo, tên doanh nghiệp, điện thoại, email, địa chỉ, footer và các trường SEO.</p>
             <ul>
@@ -192,8 +224,26 @@
             <p>Các key do Developer định nghĩa theo template. Người quản trị chỉ nhập value: logo, URL mạng xã hội, email hoặc nội dung bổ sung. Không thay đổi ý nghĩa của key.</p>
         </section>
 
+        <section id="sao-luu" class="help-section">
+            <h2>12. Sao lưu &amp; khôi phục nội dung</h2>
+            <p>Chỉ Super Administrator truy cập chức năng này. VCMS Content Package là file <code>.vcms.zip</code> dùng để sao lưu một website hoặc chuyển nội dung sang một bản cài VCMS Landing tương thích.</p>
+            <h3>Export</h3>
+            <p>Bấm <b>Tải content package</b>. Package bao gồm section và item, nội dung đa ngôn ngữ, cấu hình nội dung, template, theme, cấu trúc Header/Footer và toàn bộ media còn sử dụng.</p>
+            <h3>Không nằm trong package</h3>
+            <p>Tài khoản quản trị, liên hệ khách hàng, license, SMTP, Cloudflare Turnstile và các environment variable/secret của máy chủ không được export hoặc ghi đè khi import.</p>
+            <h3>Import/khôi phục</h3>
+            <ol>
+                <li>Chọn file package, bấm <b>Kiểm tra package</b> và chờ thanh upload hoàn tất.</li>
+                <li>Kiểm tra tên website, schema, dung lượng, số section, item, media, ngôn ngữ, template, theme và các cảnh báo.</li>
+                <li>Chỉ bấm <b>Xác nhận khôi phục</b> khi đúng package cần dùng. Toàn bộ nội dung website hiện tại sẽ bị thay thế.</li>
+                <li>Kiểm tra lại trang public, Header/Footer, media, ngôn ngữ và form liên hệ sau khi import.</li>
+            </ol>
+            <p>Hệ thống tự tạo một bản sao nội dung hiện tại trong <code>App_Data/content-backups</code> trước khi import. Giới hạn package hiện tại là 512 MB.</p>
+            <div class="help-warning"><strong>Quan trọng:</strong> Content Package gần giống backup/restore nội dung nhưng không thay thế backup đầy đủ của database, file hệ thống và cấu hình máy chủ.</div>
+        </section>
+
         <section id="tai-khoan" class="help-section">
-            <h2>11. Tài khoản và mật khẩu</h2>
+            <h2>13. Tài khoản và mật khẩu</h2>
             <p>Vào <b>Tài khoản & phân quyền</b> để thêm hoặc chỉnh sửa người dùng. Tên đăng nhập có thể là username thông thường, không bắt buộc là email.</p>
             <ul>
                 <li>Mật khẩu tối thiểu 10 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.</li>
@@ -204,7 +254,7 @@
         </section>
 
         <section id="lien-he" class="help-section">
-            <h2>12. Liên hệ khách hàng</h2>
+            <h2>14. Liên hệ khách hàng</h2>
             <p>Form liên hệ lưu yêu cầu vào database trước khi gửi email. Vì vậy, nếu SMTP lỗi, thông tin khách hàng vẫn còn trong Admin.</p>
             <ul>
                 <li><b>Đã gửi:</b> email thông báo đã được gửi thành công.</li>
@@ -215,20 +265,21 @@
         </section>
 
         <section id="license" class="help-section">
-            <h2>13. Trạng thái license</h2>
+            <h2>15. Trạng thái license</h2>
             <p>Chỉ Super Administrator truy cập mục này. Trang hiển thị trạng thái local/server, canonical URL, domain được phép, lần kiểm tra gần nhất và lần kiểm tra kế tiếp.</p>
             <p>Dùng <b>Kiểm tra lại</b> khi vừa thay đổi license trên VNS Licensing Server. Nếu license bị Suspended/Revoked rồi chuyển lại Active, website cũng tự kiểm tra lại theo lịch do server quy định.</p>
             <div class="help-warning"><strong>Không chia sẻ:</strong> License key, SMTP password, OAuth secret và các secret cấu hình không được đưa vào ảnh chụp, email công khai hoặc source repository.</div>
         </section>
 
         <section id="kiem-tra" class="help-section">
-            <h2>14. Checklist trước khi bàn giao</h2>
+            <h2>16. Checklist trước khi bàn giao</h2>
             <ul class="help-checklist">
                 <li>Kiểm tra tên doanh nghiệp, logo, điện thoại, email và địa chỉ.</li>
                 <li>Kiểm tra tiêu đề SEO, mô tả SEO và từ khóa cho từng ngôn ngữ.</li>
                 <li>Kiểm tra thứ tự, trạng thái và nhãn menu của các section.</li>
                 <li>Kiểm tra tất cả nút, liên kết nội bộ, email và số điện thoại.</li>
                 <li>Kiểm tra ảnh Hero, Gallery, Media trên desktop và mobile.</li>
+                <li>Kiểm tra bố cục, bản dịch và ảnh nền Header/Footer trên desktop và mobile.</li>
                 <li>Gửi thử form liên hệ và xác nhận email đến Admin.</li>
                 <li>Kiểm tra chuyển đổi ngôn ngữ và nội dung fallback.</li>
                 <li>Kiểm tra tài khoản đúng vai trò và đổi mật khẩu ban đầu.</li>
@@ -237,12 +288,14 @@
         </section>
 
         <section id="su-co" class="help-section">
-            <h2>15. Xử lý sự cố thường gặp</h2>
+            <h2>17. Xử lý sự cố thường gặp</h2>
             <div class="help-faq">
                 <details><summary>Chọn ảnh nhưng chưa thấy preview</summary><p>Thử tải lại trang không dùng cache bằng <kbd>Ctrl</kbd> + <kbd>F5</kbd>, sau đó chọn lại file.</p></details>
                 <details><summary>Nội dung đã lưu nhưng chưa thấy trên trang chủ</summary><p>Kiểm tra đúng ngôn ngữ, đúng template đang sử dụng và section đang ở trạng thái “Đang hiện”. Sau đó mở lại trang public.</p></details>
                 <details><summary>Nút không xuất hiện</summary><p>Kiểm tra cả nội dung nút và URL. Một số template chỉ hiển thị nút khi hai giá trị đều hợp lệ.</p></details>
                 <details><summary>Email liên hệ gửi lỗi</summary><p>Thông tin vẫn được lưu. Kiểm tra SMTP/certificate rồi dùng “Gửi lại” hoặc “Gửi lại tất cả”.</p></details>
+                <details><summary>Không thấy phần cấu hình ảnh nền Header/Footer</summary><p>Trong hàng cần chỉnh, đổi loại nền sang <b>image</b>. Nhóm “Ảnh nền của hàng” sẽ xuất hiện ngay bên dưới phần thiết lập hàng.</p></details>
+                <details><summary>Import thành công nhưng form hoặc nút cuộn sai vị trí</summary><p>Kiểm tra URL liên kết có trùng với khóa section hiện tại hay không, ví dụ <code>#contact</code>. Liên kết tới một khóa không tồn tại sẽ không cuộn đến đúng section.</p></details>
                 <details><summary>Website báo không thể xác minh license</summary><p>Super Administrator mở trang License và bấm “Kiểm tra lại”. Nếu vẫn lỗi, chuyển thông tin thời điểm và trạng thái hiển thị cho bộ phận kỹ thuật; không gửi license key qua kênh công khai.</p></details>
                 <details><summary>Không thấy chức năng được mô tả</summary><p>Tài khoản có thể không đủ quyền hoặc website đang dùng phiên bản khác. Kiểm tra vai trò với Administrator/Super Administrator.</p></details>
             </div>
@@ -250,7 +303,7 @@
 
         <section class="help-feedback">
             <div>
-                <span class="help-kicker">Dùng thử Phase 1</span>
+                <span class="help-kicker">Phản hồi và hỗ trợ</span>
                 <h2>Gửi phản hồi hữu ích</h2>
                 <p>Khi báo lỗi, vui lòng ghi: tài khoản/vai trò, màn hình đang thao tác, các bước thực hiện, kết quả mong đợi, kết quả thực tế và ảnh chụp nếu có. Không chụp kèm mật khẩu hoặc secret.</p>
             </div>
