@@ -3,9 +3,9 @@
 @using LandingCms
 @inject Microsoft.Extensions.Localization.IStringLocalizer<PublicResource> PublicText
 @{
-    var page = Model.Page;
-    page.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
-    page.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
+    var viewModel = Model.Page;
+    viewModel.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
+    viewModel.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
     var navigationIdAssigned = false;
     var hasHeaderNavigation = Model.Region == "header" && Model.Layout.Rows.SelectMany(x => x.Columns).SelectMany(x => x.Components).Any(x => x.Type == "navigation");
 }
@@ -24,16 +24,16 @@
                             case "logo":
                                 {
                                     var logoKey = component.Variant == "light" ? "branding.logo_light" : "branding.logo_primary";
-                                    if (!page.BrandingMedia.TryGetValue(logoKey, out var logo)) page.BrandingMedia.TryGetValue("branding.logo_primary", out logo);
+                                    if (!viewModel.BrandingMedia.TryGetValue(logoKey, out var logo)) viewModel.BrandingMedia.TryGetValue("branding.logo_primary", out logo);
                                     <a class="brand" href="#top">
                                         @if (logo is not null)
                                         {
                                             var source = ResponsiveImageSources.Build(Url, logo, "thumbnail", 320);
-                                            <img src="@source.Src" srcset="@source.SrcSet" sizes="190px" width="@logo.Width" height="@logo.Height" alt="@page.Settings.SiteName" decoding="async">
+                                            <img src="@source.Src" srcset="@source.SrcSet" sizes="190px" width="@logo.Width" height="@logo.Height" alt="@viewModel.Settings.SiteName" decoding="async">
                                         }
                                         else
                                         {
-                                            @(page.Settings.LogoText ?? page.Settings.SiteName)
+                                            @(viewModel.Settings.LogoText ?? viewModel.Settings.SiteName)
                                         }
                                     </a>
                                 }
@@ -42,7 +42,7 @@
                                 var navigationId = Model.Region == "header" && !navigationIdAssigned ? "site-navigation" : null;
                                 navigationIdAssigned |= navigationId is not null;
                                 <nav id="@navigationId">
-                                    @foreach (var item in page.NavigationItems)
+                                    @foreach (var item in viewModel.NavigationItems)
                                     {
                                         <a href="#@item.SectionKey">@item.Label</a>
                                     }
@@ -52,31 +52,31 @@
                                 <a class="btn btn-small" href="@(component.Url ?? "#contact")">@(component.Text ?? PublicText["Header.Contact"].Value)</a>
                                 break;
                             case "language":
-                                if (page.Languages.Count > 1)
+                                if (viewModel.Languages.Count > 1)
                                 {
                                     <div class="language-switcher" role="navigation" aria-label="@PublicText["Language.Navigation"]">
-                                        @foreach (var language in page.Languages)
+                                        @foreach (var language in viewModel.Languages)
                                         {
                                             var languageUrl = language.IsDefault ? "/" : $"/{language.Code}";
-                                            <a href="@languageUrl" class="@(language.Code == page.CurrentLanguage.Code ? "active" : null)">@language.Code.ToUpperInvariant()</a>
+                                            <a href="@languageUrl" class="@(language.Code == viewModel.CurrentLanguage.Code ? "active" : null)">@language.Code.ToUpperInvariant()</a>
                                         }
                                     </div>
                                 }
                                 break;
                             case "phone":
-                                if (!string.IsNullOrWhiteSpace(page.Settings.Phone)) { <a href="tel:@page.Settings.Phone">@page.Settings.Phone</a> }
+                                if (!string.IsNullOrWhiteSpace(viewModel.Settings.Phone)) { <a href="tel:@viewModel.Settings.Phone">@viewModel.Settings.Phone</a> }
                                 break;
                             case "email":
-                                if (!string.IsNullOrWhiteSpace(page.Settings.Email)) { <a href="mailto:@page.Settings.Email">@page.Settings.Email</a> }
+                                if (!string.IsNullOrWhiteSpace(viewModel.Settings.Email)) { <a href="mailto:@viewModel.Settings.Email">@viewModel.Settings.Email</a> }
                                 break;
                             case "address":
-                                if (!string.IsNullOrWhiteSpace(page.Settings.Address)) { <span>@page.Settings.Address</span> }
+                                if (!string.IsNullOrWhiteSpace(viewModel.Settings.Address)) { <span>@viewModel.Settings.Address</span> }
                                 break;
                             case "company":
-                                <p>@(component.Text ?? page.Settings.CompanyName ?? page.Settings.SiteName)</p>
+                                <p>@(component.Text ?? viewModel.Settings.CompanyName ?? viewModel.Settings.SiteName)</p>
                                 break;
                             case "copyright":
-                                <span>@(component.Text ?? page.Settings.FooterText)</span>
+                                <span>@(component.Text ?? viewModel.Settings.FooterText)</span>
                                 break;
                             case "social":
                                 if (!string.IsNullOrWhiteSpace(facebookUrl)) { <a href="@facebookUrl" target="_blank" rel="noopener">Facebook</a> }
