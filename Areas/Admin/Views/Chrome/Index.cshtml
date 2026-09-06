@@ -16,4 +16,4 @@
     </section>
     <div class="form-actions"><button class="button" type="submit">Lưu cấu trúc</button></div>
 </form>
-@section Scripts{<script>window.chromeBuilderInitial={header:@Html.Raw(JsonSerializer.Serialize(Model.HeaderJson)),footer:@Html.Raw(JsonSerializer.Serialize(Model.FooterJson))};</script><script src="~/js/chrome-builder.js" asp-append-version="true"></script>}
+@section Scripts{<script>window.chromeBuilderInitial={header:@Html.Raw(JsonSerializer.Serialize(Model.HeaderJson)),footer:@Html.Raw(JsonSerializer.Serialize(Model.FooterJson)),languages:@Html.Raw(JsonSerializer.Serialize(Model.Languages))};</script><script src="~/js/chrome-builder.js" asp-append-version="true"></script>}

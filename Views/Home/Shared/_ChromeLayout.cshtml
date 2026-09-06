@@ -8,6 +8,13 @@
     viewModel.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
     var navigationIdAssigned = false;
     var hasHeaderNavigation = Model.Region == "header" && Model.Layout.Rows.SelectMany(x => x.Columns).SelectMany(x => x.Components).Any(x => x.Type == "navigation");
+    var defaultLanguageCode = viewModel.Languages.FirstOrDefault(x => x.IsDefault)?.Code;
+    string? ComponentText(ChromeComponent component)
+    {
+        if (component.Translations.TryGetValue(viewModel.CurrentLanguage.Code, out var currentText) && !string.IsNullOrWhiteSpace(currentText)) return currentText;
+        if (defaultLanguageCode is not null && component.Translations.TryGetValue(defaultLanguageCode, out var defaultText) && !string.IsNullOrWhiteSpace(defaultText)) return defaultText;
+        return component.Text;
+    }
 }
 @foreach (var row in Model.Layout.Rows)
 {
@@ -49,7 +56,7 @@
                                 </nav>
                                 break;
                             case "button":
-                                <a class="btn btn-small" href="@(component.Url ?? "#contact")">@(component.Text ?? PublicText["Header.Contact"].Value)</a>
+                                <a class="btn btn-small" href="@(component.Url ?? "#contact")">@(ComponentText(component) ?? PublicText["Header.Contact"].Value)</a>
                                 break;
                             case "language":
                                 if (viewModel.Languages.Count > 1)
@@ -73,17 +80,17 @@
                                 if (!string.IsNullOrWhiteSpace(viewModel.Settings.Address)) { <span>@viewModel.Settings.Address</span> }
                                 break;
                             case "company":
-                                <p>@(component.Text ?? viewModel.Settings.CompanyName ?? viewModel.Settings.SiteName)</p>
+                                <p>@(ComponentText(component) ?? viewModel.Settings.CompanyName ?? viewModel.Settings.SiteName)</p>
                                 break;
                             case "copyright":
-                                <span>@(component.Text ?? viewModel.Settings.FooterText)</span>
+                                <span>@(ComponentText(component) ?? viewModel.Settings.FooterText)</span>
                                 break;
                             case "social":
                                 if (!string.IsNullOrWhiteSpace(facebookUrl)) { <a href="@facebookUrl" target="_blank" rel="noopener">Facebook</a> }
                                 if (!string.IsNullOrWhiteSpace(zaloUrl)) { <a href="@zaloUrl" target="_blank" rel="noopener">Zalo</a> }
                                 break;
                             case "text":
-                                <span>@component.Text</span>
+                                <span>@ComponentText(component)</span>
                                 break;
                         }
                         </div>

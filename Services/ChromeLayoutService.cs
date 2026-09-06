@@ -31,6 +31,7 @@ public sealed class ChromeComponent
     public string? Variant { get; set; }
     public string? Text { get; set; }
     public string? Url { get; set; }
+    public Dictionary<string, string> Translations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public bool HideOnMobile { get; set; }
 }
 
@@ -96,6 +97,18 @@ public sealed class ChromeLayoutService : IChromeLayoutService
                     if (!ComponentTypes.Contains(component.Type)) throw new InvalidOperationException($"Thành phần '{component.Type}' không được hỗ trợ.");
                     component.Variant = Slug(component.Variant, "default");
                     component.Text = Trim(component.Text, 200); component.Url = SafeUrl(component.Url);
+                    component.Translations ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    if (component.Translations.Count > 20) throw new InvalidOperationException("Mỗi thành phần tối đa 20 bản dịch.");
+                    var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var translation in component.Translations)
+                    {
+                        var languageCode = translation.Key.Trim().ToLowerInvariant();
+                        if (languageCode.Length is < 2 or > 10 || languageCode.Any(x => !char.IsLetterOrDigit(x) && x != '-'))
+                            throw new InvalidOperationException($"Mã ngôn ngữ '{translation.Key}' không hợp lệ.");
+                        var translatedText = Trim(translation.Value, 200);
+                        if (translatedText is not null) translations[languageCode] = translatedText;
+                    }
+                    component.Translations = translations;
                     componentCount++;
                 }
             }
