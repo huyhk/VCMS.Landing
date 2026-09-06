@@ -1,0 +1,38 @@
+aside {
+    padding-right: 14px;
+    padding-bottom: 20px;
+    overflow: hidden;
+}
+
+.admin-brand {
+    flex: 0 0 auto;
+    margin-bottom: 30px;
+}
+
+aside nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 8px;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #475569 transparent;
+}
+
+aside nav::-webkit-scrollbar {
+    width: 7px;
+}
+
+aside nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+aside nav::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 10px;
+}
+
+aside nav::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
