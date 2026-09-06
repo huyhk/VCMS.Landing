@@ -1,12 +1,15 @@
 (()=>{
 const form=document.querySelector('[data-chrome-builder]');if(!form)return;
 const componentTypes=['logo','navigation','button','language','phone','email','address','social','company','copyright','text'];
+const componentLabels={logo:'Logo',navigation:'Menu chính',button:'Nút hành động',language:'Chọn ngôn ngữ',phone:'Điện thoại',email:'Email',address:'Địa chỉ',social:'Mạng xã hội',company:'Tên/Giới thiệu doanh nghiệp',copyright:'Bản quyền',text:'Văn bản tùy chỉnh'};
+const componentHints={logo:'Hình ảnh lấy từ Logo chính/Logo sáng trong Setting values.',navigation:'Liên kết lấy từ các section đang bật hiển thị trên menu.',language:'Danh sách lấy từ các ngôn ngữ đang được bật.',phone:'Giá trị lấy từ Cấu hình website → Điện thoại.',email:'Giá trị lấy từ Cấu hình website → Email.',address:'Giá trị lấy từ Cấu hình website → Địa chỉ.',social:'Liên kết lấy từ nhóm Mạng xã hội trong Setting values.'};
 const choices={background:['surface','brand','contrast','transparent'],height:['compact','standard','large'],container:['boxed','full'],width:['auto','fill','1','2','3','4'],align:['left','center','right']};
 const parse=(value,fallback)=>{try{return JSON.parse(value)}catch{return fallback}};
 const states={header:parse(window.chromeBuilderInitial.header,{behavior:'sticky',rows:[]}),footer:parse(window.chromeBuilderInitial.footer,{behavior:'static',rows:[]})};
-const option=(value,current)=>{const el=document.createElement('option');el.value=value;el.textContent=value;el.selected=value===current;return el};
-const select=(values,current,field)=>{const el=document.createElement('select');el.dataset.field=field;values.forEach(x=>el.append(option(x,current)));return el};
+const option=(value,current,label=value)=>{const el=document.createElement('option');el.value=value;el.textContent=label;el.selected=value===current;return el};
+const select=(values,current,field,labels={})=>{const el=document.createElement('select');el.dataset.field=field;values.forEach(x=>el.append(option(x,current,labels[x]||x)));return el};
 const checkbox=(text,current,field)=>{const label=document.createElement('label');label.className='chrome-checkbox';const el=document.createElement('input');el.type='checkbox';el.checked=!!current;el.dataset.booleanField=field;label.append(el,document.createTextNode(text));return label};
+const inputField=(labelText,value,placeholder,field)=>{const label=document.createElement('label');label.className='chrome-component-field';const caption=document.createElement('span');caption.textContent=labelText;const input=document.createElement('input');input.value=value||'';input.placeholder=placeholder;input.dataset.field=field;label.append(caption,input);return label};
 const button=(text,action,index)=>{const el=document.createElement('button');el.type='button';el.textContent=text;el.className='chrome-icon-button'+(action==='remove'?' danger':'');el.dataset.action=action;if(index!==undefined)el.dataset.index=index;return el};
 function render(region){
  const state=states[region],root=form.querySelector(`[data-layout-editor="${region}"]`);root.replaceChildren();
@@ -22,11 +25,13 @@ function render(region){
    const colHead=document.createElement('div');colHead.className='chrome-builder-column-head';colHead.append(select(choices.width,column.width,'width'),select(choices.align,column.align,'align'),button('×','remove-column'));col.append(colHead);
    (column.components||=[]).forEach((component,pi)=>{
     const item=document.createElement('div');item.className='chrome-builder-component';item.dataset.component=pi;
-    item.append(select(componentTypes,component.type,'type'));
-    const variant=document.createElement('input');variant.value=component.variant||'';variant.placeholder='Biến thể (primary/light)';variant.dataset.field='variant';item.append(variant);
-    const controls=document.createElement('div');controls.append(button('↑','component-up'),button('↓','component-down'),button('×','remove-component'));item.append(controls);
-    const text=document.createElement('input');text.value=component.text||'';text.placeholder='Nội dung tùy chọn';text.dataset.field='text';
-    const url=document.createElement('input');url.value=component.url||'';url.placeholder='URL tùy chọn';url.dataset.field='url';item.append(text,url,checkbox('Ẩn mobile',component.hideOnMobile,'hideOnMobile'));col.append(item);
+    const itemHead=document.createElement('div');itemHead.className='chrome-builder-component-head';itemHead.append(select(componentTypes,component.type,'type',componentLabels));
+    const controls=document.createElement('div');controls.className='chrome-builder-actions';controls.append(button('↑','component-up'),button('↓','component-down'),button('×','remove-component'));itemHead.append(controls);item.append(itemHead);
+    if(componentHints[component.type]){const hint=document.createElement('p');hint.className='chrome-component-hint';hint.textContent=componentHints[component.type];item.append(hint)}
+    if(['logo','button'].includes(component.type))item.append(inputField('Biến thể',component.variant,'Ví dụ: primary hoặc light','variant'));
+    if(['button','company','copyright','text'].includes(component.type))item.append(inputField('Nội dung tùy chỉnh',component.text,'Để trống để dùng nội dung mặc định','text'));
+    if(component.type==='button')item.append(inputField('Liên kết',component.url,'Ví dụ: #contact hoặc /bao-gia','url'));
+    item.append(checkbox('Ẩn thành phần này trên mobile',component.hideOnMobile,'hideOnMobile'));col.append(item);
    });
    const add=button('+ Thành phần','add-component');add.className='button button-secondary';col.append(add);columns.append(col);
   });
@@ -35,7 +40,7 @@ function render(region){
 }
 function locate(target){const rowEl=target.closest('[data-row]'),colEl=target.closest('[data-column]'),componentEl=target.closest('[data-component]');return{region:rowEl?.dataset.region,row:+rowEl?.dataset.row,column:colEl?+colEl.dataset.column:null,component:componentEl?+componentEl.dataset.component:null}}
 function sync(region){form.querySelector(`[data-chrome-json="${region}"]`).value=JSON.stringify(states[region]);}
-form.addEventListener('input',event=>{const pos=locate(event.target),field=event.target.dataset.field;if(!pos.region||!field)return;let target=states[pos.region].rows[pos.row];if(pos.column!==null)target=target.columns[pos.column];if(pos.component!==null)target=target.components[pos.component];target[field]=event.target.value;sync(pos.region)});
+form.addEventListener('input',event=>{const pos=locate(event.target),field=event.target.dataset.field;if(!pos.region||!field)return;let target=states[pos.region].rows[pos.row];if(pos.column!==null)target=target.columns[pos.column];if(pos.component!==null)target=target.components[pos.component];target[field]=event.target.value;sync(pos.region);if(field==='type')render(pos.region)});
 form.addEventListener('change',event=>{
  if(event.target.matches('[data-behavior]')){states[event.target.dataset.behavior].behavior=event.target.value;sync(event.target.dataset.behavior);return}
  const field=event.target.dataset.booleanField;if(!field)return;const pos=locate(event.target);let target=states[pos.region].rows[pos.row];if(pos.column!==null)target=target.columns[pos.column];if(pos.component!==null)target=target.components[pos.component];target[field]=event.target.checked;sync(pos.region);
