@@ -1,0 +1,99 @@
+@model ChromeRenderViewModel
+@using LandingCms.Services
+@using LandingCms
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PublicResource> PublicText
+@{
+    var page = Model.Page;
+    page.ExtendedSettings.TryGetValue("social.facebook_url", out var facebookUrl);
+    page.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
+    var navigationIdAssigned = false;
+    var hasHeaderNavigation = Model.Region == "header" && Model.Layout.Rows.SelectMany(x => x.Columns).SelectMany(x => x.Components).Any(x => x.Type == "navigation");
+}
+@foreach (var row in Model.Layout.Rows)
+{
+    <div class="chrome-row chrome-row-@row.Key chrome-bg-@row.Background chrome-height-@row.Height @(row.HideOnMobile ? "chrome-mobile-hidden" : null)">
+        <div class="@(row.Container == "full" ? "chrome-container-full" : "container") chrome-columns">
+            @foreach (var column in row.Columns)
+            {
+                <div class="chrome-column chrome-width-@column.Width chrome-align-@column.Align">
+                    @foreach (var component in column.Components)
+                    {
+                        <div class="chrome-component chrome-component-@component.Type chrome-variant-@component.Variant @(component.HideOnMobile ? "chrome-mobile-hidden" : null)">
+                        @switch (component.Type)
+                        {
+                            case "logo":
+                                {
+                                    var logoKey = component.Variant == "light" ? "branding.logo_light" : "branding.logo_primary";
+                                    if (!page.BrandingMedia.TryGetValue(logoKey, out var logo)) page.BrandingMedia.TryGetValue("branding.logo_primary", out logo);
+                                    <a class="brand" href="#top">
+                                        @if (logo is not null)
+                                        {
+                                            var source = ResponsiveImageSources.Build(Url, logo, "thumbnail", 320);
+                                            <img src="@source.Src" srcset="@source.SrcSet" sizes="190px" width="@logo.Width" height="@logo.Height" alt="@page.Settings.SiteName" decoding="async">
+                                        }
+                                        else
+                                        {
+                                            @(page.Settings.LogoText ?? page.Settings.SiteName)
+                                        }
+                                    </a>
+                                }
+                                break;
+                            case "navigation":
+                                var navigationId = Model.Region == "header" && !navigationIdAssigned ? "site-navigation" : null;
+                                navigationIdAssigned |= navigationId is not null;
+                                <nav id="@navigationId">
+                                    @foreach (var item in page.NavigationItems)
+                                    {
+                                        <a href="#@item.SectionKey">@item.Label</a>
+                                    }
+                                </nav>
+                                break;
+                            case "button":
+                                <a class="btn btn-small" href="@(component.Url ?? "#contact")">@(component.Text ?? PublicText["Header.Contact"].Value)</a>
+                                break;
+                            case "language":
+                                if (page.Languages.Count > 1)
+                                {
+                                    <div class="language-switcher" role="navigation" aria-label="@PublicText["Language.Navigation"]">
+                                        @foreach (var language in page.Languages)
+                                        {
+                                            var languageUrl = language.IsDefault ? "/" : $"/{language.Code}";
+                                            <a href="@languageUrl" class="@(language.Code == page.CurrentLanguage.Code ? "active" : null)">@language.Code.ToUpperInvariant()</a>
+                                        }
+                                    </div>
+                                }
+                                break;
+                            case "phone":
+                                if (!string.IsNullOrWhiteSpace(page.Settings.Phone)) { <a href="tel:@page.Settings.Phone">@page.Settings.Phone</a> }
+                                break;
+                            case "email":
+                                if (!string.IsNullOrWhiteSpace(page.Settings.Email)) { <a href="mailto:@page.Settings.Email">@page.Settings.Email</a> }
+                                break;
+                            case "address":
+                                if (!string.IsNullOrWhiteSpace(page.Settings.Address)) { <span>@page.Settings.Address</span> }
+                                break;
+                            case "company":
+                                <p>@(component.Text ?? page.Settings.CompanyName ?? page.Settings.SiteName)</p>
+                                break;
+                            case "copyright":
+                                <span>@(component.Text ?? page.Settings.FooterText)</span>
+                                break;
+                            case "social":
+                                if (!string.IsNullOrWhiteSpace(facebookUrl)) { <a href="@facebookUrl" target="_blank" rel="noopener">Facebook</a> }
+                                if (!string.IsNullOrWhiteSpace(zaloUrl)) { <a href="@zaloUrl" target="_blank" rel="noopener">Zalo</a> }
+                                break;
+                            case "text":
+                                <span>@component.Text</span>
+                                break;
+                        }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+@if (hasHeaderNavigation)
+{
+    <button class="menu-button chrome-menu-button" type="button" aria-label="Mở menu" aria-controls="site-navigation" aria-expanded="false">☰</button>
+}

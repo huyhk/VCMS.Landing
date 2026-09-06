@@ -15,7 +15,7 @@ namespace LandingCms.Controllers;
 public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger,
     IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas,
     ICloudflareTurnstileValidator turnstileValidator, IOptions<CloudflareTurnstileOptions> turnstileOptions,
-    IThemeCssService themeCss, IStringLocalizer<PublicResource> publicText) : Controller
+    IThemeCssService themeCss, IStringLocalizer<PublicResource> publicText, IChromeLayoutService chromeLayouts) : Controller
 {
     public async Task<IActionResult> Index(string? culture)
     {
@@ -184,7 +184,9 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             .ToDictionary(x => x.Key, x => (IReadOnlyList<SectionItem>)x.ToList());
         var turnstileSiteKey = turnstileOptions.Value.IsEnabled ? turnstileOptions.Value.SiteKey : null;
         return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings,
-            brandingMedia, sectionMedia, sectionItems, languages, currentLanguage));
+            brandingMedia, sectionMedia, sectionItems, languages, currentLanguage,
+            chromeLayouts.ParseHeader(templateSetting.ActiveTemplate.HeaderLayoutJson),
+            chromeLayouts.ParseFooter(templateSetting.ActiveTemplate.FooterLayoutJson)));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]

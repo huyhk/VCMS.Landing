@@ -11,6 +11,8 @@ public class PageTemplate
     [Required, StringLength(300)] public string ViewPath { get; set; } = "";
     [StringLength(300)] public string? PreviewImageUrl { get; set; }
     [StringLength(30)] public string Version { get; set; } = "1.0";
+    public string HeaderLayoutJson { get; set; } = "{}";
+    public string FooterLayoutJson { get; set; } = "{}";
     public bool IsEnabled { get; set; } = true;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public ICollection<TemplateSection> Sections { get; set; } = new List<TemplateSection>();

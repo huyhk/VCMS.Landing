@@ -1,8 +1,10 @@
 using LandingCms.Models;
+using LandingCms.Services;
 
 namespace LandingCms.ViewModels;
 public record NavigationItem(string SectionKey, string Label);
 public record SectionRenderViewModel(LandingSection Section, HomeViewModel Page);
+public record ChromeRenderViewModel(HomeViewModel Page, ChromeLayout Layout, string Region);
 public record HomeViewModel(
     SiteSetting Settings,
     IReadOnlyList<LandingSection> Sections,
@@ -13,4 +15,6 @@ public record HomeViewModel(
     IReadOnlyDictionary<string, IReadOnlyList<SectionMedia>> SectionMedia,
     IReadOnlyDictionary<string, IReadOnlyList<SectionItem>> SectionItems,
     IReadOnlyList<ContentLanguage> Languages,
-    ContentLanguage CurrentLanguage);
+    ContentLanguage CurrentLanguage,
+    ChromeLayout HeaderLayout,
+    ChromeLayout FooterLayout);

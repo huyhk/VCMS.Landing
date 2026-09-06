@@ -16,7 +16,7 @@ menuButton?.addEventListener('click',event=>{
 });
 siteNavigation?.querySelectorAll('a').forEach(link=>link.addEventListener('click',closeMenu));
 document.addEventListener('click',event=>{
-    if(siteNavigation?.classList.contains('open')&&!event.target.closest('.nav'))closeMenu();
+    if(siteNavigation?.classList.contains('open')&&!event.target.closest('.site-header'))closeMenu();
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu()});
 window.addEventListener('resize',()=>{if(window.innerWidth>800)closeMenu()});

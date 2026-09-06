@@ -1,0 +1,19 @@
+@model ChromeBuilderViewModel
+@using System.Text.Json
+@{ ViewData["Title"] = "Header & Footer Builder"; }
+<div class="page-title"><div><h1>Header & Footer Builder</h1><p>Template đang sử dụng: <strong>@Model.TemplateName</strong>. Cấu trúc được lưu theo template và đi cùng file backup/import.</p></div><a class="button button-secondary" href="/" target="_blank">Xem website ↗</a></div>
+<form asp-action="Save" method="post" data-chrome-builder>
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+    <input asp-for="HeaderJson" type="hidden" data-chrome-json="header"><input asp-for="FooterJson" type="hidden" data-chrome-json="footer">
+    <section class="panel chrome-builder-panel">
+        <div class="panel-head"><div><h2>Header</h2><p>Tạo tối đa 5 hàng; mỗi hàng tối đa 4 cột.</p></div><div class="chrome-presets">@foreach(var preset in Model.HeaderPresets){<button type="button" class="button button-secondary" data-preset-region="header" data-preset-json="@preset.Value">@preset.Key</button>}</div></div>
+        <label class="chrome-behavior">Cách hiển thị <select data-behavior="header"><option value="sticky">Cố định khi cuộn</option><option value="static">Cuộn cùng nội dung</option></select></label>
+        <div data-layout-editor="header"></div><button type="button" class="button button-secondary" data-add-row="header">+ Thêm hàng</button>
+    </section>
+    <section class="panel chrome-builder-panel">
+        <div class="panel-head"><div><h2>Footer</h2><p>Kết hợp logo, thông tin doanh nghiệp, menu, liên hệ và copyright.</p></div><div class="chrome-presets">@foreach(var preset in Model.FooterPresets){<button type="button" class="button button-secondary" data-preset-region="footer" data-preset-json="@preset.Value">@preset.Key</button>}</div></div>
+        <div data-layout-editor="footer"></div><button type="button" class="button button-secondary" data-add-row="footer">+ Thêm hàng</button>
+    </section>
+    <div class="form-actions"><button class="button" type="submit">Lưu cấu trúc</button></div>
+</form>
+@section Scripts{<script>window.chromeBuilderInitial={header:@Html.Raw(JsonSerializer.Serialize(Model.HeaderJson)),footer:@Html.Raw(JsonSerializer.Serialize(Model.FooterJson))};</script><script src="~/js/chrome-builder.js" asp-append-version="true"></script>}

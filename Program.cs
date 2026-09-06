@@ -74,6 +74,7 @@ builder.Services.AddScoped<IMediaStorageService, MediaStorageService>();
 builder.Services.AddScoped<IContentPackageService, ContentPackageService>();
 builder.Services.AddSingleton<IContentHtmlSanitizer, ContentHtmlSanitizer>();
 builder.Services.AddSingleton<ISectionSchemaService, SectionSchemaService>();
+builder.Services.AddSingleton<IChromeLayoutService, ChromeLayoutService>();
 builder.Services.AddSingleton<ITemplateStyleProvider, TemplateStyleProvider>();
 builder.Services.AddSingleton<IThemeCssService, ThemeCssService>();
 builder.Services.AddRateLimiter(options => options.AddPolicy("contact", context =>

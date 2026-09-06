@@ -1,4 +1,5 @@
 using LandingCms.Models;
+using LandingCms.Services;
 using LandingCms.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -123,7 +124,6 @@ public static class DbInitializer
             db.PageTemplates.Add(template);
             await db.SaveChangesAsync();
         }
-
         if (!await db.TemplateSections.AnyAsync(x => x.TemplateId == template.Id))
         {
             var definitions = await db.SectionDefinitions.ToDictionaryAsync(x => x.Key);
@@ -195,6 +195,7 @@ public static class DbInitializer
         await EnsureDerivedTemplateAsync("editorial", "Editorial", "Bố cục bất đối xứng, typography lớn và hình ảnh giàu tính biên tập.", "~/Views/Templates/Editorial/Index.cshtml");
         await EnsureDerivedTemplateAsync("full-width", "Full Width", "Bố cục tràn cạnh, ưu tiên hình ảnh lớn và chuyển tiếp mạnh giữa các section.", "~/Views/Templates/FullWidth/Index.cshtml");
         await EnsureDerivedTemplateAsync("conversion", "Conversion", "Bố cục cô đọng, ưu tiên bằng chứng, lời kêu gọi hành động và form liên hệ.", "~/Views/Templates/Conversion/Index.cshtml");
+        await EnsureChromeLayoutsAsync(db);
 
         await BackfillPageSectionsAsync(db);
 
@@ -248,9 +249,6 @@ public static class DbInitializer
             new DeveloperSetting("branding.logo_primary", "Logo chính", "Nhận diện thương hiệu", "Image", "Logo dùng trên nền sáng.", 1),
             new DeveloperSetting("branding.logo_light", "Logo sáng", "Nhận diện thương hiệu", "Image", "Logo trắng/sáng dùng trên Hero hoặc nền tối.", 2),
             new DeveloperSetting("branding.favicon", "Favicon", "Nhận diện thương hiệu", "Image", "Icon hiển thị trên tab trình duyệt.", 3),
-            new DeveloperSetting("layout.header", "Kiểu Header", "Bố cục chung", "Select", "Standard, Centered, Transparent, Compact hoặc Minimal.", 4),
-            new DeveloperSetting("layout.header_behavior", "Cách cố định Header", "Bố cục chung", "Select", "Sticky hoặc cuộn cùng nội dung.", 5),
-            new DeveloperSetting("layout.footer", "Kiểu Footer", "Bố cục chung", "Select", "Corporate, Contact, Simple hoặc Minimal.", 6),
             new DeveloperSetting("social.facebook_url", "Trang Facebook", "Mạng xã hội", "Url", "URL trang Facebook của doanh nghiệp.", 10),
             new DeveloperSetting("social.zalo_url", "Tài khoản Zalo", "Mạng xã hội", "Url", "URL Zalo OA hoặc liên kết liên hệ Zalo.", 20),
             new DeveloperSetting("analytics.ga_measurement_id", "Google Analytics Measurement ID", "Phân tích", "Text", "Ví dụ: G-ABC123XYZ.", 30),
@@ -266,14 +264,9 @@ public static class DbInitializer
             }
             definition.Name = item.Name; definition.Group = item.Group; definition.ValueType = item.ValueType;
             definition.Description = item.Description; definition.SortOrder = item.SortOrder; definition.IsEnabled = true;
-            definition.DefaultValue = item.Key switch
-            {
-                "layout.header" => "standard",
-                "layout.header_behavior" => "sticky",
-                "layout.footer" => "corporate",
-                _ => definition.DefaultValue
-            };
         }
+        foreach (var legacyKey in new[] { "layout.header", "layout.header_behavior", "layout.footer" })
+            if (existing.TryGetValue(legacyKey, out var legacyDefinition)) legacyDefinition.IsEnabled = false;
         await db.SaveChangesAsync();
 
         var templateKeys = new[] { "corporate", "minimal", "editorial", "full-width", "conversion" };
@@ -284,6 +277,20 @@ public static class DbInitializer
             foreach (var definition in existing.Values.Where(x => developerKeys.Contains(x.Key)))
                 if (!links.Any(x => x.TemplateId == template.Id && x.SettingDefinitionId == definition.Id))
                     db.TemplateSettings.Add(new TemplateSetting { TemplateId = template.Id, SettingDefinitionId = definition.Id, SortOrder = definition.SortOrder });
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task EnsureChromeLayoutsAsync(ApplicationDbContext db)
+    {
+        var layouts = new ChromeLayoutService();
+        var templates = await db.PageTemplates.ToListAsync();
+        foreach (var pageTemplate in templates)
+        {
+            if (string.IsNullOrWhiteSpace(pageTemplate.HeaderLayoutJson) || pageTemplate.HeaderLayoutJson == "{}")
+                pageTemplate.HeaderLayoutJson = layouts.GetHeaderPreset("standard");
+            if (string.IsNullOrWhiteSpace(pageTemplate.FooterLayoutJson) || pageTemplate.FooterLayoutJson == "{}")
+                pageTemplate.FooterLayoutJson = layouts.GetFooterPreset("corporate");
+        }
         await db.SaveChangesAsync();
     }
 
