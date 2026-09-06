@@ -182,11 +182,17 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         }
         var sectionItems = sectionItemRows.GroupBy(x => x.SectionKey)
             .ToDictionary(x => x.Key, x => (IReadOnlyList<SectionItem>)x.ToList());
+        var headerLayout = chromeLayouts.ParseHeader(templateSetting.ActiveTemplate.HeaderLayoutJson);
+        var footerLayout = chromeLayouts.ParseFooter(templateSetting.ActiveTemplate.FooterLayoutJson);
+        var chromeMediaIds = headerLayout.Rows.Concat(footerLayout.Rows)
+            .SelectMany(x => new long?[] { x.BackgroundMediaId, x.MobileBackgroundMediaId })
+            .Where(x => x.HasValue).Select(x => x!.Value).Distinct().ToArray();
+        var chromeMedia = await db.MediaAssets.AsNoTracking()
+            .Where(x => chromeMediaIds.Contains(x.Id) && !x.IsDeleted).ToDictionaryAsync(x => x.Id);
         var turnstileSiteKey = turnstileOptions.Value.IsEnabled ? turnstileOptions.Value.SiteKey : null;
         return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings,
             brandingMedia, sectionMedia, sectionItems, languages, currentLanguage,
-            chromeLayouts.ParseHeader(templateSetting.ActiveTemplate.HeaderLayoutJson),
-            chromeLayouts.ParseFooter(templateSetting.ActiveTemplate.FooterLayoutJson)));
+            headerLayout, footerLayout, chromeMedia));
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]

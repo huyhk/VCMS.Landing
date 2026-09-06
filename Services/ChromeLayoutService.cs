@@ -14,6 +14,12 @@ public sealed class ChromeRow
     public string Container { get; set; } = "boxed";
     public string Background { get; set; } = "surface";
     public string Height { get; set; } = "standard";
+    public long? BackgroundMediaId { get; set; }
+    public long? MobileBackgroundMediaId { get; set; }
+    public string BackgroundSize { get; set; } = "cover";
+    public string BackgroundPosition { get; set; } = "center";
+    public string OverlayColor { get; set; } = "#000000";
+    public int OverlayOpacity { get; set; }
     public bool HideOnMobile { get; set; }
     public List<ChromeColumn> Columns { get; set; } = [];
 }
@@ -50,7 +56,7 @@ public sealed class ChromeLayoutService : IChromeLayoutService
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
     private static readonly HashSet<string> ComponentTypes = new(StringComparer.Ordinal)
         { "logo", "navigation", "button", "language", "phone", "email", "address", "social", "company", "copyright", "text" };
-    private static readonly HashSet<string> Backgrounds = new(StringComparer.Ordinal) { "surface", "brand", "contrast", "transparent" };
+    private static readonly HashSet<string> Backgrounds = new(StringComparer.Ordinal) { "surface", "brand", "contrast", "transparent", "image" };
     private static readonly HashSet<string> Heights = new(StringComparer.Ordinal) { "compact", "standard", "large" };
     private static readonly HashSet<string> Widths = new(StringComparer.Ordinal) { "auto", "fill", "1", "2", "3", "4" };
     private static readonly HashSet<string> Alignments = new(StringComparer.Ordinal) { "left", "center", "right" };
@@ -86,6 +92,12 @@ public sealed class ChromeLayoutService : IChromeLayoutService
             row.Key = Slug(row.Key, "row"); row.Container = row.Container == "full" ? "full" : "boxed";
             row.Background = Backgrounds.Contains(row.Background) ? row.Background : "surface";
             row.Height = Heights.Contains(row.Height) ? row.Height : "standard";
+            row.BackgroundMediaId = row.BackgroundMediaId > 0 ? row.BackgroundMediaId : null;
+            row.MobileBackgroundMediaId = row.MobileBackgroundMediaId > 0 ? row.MobileBackgroundMediaId : null;
+            row.BackgroundSize = row.BackgroundSize is "cover" or "contain" or "auto" ? row.BackgroundSize : "cover";
+            row.BackgroundPosition = row.BackgroundPosition is "center" or "left" or "right" or "top" or "bottom" ? row.BackgroundPosition : "center";
+            row.OverlayColor = IsHexColor(row.OverlayColor) ? row.OverlayColor.ToLowerInvariant() : "#000000";
+            row.OverlayOpacity = Math.Clamp(row.OverlayOpacity, 0, 100);
             if (row.Columns.Count is < 1 or > 4) throw new InvalidOperationException("Mỗi hàng phải có từ 1 đến 4 cột.");
             foreach (var column in row.Columns)
             {
@@ -120,6 +132,7 @@ public sealed class ChromeLayoutService : IChromeLayoutService
     }
 
     private static string Serialize(ChromeLayout value) => JsonSerializer.Serialize(value, JsonOptions);
+    private static bool IsHexColor(string? value) => value is { Length: 7 } && value[0] == '#' && value[1..].All(Uri.IsHexDigit);
     private static string Slug(string? value, string fallback) => string.IsNullOrWhiteSpace(value) ? fallback : new string(value.Where(x => char.IsLetterOrDigit(x) || x == '-').Take(40).ToArray()).ToLowerInvariant() is { Length: > 0 } result ? result : fallback;
     private static string? Trim(string? value, int max)
     {

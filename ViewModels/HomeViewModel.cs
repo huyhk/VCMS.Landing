@@ -17,4 +17,5 @@ public record HomeViewModel(
     IReadOnlyList<ContentLanguage> Languages,
     ContentLanguage CurrentLanguage,
     ChromeLayout HeaderLayout,
-    ChromeLayout FooterLayout);
+    ChromeLayout FooterLayout,
+    IReadOnlyDictionary<long, MediaAsset> ChromeMedia);

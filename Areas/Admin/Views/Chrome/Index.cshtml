@@ -2,7 +2,7 @@
 @using System.Text.Json
 @{ ViewData["Title"] = "Header & Footer Builder"; }
 <div class="page-title"><div><h1>Header & Footer Builder</h1><p>Template đang sử dụng: <strong>@Model.TemplateName</strong>. Cấu trúc được lưu theo template và đi cùng file backup/import.</p></div><a class="button button-secondary" href="/" target="_blank">Xem website ↗</a></div>
-<form asp-action="Save" method="post" data-chrome-builder>
+<form asp-action="Save" method="post" data-chrome-builder data-upload-url="@Url.Action("UploadBackground")">
     <div asp-validation-summary="ModelOnly" class="validation"></div>
     <input asp-for="HeaderJson" type="hidden" data-chrome-json="header"><input asp-for="FooterJson" type="hidden" data-chrome-json="footer">
     <section class="panel chrome-builder-panel">
@@ -16,4 +16,4 @@
     </section>
     <div class="form-actions"><button class="button" type="submit">Lưu cấu trúc</button></div>
 </form>
-@section Scripts{<script>window.chromeBuilderInitial={header:@Html.Raw(JsonSerializer.Serialize(Model.HeaderJson)),footer:@Html.Raw(JsonSerializer.Serialize(Model.FooterJson)),languages:@Html.Raw(JsonSerializer.Serialize(Model.Languages))};</script><script src="~/js/chrome-builder.js" asp-append-version="true"></script>}
+@section Scripts{<script>window.chromeBuilderInitial={header:@Html.Raw(JsonSerializer.Serialize(Model.HeaderJson)),footer:@Html.Raw(JsonSerializer.Serialize(Model.FooterJson)),languages:@Html.Raw(JsonSerializer.Serialize(Model.Languages)),media:@Html.Raw(JsonSerializer.Serialize(Model.Media))};</script><script src="~/js/chrome-builder.js" asp-append-version="true"></script>}

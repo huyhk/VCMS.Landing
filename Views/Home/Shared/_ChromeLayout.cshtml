@@ -18,7 +18,23 @@
 }
 @foreach (var row in Model.Layout.Rows)
 {
-    <div class="chrome-row chrome-row-@row.Key chrome-bg-@row.Background chrome-height-@row.Height @(row.HideOnMobile ? "chrome-mobile-hidden" : null)">
+    var rowStyles = new List<string>();
+    var hasBackgroundImage = false;
+    if (row.Background == "image" && row.BackgroundMediaId.HasValue && viewModel.ChromeMedia.TryGetValue(row.BackgroundMediaId.Value, out var desktopBackground))
+    {
+        hasBackgroundImage = true;
+        var desktopSource = ResponsiveImageSources.Build(Url, desktopBackground, "hero", 1600);
+        var mobileSource = desktopSource.Src;
+        if (row.MobileBackgroundMediaId.HasValue && viewModel.ChromeMedia.TryGetValue(row.MobileBackgroundMediaId.Value, out var mobileBackground))
+            mobileSource = ResponsiveImageSources.Build(Url, mobileBackground, "hero", 800).Src;
+        rowStyles.Add($"--chrome-bg-image:url('{desktopSource.Src}')");
+        rowStyles.Add($"--chrome-bg-mobile-image:url('{mobileSource}')");
+        rowStyles.Add($"--chrome-bg-size:{row.BackgroundSize}");
+        rowStyles.Add($"--chrome-bg-position:{row.BackgroundPosition}");
+        rowStyles.Add($"--chrome-overlay-color:{row.OverlayColor}");
+        rowStyles.Add($"--chrome-overlay-opacity:{row.OverlayOpacity}%");
+    }
+    <div class="chrome-row chrome-row-@row.Key chrome-bg-@row.Background @(hasBackgroundImage ? "chrome-has-background-image" : null) chrome-height-@row.Height @(row.HideOnMobile ? "chrome-mobile-hidden" : null)" style="@string.Join(";", rowStyles)">
         <div class="@(row.Container == "full" ? "chrome-container-full" : "container") chrome-columns">
             @foreach (var column in row.Columns)
             {
