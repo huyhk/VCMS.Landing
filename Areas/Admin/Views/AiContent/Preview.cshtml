@@ -14,44 +14,44 @@
         <label><input id="select-all-ai-sections" type="checkbox" checked> Chọn tất cả</label>
     </div>
     <div class="ai-section-grid">
-    @foreach (var section in Model.Sections)
+    @foreach (var draftSection in Model.Sections)
     {
-        var hasDraft = section.Content.Count > 0 || section.Items.Count > 0;
+        var hasDraft = draftSection.Content.Count > 0 || draftSection.Items.Count > 0;
         <article class="panel ai-section-card @(hasDraft ? "" : "ai-section-empty")">
             <header>
                 <label>
                     @if (hasDraft)
                     {
-                        <input class="ai-section-check" type="checkbox" name="sectionKeys" value="@section.SectionKey" checked>
+                        <input class="ai-section-check" type="checkbox" name="sectionKeys" value="@draftSection.SectionKey" checked>
                     }
                     else
                     {
                         <input class="ai-section-check" type="checkbox" disabled>
                     }
-                    <strong>@section.DisplayName</strong>
+                    <strong>@draftSection.DisplayName</strong>
                 </label>
-                <span>@section.SectionType · #@section.SectionKey</span>
+                <span>@draftSection.SectionType · #@draftSection.SectionKey</span>
             </header>
-            @if (section.Content.Count > 0)
+            @if (draftSection.Content.Count > 0)
             {
                 <dl>
-                @foreach (var field in section.Content.Where(x => !string.IsNullOrWhiteSpace(x.Value)))
+                @foreach (var field in draftSection.Content.Where(x => !string.IsNullOrWhiteSpace(x.Value)))
                 {
                     <div><dt>@field.Key</dt><dd>@field.Value</dd></div>
                 }
                 </dl>
             }
-            @if (section.Items.Count > 0)
+            @if (draftSection.Items.Count > 0)
             {
                 <div class="ai-items-preview">
-                    <h3>@section.Items.Count mục nội dung</h3>
-                    @for (var i = 0; i < section.Items.Count; i++)
+                    <h3>@draftSection.Items.Count mục nội dung</h3>
+                    @for (var i = 0; i < draftSection.Items.Count; i++)
                     {
-                        <div><b>@(i + 1)</b><span>@string.Join(" · ", section.Items[i].Where(x => !string.IsNullOrWhiteSpace(x.Value)).Select(x => x.Value))</span></div>
+                        <div><b>@(i + 1)</b><span>@string.Join(" · ", draftSection.Items[i].Where(x => !string.IsNullOrWhiteSpace(x.Value)).Select(x => x.Value))</span></div>
                     }
                 </div>
             }
-            @foreach (var note in section.Notes) { <p class="ai-note">@note</p> }
+            @foreach (var note in draftSection.Notes) { <p class="ai-note">@note</p> }
         </article>
     }
     </div>
