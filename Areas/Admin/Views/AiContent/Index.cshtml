@@ -1,0 +1,62 @@
+@model LandingCms.Services.AiLandingBrief
+@{
+    ViewData["Title"] = "AI Content Studio";
+    var available = ViewBag.IsAvailable is true;
+}
+<div class="page-title">
+    <div>
+        <h1>AI Content Studio</h1>
+        <p>Tạo bản nháp nội dung theo cấu trúc của template <strong>@ViewBag.TemplateName</strong>.</p>
+    </div>
+    <span class="status @(available ? "on" : "off")">@(available ? $"Sẵn sàng · {ViewBag.ModelName}" : "Chưa cấu hình")</span>
+</div>
+
+@if (!available)
+{
+    <div class="ai-notice">
+        <strong>AI đang tắt trên website này</strong>
+        <p>Đặt <code>AI__Enabled=true</code>, <code>AI__ApiKey</code> và model trong environment variables rồi khởi động lại ứng dụng.</p>
+    </div>
+}
+
+<form asp-action="Generate" method="post" class="panel form-panel ai-brief-form">
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+    <div class="form-grid">
+        <div class="full">
+            <label asp-for="Topic">Chủ đề website *</label>
+            <input asp-for="Topic" placeholder="Ví dụ: Phân phối dây cáp và phụ kiện cho công trình">
+            <span asp-validation-for="Topic"></span>
+        </div>
+        <div><label asp-for="BrandName">Tên thương hiệu</label><input asp-for="BrandName" placeholder="Ví dụ: BENKA Việt Nam"></div>
+        <div><label asp-for="ServiceArea">Khu vực phục vụ</label><input asp-for="ServiceArea" placeholder="Ví dụ: Toàn quốc"></div>
+        <div class="full"><label asp-for="ProductOrService">Sản phẩm hoặc dịch vụ</label><textarea asp-for="ProductOrService" rows="4" placeholder="Liệt kê nhóm sản phẩm, dịch vụ, thông số hoặc mức giá đã được xác nhận"></textarea></div>
+        <div><label asp-for="TargetAudience">Khách hàng mục tiêu</label><textarea asp-for="TargetAudience" rows="4" placeholder="Nhà thầu, chủ đầu tư, doanh nghiệp..."></textarea></div>
+        <div><label asp-for="Differentiators">Điểm khác biệt</label><textarea asp-for="Differentiators" rows="4" placeholder="Nguồn hàng, năng lực tư vấn, giao hàng..."></textarea></div>
+        <div><label asp-for="ConversionGoal">Mục tiêu chuyển đổi</label><textarea asp-for="ConversionGoal" rows="3" placeholder="Nhận báo giá, đặt hàng, đăng ký tư vấn..."></textarea></div>
+        <div>
+            <label asp-for="Tone">Giọng văn</label>
+            <select asp-for="Tone"><option>Chuyên nghiệp, rõ ràng</option><option>Thân thiện, gần gũi</option><option>Kỹ thuật, đáng tin cậy</option><option>Cao cấp, tinh gọn</option><option>Năng động, bán hàng</option></select>
+        </div>
+        <div class="full"><label asp-for="AdditionalInstructions">Thông tin và yêu cầu bổ sung</label><textarea asp-for="AdditionalInstructions" rows="5" placeholder="Chỉ cung cấp dữ liệu đã được phép công bố. AI sẽ không tự bịa chứng nhận, khách hàng hoặc cam kết."></textarea></div>
+    </div>
+    <div class="form-actions">
+        @if (available)
+        {
+            <button class="button ai-generate-button" type="submit">Tạo bản nháp nội dung</button>
+        }
+        else
+        {
+            <button class="button ai-generate-button" type="submit" disabled>Tạo bản nháp nội dung</button>
+        }
+        <span class="ai-submit-note">AI không tự đăng nội dung lên website.</span>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+document.querySelector('.ai-brief-form')?.addEventListener('submit', function () {
+    const button = this.querySelector('.ai-generate-button');
+    if (button && this.checkValidity()) { button.disabled = true; button.textContent = 'Đang tạo nội dung…'; }
+});
+</script>
+}

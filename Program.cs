@@ -60,7 +60,9 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     ];
 });
 builder.Services.AddControllersWithViews();
+builder.Services.AddMemoryCache();
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
+builder.Services.Configure<AiContentOptions>(builder.Configuration.GetSection("AI"));
 builder.Services.AddOptions<CloudflareTurnstileOptions>()
     .Bind(builder.Configuration.GetSection("CloudflareTurnstile"))
     .Validate(options => options.HasSiteKey == options.HasSecretKey,
@@ -72,15 +74,31 @@ builder.Services.AddHttpClient<ICloudflareTurnstileValidator, CloudflareTurnstil
     client.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddScoped<IMediaStorageService, MediaStorageService>();
 builder.Services.AddScoped<IContentPackageService, ContentPackageService>();
+builder.Services.AddSingleton<IAiDraftStore, AiDraftStore>();
+builder.Services.AddHttpClient<IAiContentService, OpenAiContentService>((services, client) =>
+{
+    var options = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<AiContentOptions>>().Value;
+    client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 30, 300));
+});
 builder.Services.AddSingleton<IContentHtmlSanitizer, ContentHtmlSanitizer>();
 builder.Services.AddSingleton<ISectionSchemaService, SectionSchemaService>();
 builder.Services.AddSingleton<IChromeLayoutService, ChromeLayoutService>();
 builder.Services.AddSingleton<ITemplateStyleProvider, TemplateStyleProvider>();
 builder.Services.AddSingleton<IThemeCssService, ThemeCssService>();
-builder.Services.AddRateLimiter(options => options.AddPolicy("contact", context =>
-    RateLimitPartition.GetFixedWindowLimiter(
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("contact", context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(10), QueueLimit = 0 })));
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(10), QueueLimit = 0 }));
+    options.AddPolicy("ai-content", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10, Window = TimeSpan.FromHours(1), QueueLimit = 0,
+            AutoReplenishment = true
+        }));
+});
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

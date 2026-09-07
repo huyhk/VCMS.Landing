@@ -45,6 +45,7 @@ public sealed class SectionSchemaDocument
 
 public interface ISectionSchemaService
 {
+    SectionSchemaDocument? GetSchema(string? schemaJson);
     SectionFieldSchema GetField(string? schemaJson, string fieldName);
     SectionSettingSchema? GetSetting(string? schemaJson, string settingName);
     SectionNavigationSchema GetNavigation(string? schemaJson);
@@ -55,6 +56,8 @@ public interface ISectionSchemaService
 public sealed class SectionSchemaService : ISectionSchemaService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    public SectionSchemaDocument? GetSchema(string? schemaJson) => ParseSchema(schemaJson);
 
     public SectionFieldSchema GetField(string? schemaJson, string fieldName)
     {

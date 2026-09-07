@@ -69,6 +69,24 @@ Smtp__FromName=Website Contact
 
 Không commit mật khẩu SMTP vào `appsettings.json`. Nếu gửi email thất bại, nội dung vẫn được lưu và có thể xem trong `Quản trị > Liên hệ khách hàng`.
 
+## AI Content Studio (tùy chọn)
+
+AI Content Studio chỉ dành cho SuperAdministrator và mặc định bị tắt. Tính năng tạo bản nháp cho các section của template đang sử dụng, cho phép xem trước/chọn section trước khi áp dụng và không tự publish hoặc tạo media.
+
+Khi một website có nhu cầu sử dụng, cấu hình bằng environment variables:
+
+```text
+AI__Enabled=true
+AI__Provider=OpenAI
+AI__ApiKey=your-api-key
+AI__BaseUrl=https://api.openai.com/v1/
+AI__DefaultModel=gpt-5.6-terra
+AI__TimeoutSeconds=120
+AI__DraftLifetimeMinutes=60
+```
+
+Không lưu hoặc commit API key trong `appsettings.json`, content package hay file publish. Mỗi tài khoản chỉ đọc được draft do chính mình tạo; draft hết hạn tự động và nội dung AI phải được SuperAdministrator xác nhận trước khi ghi vào database. Hệ thống giới hạn 10 lượt gọi AI mỗi giờ trên một địa chỉ IP và tối đa 12.000 output token mỗi request.
+
 ## Template settings
 
 Các key được developer khai báo trong `DbInitializer.SeedSettingsAsync`. Ứng dụng chỉ bổ sung/cập nhật definition và không ghi đè value mà quản trị viên đã nhập. Mỗi template được liên kết với các key qua `TemplateSetting`.

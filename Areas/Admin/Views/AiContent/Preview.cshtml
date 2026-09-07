@@ -1,0 +1,71 @@
+@model LandingCms.Services.AiLandingDraft
+@{
+    ViewData["Title"] = "Xem trước nội dung AI";
+}
+<div class="page-title">
+    <div><h1>@Model.Title</h1><p>@Model.Summary</p></div>
+    <span class="status on">Bản nháp · @Model.LanguageCode.ToUpperInvariant()</span>
+</div>
+
+<form asp-action="Apply" method="post" class="ai-preview-form" onsubmit="return confirm('Áp dụng nội dung AI cho các section đã chọn?');">
+    <input type="hidden" name="token" value="@Model.Token">
+    <div class="ai-preview-toolbar panel">
+        <div><strong>@Model.TemplateName</strong><small>Nội dung hiện tại chỉ thay đổi sau khi xác nhận.</small></div>
+        <label><input id="select-all-ai-sections" type="checkbox" checked> Chọn tất cả</label>
+    </div>
+    <div class="ai-section-grid">
+    @foreach (var section in Model.Sections)
+    {
+        var hasDraft = section.Content.Count > 0 || section.Items.Count > 0;
+        <article class="panel ai-section-card @(hasDraft ? "" : "ai-section-empty")">
+            <header>
+                <label>
+                    @if (hasDraft)
+                    {
+                        <input class="ai-section-check" type="checkbox" name="sectionKeys" value="@section.SectionKey" checked>
+                    }
+                    else
+                    {
+                        <input class="ai-section-check" type="checkbox" disabled>
+                    }
+                    <strong>@section.DisplayName</strong>
+                </label>
+                <span>@section.SectionType · #@section.SectionKey</span>
+            </header>
+            @if (section.Content.Count > 0)
+            {
+                <dl>
+                @foreach (var field in section.Content.Where(x => !string.IsNullOrWhiteSpace(x.Value)))
+                {
+                    <div><dt>@field.Key</dt><dd>@field.Value</dd></div>
+                }
+                </dl>
+            }
+            @if (section.Items.Count > 0)
+            {
+                <div class="ai-items-preview">
+                    <h3>@section.Items.Count mục nội dung</h3>
+                    @for (var i = 0; i < section.Items.Count; i++)
+                    {
+                        <div><b>@(i + 1)</b><span>@string.Join(" · ", section.Items[i].Where(x => !string.IsNullOrWhiteSpace(x.Value)).Select(x => x.Value))</span></div>
+                    }
+                </div>
+            }
+            @foreach (var note in section.Notes) { <p class="ai-note">@note</p> }
+        </article>
+    }
+    </div>
+    <div class="form-actions ai-preview-actions">
+        <button class="button" type="submit">Áp dụng section đã chọn</button>
+        <button class="button button-secondary" type="submit" formaction="@Url.Action("Cancel")" formnovalidate onclick="this.form.onsubmit=null; return confirm('Hủy bản nháp AI?');">Hủy bản nháp</button>
+        <small>Text của item được cập nhật theo thứ tự; media hiện có được giữ nguyên.</small>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+document.getElementById('select-all-ai-sections')?.addEventListener('change', function () {
+    document.querySelectorAll('.ai-section-check:not(:disabled)').forEach(x => x.checked = this.checked);
+});
+</script>
+}

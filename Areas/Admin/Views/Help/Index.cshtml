@@ -17,6 +17,7 @@
         <a href="#bat-dau">Bắt đầu nhanh</a>
         <a href="#vai-tro">Vai trò và quyền hạn</a>
         <a href="#noi-dung">Chỉnh sửa nội dung</a>
+        <a href="#ai-content">AI Content Studio</a>
         <a href="#da-ngon-ngu">Nội dung đa ngôn ngữ</a>
         <a href="#hinh-anh">Hình ảnh và media</a>
         <a href="#danh-sach">Danh sách mục con</a>
@@ -88,8 +89,22 @@
             <div class="help-warning"><strong>Lưu ý:</strong> Chỉ Super Administrator thay đổi trạng thái hiện/ẩn của section trong template đang sử dụng.</div>
         </section>
 
+        <section id="ai-content" class="help-section">
+            <h2>4. AI Content Studio</h2>
+            <p>Chức năng tùy chọn dành cho Super Administrator. AI tạo bản nháp nội dung theo các section của template đang sử dụng; không tự bật section, không tự tạo hình ảnh và không tự đăng nội dung.</p>
+            <ol>
+                <li>Mở <b>AI Content Studio</b>, nhập chủ đề, thương hiệu, sản phẩm/dịch vụ, khách hàng mục tiêu và mục tiêu chuyển đổi.</li>
+                <li>Chỉ nhập số liệu, giá, chứng nhận, chính sách và phản hồi khách hàng đã được phép công bố.</li>
+                <li>Bấm <b>Tạo bản nháp nội dung</b> và chờ AI hoàn tất.</li>
+                <li>Kiểm tra từng field và item, bỏ chọn section chưa phù hợp rồi bấm <b>Áp dụng section đã chọn</b>.</li>
+                <li>Mở <b>Nội dung landing page</b> để chỉnh lại, bổ sung media và kiểm tra trang public.</li>
+            </ol>
+            <p>AI cập nhật text của item theo thứ tự và giữ media đang gắn với item. Những item/field AI không tạo được giữ nguyên. Bản nháp chỉ tồn tại tạm thời và gắn với tài khoản đã tạo.</p>
+            <div class="help-warning"><strong>Cần biên tập:</strong> Nội dung AI có thể chưa chính xác hoặc chưa phù hợp quy định ngành. Người quản trị chịu trách nhiệm kiểm tra trước khi sử dụng.</div>
+        </section>
+
         <section id="da-ngon-ngu" class="help-section">
-            <h2>4. Nội dung đa ngôn ngữ</h2>
+            <h2>5. Nội dung đa ngôn ngữ</h2>
             <p>Danh sách ngôn ngữ và các file resource <code>.resx</code> do Developer cung cấp. Super Administrator quyết định ngôn ngữ nào được sử dụng trên website.</p>
             <h3>Bật, tắt và chọn ngôn ngữ mặc định</h3>
             <ol>
@@ -111,7 +126,7 @@
         </section>
 
         <section id="hinh-anh" class="help-section">
-            <h2>5. Hình ảnh và media</h2>
+            <h2>6. Hình ảnh và media</h2>
             <ul>
                 <li>Định dạng hỗ trợ: PNG, JPEG/JPG và WebP.</li>
                 <li>Ảnh được preview ngay sau khi chọn file.</li>
@@ -132,7 +147,7 @@
         </section>
 
         <section id="danh-sach" class="help-section">
-            <h2>6. Quản lý danh sách mục con</h2>
+            <h2>7. Quản lý danh sách mục con</h2>
             <p>Các loại Cards, FAQ, Testimonials, Process, Pricing, Partners, Team và một số Media có nút <b>Quản lý danh sách</b>.</p>
             <ol>
                 <li>Bấm <b>Quản lý danh sách</b> trong trang chỉnh sửa section.</li>
@@ -144,13 +159,13 @@
         </section>
 
         <section id="phien-ban" class="help-section">
-            <h2>7. Lịch sử phiên bản và khôi phục</h2>
+            <h2>8. Lịch sử phiên bản và khôi phục</h2>
             <p>Khi lưu nội dung ở ngôn ngữ mặc định, hệ thống lưu phiên bản gần nhất. Mở <b>Lịch sử phiên bản</b> để xem và khôi phục nội dung trước đó.</p>
             <div class="help-warning"><strong>Trước khi khôi phục:</strong> Xác nhận đúng section hoặc đúng mục con. Sau khi khôi phục, mở trang public để kiểm tra kết quả.</div>
         </section>
 
         <section id="section-template" class="help-section">
-            <h2>8. Thư viện section và template</h2>
+            <h2>9. Thư viện section và template</h2>
             <p>Phần này chỉ dành cho Super Administrator.</p>
             <h3>Thư viện section</h3>
             <p>Section là nội dung dùng chung, có thể tồn tại độc lập và được gắn vào nhiều template. Khi chỉnh nội dung dùng chung, không cần sửa lại từng template.</p>
@@ -167,7 +182,7 @@
         </section>
 
         <section id="header-footer" class="help-section">
-            <h2>9. Header &amp; Footer Builder</h2>
+            <h2>10. Header &amp; Footer Builder</h2>
             <p>Chỉ Super Administrator truy cập chức năng này. Cấu trúc Header/Footer được lưu theo template đang sử dụng, có thể thay đổi bố cục mà không cần tạo thêm phiên bản <code>.cshtml</code>.</p>
             <h3>Cách tổ chức</h3>
             <ul>
@@ -200,7 +215,7 @@
         </section>
 
         <section id="theme" class="help-section">
-            <h2>10. Theme màu</h2>
+            <h2>11. Theme màu</h2>
             <p>Theme kiểm soát hệ màu và hoạt động độc lập với template bố cục.</p>
             <ul>
                 <li><b>Áp dụng:</b> kích hoạt một theme có sẵn.</li>
@@ -212,7 +227,7 @@
         </section>
 
         <section id="cau-hinh" class="help-section">
-            <h2>11. Cấu hình website và setting values</h2>
+            <h2>12. Cấu hình website và setting values</h2>
             <h3>Cấu hình website</h3>
             <p>Administrator và Super Administrator có thể cập nhật tên website, chữ logo, tên doanh nghiệp, điện thoại, email, địa chỉ, footer và các trường SEO.</p>
             <ul>
@@ -225,7 +240,7 @@
         </section>
 
         <section id="sao-luu" class="help-section">
-            <h2>12. Sao lưu &amp; khôi phục nội dung</h2>
+            <h2>13. Sao lưu &amp; khôi phục nội dung</h2>
             <p>Chỉ Super Administrator truy cập chức năng này. VCMS Content Package là file <code>.vcms.zip</code> dùng để sao lưu một website hoặc chuyển nội dung sang một bản cài VCMS Landing tương thích.</p>
             <h3>Export</h3>
             <p>Bấm <b>Tải content package</b>. Package bao gồm section và item, nội dung đa ngôn ngữ, cấu hình nội dung, template, theme, cấu trúc Header/Footer và toàn bộ media còn sử dụng.</p>
@@ -243,7 +258,7 @@
         </section>
 
         <section id="tai-khoan" class="help-section">
-            <h2>13. Tài khoản và mật khẩu</h2>
+            <h2>14. Tài khoản và mật khẩu</h2>
             <p>Vào <b>Tài khoản & phân quyền</b> để thêm hoặc chỉnh sửa người dùng. Tên đăng nhập có thể là username thông thường, không bắt buộc là email.</p>
             <ul>
                 <li>Mật khẩu tối thiểu 10 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.</li>
@@ -254,7 +269,7 @@
         </section>
 
         <section id="lien-he" class="help-section">
-            <h2>14. Liên hệ khách hàng</h2>
+            <h2>15. Liên hệ khách hàng</h2>
             <p>Form liên hệ lưu yêu cầu vào database trước khi gửi email. Vì vậy, nếu SMTP lỗi, thông tin khách hàng vẫn còn trong Admin.</p>
             <ul>
                 <li><b>Đã gửi:</b> email thông báo đã được gửi thành công.</li>
@@ -265,14 +280,14 @@
         </section>
 
         <section id="license" class="help-section">
-            <h2>15. Trạng thái license</h2>
+            <h2>16. Trạng thái license</h2>
             <p>Chỉ Super Administrator truy cập mục này. Trang hiển thị trạng thái local/server, canonical URL, domain được phép, lần kiểm tra gần nhất và lần kiểm tra kế tiếp.</p>
             <p>Dùng <b>Kiểm tra lại</b> khi vừa thay đổi license trên VNS Licensing Server. Nếu license bị Suspended/Revoked rồi chuyển lại Active, website cũng tự kiểm tra lại theo lịch do server quy định.</p>
             <div class="help-warning"><strong>Không chia sẻ:</strong> License key, SMTP password, OAuth secret và các secret cấu hình không được đưa vào ảnh chụp, email công khai hoặc source repository.</div>
         </section>
 
         <section id="kiem-tra" class="help-section">
-            <h2>16. Checklist trước khi bàn giao</h2>
+            <h2>17. Checklist trước khi bàn giao</h2>
             <ul class="help-checklist">
                 <li>Kiểm tra tên doanh nghiệp, logo, điện thoại, email và địa chỉ.</li>
                 <li>Kiểm tra tiêu đề SEO, mô tả SEO và từ khóa cho từng ngôn ngữ.</li>
@@ -288,7 +303,7 @@
         </section>
 
         <section id="su-co" class="help-section">
-            <h2>17. Xử lý sự cố thường gặp</h2>
+            <h2>18. Xử lý sự cố thường gặp</h2>
             <div class="help-faq">
                 <details><summary>Chọn ảnh nhưng chưa thấy preview</summary><p>Thử tải lại trang không dùng cache bằng <kbd>Ctrl</kbd> + <kbd>F5</kbd>, sau đó chọn lại file.</p></details>
                 <details><summary>Nội dung đã lưu nhưng chưa thấy trên trang chủ</summary><p>Kiểm tra đúng ngôn ngữ, đúng template đang sử dụng và section đang ở trạng thái “Đang hiện”. Sau đó mở lại trang public.</p></details>
