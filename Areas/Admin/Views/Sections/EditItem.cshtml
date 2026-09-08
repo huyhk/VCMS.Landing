@@ -39,10 +39,10 @@
                     {
                         <div class="single-image-preview">
                             <img src="@Url.Action("Thumbnail", "Media", new { area = "", id = Model.MediaAsset.Id })" alt="">
-                            <span>Ảnh hiện tại</span>
+                            <span>Ảnh hiện tại@if(Model.UsesFallbackMedia){<text> · từ ngôn ngữ mặc định</text>}</span>
                         </div>
                     }
-                    @if(Model.IsDefaultLanguage){<input asp-for="MediaFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="item-image-preview"><div id="item-image-preview" class="single-image-preview"></div><span asp-validation-for="MediaFile"></span>}
+                    <input asp-for="MediaFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="item-image-preview"><div id="item-image-preview" class="single-image-preview"></div><span asp-validation-for="MediaFile"></span>
                 </div>
             }
             else if (field.Value.Editor == "html")

@@ -32,6 +32,7 @@ public class SectionContentEditViewModel
     public IReadOnlyList<SectionMedia> Backgrounds { get; set; } = Array.Empty<SectionMedia>();
     public List<IFormFile> GalleryFiles { get; set; } = new();
     public IReadOnlyList<SectionMedia> GalleryImages { get; set; } = Array.Empty<SectionMedia>();
+    public bool UsesFallbackMedia { get; set; }
     [StringLength(80)] public string? PrimaryButtonText { get; set; }
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }
     [StringLength(80)] public string? SecondaryButtonText { get; set; }
@@ -68,6 +69,7 @@ public class SectionItemEditViewModel
         new Dictionary<string, IReadOnlySet<string>>(StringComparer.OrdinalIgnoreCase);
     public IFormFile? MediaFile { get; set; }
     public MediaAsset? MediaAsset { get; set; }
+    public bool UsesFallbackMedia { get; set; }
     public bool IsEnabled { get; set; } = true;
 }
 

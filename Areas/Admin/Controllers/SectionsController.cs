@@ -59,8 +59,17 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             IsEnabled = slot.IsEnabled,
             HasItems = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is not null
         };
-        model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
-        model.GalleryImages = await LoadMediaAsync(slot.SectionKey, "Gallery");
+        var backgrounds = await LoadLocalizedMediaAsync(slot.SectionKey, "Background", currentLanguage);
+        var gallery = await LoadLocalizedMediaAsync(slot.SectionKey, "Gallery", currentLanguage);
+        model.Backgrounds = backgrounds.Items;
+        model.GalleryImages = gallery.Items;
+        model.UsesFallbackMedia = backgrounds.UsesFallback || gallery.UsesFallback;
+        var localizedMain = await LoadLocalizedMediaAsync(slot.SectionKey, "MainImage", currentLanguage);
+        if (localizedMain.Items.FirstOrDefault()?.MediaAsset is { } mainAsset)
+        {
+            model.ImageUrl = mainAsset.RelativeUrl;
+            model.UsesFallbackMedia |= localizedMain.UsesFallback;
+        }
         return View(model);
     }
 
@@ -89,9 +98,10 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var languageCode = currentLanguage.IsDefault ? null : currentLanguage.Code;
             var mainImage = await db.SectionMedia.Include(x => x.MediaAsset)
-                .FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey && x.Role == "MainImage");
-            if (currentLanguage.IsDefault && model.ImageFile is { Length: > 0 })
+                .FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey && x.Role == "MainImage" && x.LanguageCode == languageCode);
+            if (model.ImageFile is { Length: > 0 })
             {
                 var asset = await mediaStorage.SaveImageAsync(model.ImageFile, userId, ImageUploadProfile.SectionImage, HttpContext.RequestAborted);
                 model.ImageUrl = asset.RelativeUrl;
@@ -99,7 +109,8 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
                 {
                     db.SectionMedia.Add(new SectionMedia
                     {
-                        SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "MainImage", SortOrder = 0
+                        SectionKey = slot.SectionKey, LanguageCode = languageCode,
+                        MediaAssetId = asset.Id, Role = "MainImage", SortOrder = 0
                     });
                 }
                 else
@@ -107,28 +118,28 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
                     mainImage.MediaAssetId = asset.Id;
                 }
             }
-            else if (currentLanguage.IsDefault && mainImage is not null && !string.Equals(model.ImageUrl, mainImage.MediaAsset.RelativeUrl, StringComparison.OrdinalIgnoreCase))
+            else if (mainImage is not null && !string.Equals(model.ImageUrl, mainImage.MediaAsset.RelativeUrl, StringComparison.OrdinalIgnoreCase))
             {
                 // An explicitly entered external URL (or an empty value) takes precedence.
                 db.SectionMedia.Remove(mainImage);
             }
-            if (currentLanguage.IsDefault && slot.SectionDefinition.SectionType == "Hero" && model.BackgroundFiles.Count > 0)
+            if (slot.SectionDefinition.SectionType == "Hero" && model.BackgroundFiles.Count > 0)
             {
-                var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Background").MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
+                var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Background" && x.LanguageCode == languageCode).MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
                 foreach (var file in model.BackgroundFiles.Where(x => x.Length > 0))
                 {
                     var asset = await mediaStorage.SaveImageAsync(file, userId, ImageUploadProfile.HeroBackground, HttpContext.RequestAborted);
-                    db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "Background", SortOrder = nextOrder });
+                    db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, LanguageCode = languageCode, MediaAssetId = asset.Id, Role = "Background", SortOrder = nextOrder });
                     nextOrder += 10;
                 }
             }
-            if (currentLanguage.IsDefault && slot.SectionDefinition.SectionType == "Gallery" && model.GalleryFiles.Count > 0)
+            if (slot.SectionDefinition.SectionType == "Gallery" && model.GalleryFiles.Count > 0)
             {
-                var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Gallery").MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
+                var nextOrder = (await db.SectionMedia.Where(x => x.SectionKey == slot.SectionKey && x.Role == "Gallery" && x.LanguageCode == languageCode).MaxAsync(x => (int?)x.SortOrder) ?? 0) + 10;
                 foreach (var file in model.GalleryFiles.Where(x => x.Length > 0))
                 {
                     var asset = await mediaStorage.SaveImageAsync(file, userId, ImageUploadProfile.SectionImage, HttpContext.RequestAborted);
-                    db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, MediaAssetId = asset.Id, Role = "Gallery", SortOrder = nextOrder });
+                    db.SectionMedia.Add(new SectionMedia { SectionKey = slot.SectionKey, LanguageCode = languageCode, MediaAssetId = asset.Id, Role = "Gallery", SortOrder = nextOrder });
                     nextOrder += 10;
                 }
             }
@@ -195,7 +206,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (slot is null) return NotFound();
         db.SectionMedia.Remove(media); await db.SaveChangesAsync();
         TempData["Message"] = "Đã gỡ ảnh khỏi Hero. File vẫn được giữ trong Media Library.";
-        return RedirectToAction(nameof(Edit), new { id = slot.Id });
+        return RedirectToAction(nameof(Edit), new { id = slot.Id, language = media.LanguageCode });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -208,7 +219,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (slot is null) return NotFound();
         db.SectionMedia.Remove(media); await db.SaveChangesAsync();
         TempData["Message"] = "Đã gỡ ảnh khỏi thư viện. File vẫn được giữ trong Media Library.";
-        return RedirectToAction(nameof(Edit), new { id = slot.Id });
+        return RedirectToAction(nameof(Edit), new { id = slot.Id, language = media.LanguageCode });
     }
 
     public async Task<IActionResult> Items(int id, string? language)
@@ -224,11 +235,19 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (!currentLanguage.IsDefault && items.Count > 0)
         {
             var itemIds = items.Select(x => x.Id).ToArray();
-            var translations = await db.SectionItemTranslations.AsNoTracking()
+            var translations = await db.SectionItemTranslations.AsNoTracking().Include(x => x.MediaAsset)
                 .Where(x => itemIds.Contains(x.SectionItemId) && x.LanguageCode == currentLanguage.Code)
-                .ToDictionaryAsync(x => x.SectionItemId, x => x.ContentJson);
+                .ToDictionaryAsync(x => x.SectionItemId);
             foreach (var item in items)
-                if (translations.TryGetValue(item.Id, out var contentJson)) item.ContentJson = contentJson;
+                if (translations.TryGetValue(item.Id, out var translated))
+                {
+                    item.ContentJson = translated.ContentJson;
+                    if (translated.MediaAsset is not null)
+                    {
+                        item.MediaAsset = translated.MediaAsset;
+                        item.MediaAssetId = translated.MediaAssetId;
+                    }
+                }
         }
         return View(new SectionItemListViewModel(slot, items, languages, currentLanguage));
     }
@@ -253,7 +272,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
                 .FirstOrDefaultAsync(x => x.Id == id && x.SectionKey == slot.SectionKey);
             if (item is null) return NotFound();
             if (!currentLanguage.IsDefault)
-                translation = await db.SectionItemTranslations.AsNoTracking()
+                translation = await db.SectionItemTranslations.AsNoTracking().Include(x => x.MediaAsset)
                     .FirstOrDefaultAsync(x => x.SectionItemId == item.Id && x.LanguageCode == currentLanguage.Code);
         }
         return View(new SectionItemEditViewModel
@@ -263,7 +282,9 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             Id = item?.Id, TemplateSectionId = slot.Id, SectionKey = slot.SectionKey,
             DisplayName = slot.DisplayName, Fields = itemSchema.Fields,
             AllowedHtmlTags = GetAllowedItemTags(itemSchema),
-            Values = DeserializeItemValues(translation?.ContentJson ?? item?.ContentJson), MediaAsset = item?.MediaAsset,
+            Values = DeserializeItemValues(translation?.ContentJson ?? item?.ContentJson),
+            MediaAsset = translation?.MediaAsset ?? item?.MediaAsset,
+            UsesFallbackMedia = !currentLanguage.IsDefault && translation?.MediaAsset is null && item?.MediaAsset is not null,
             IsEnabled = item?.IsEnabled ?? true
         });
     }
@@ -315,14 +336,16 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             ModelState.AddModelError("", "Hãy tạo mục nội dung trong ngôn ngữ mặc định trước khi dịch.");
         if (!ModelState.IsValid) return View("EditItem", model);
 
+        long? uploadedMediaId = null;
         try
         {
-            if (currentLanguage.IsDefault && model.MediaFile is { Length: > 0 })
+            if (model.MediaFile is { Length: > 0 })
             {
                 var asset = await mediaStorage.SaveImageAsync(model.MediaFile,
                     User.FindFirstValue(ClaimTypes.NameIdentifier), ImageUploadProfile.SectionImage, HttpContext.RequestAborted);
                 model.MediaAsset = asset;
-                if (item is not null) item.MediaAssetId = asset.Id;
+                uploadedMediaId = asset.Id;
+                if (currentLanguage.IsDefault && item is not null) item.MediaAssetId = asset.Id;
             }
         }
         catch (InvalidOperationException ex)
@@ -340,6 +363,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
                 db.SectionItemTranslations.Add(translation);
             }
             translation.ContentJson = JsonSerializer.Serialize(values);
+            if (uploadedMediaId.HasValue) translation.MediaAssetId = uploadedMediaId;
             translation.UpdatedAtUtc = DateTime.UtcNow;
             translation.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await db.SaveChangesAsync();
@@ -482,22 +506,31 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
         model.ContentEditor = contentField.Editor; model.ContentHtmlPolicy = contentField.HtmlPolicy;
         model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
-        model.Backgrounds = await LoadBackgroundsAsync(slot.SectionKey);
-        model.GalleryImages = await LoadMediaAsync(slot.SectionKey, "Gallery");
+        model.Languages = await LoadLanguagesAsync();
+        var currentLanguage = ResolveLanguage(model.Languages, model.LanguageCode)
+            ?? model.Languages.First(x => x.IsDefault);
+        var backgrounds = await LoadLocalizedMediaAsync(slot.SectionKey, "Background", currentLanguage);
+        var gallery = await LoadLocalizedMediaAsync(slot.SectionKey, "Gallery", currentLanguage);
+        model.Backgrounds = backgrounds.Items;
+        model.GalleryImages = gallery.Items;
+        model.UsesFallbackMedia = backgrounds.UsesFallback || gallery.UsesFallback;
         model.HasItems = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is not null;
         model.ShowInNavigation = slot.ShowInNavigation;
-        model.Languages = await LoadLanguagesAsync();
-        var currentLanguage = ResolveLanguage(model.Languages, model.LanguageCode);
-        model.IsDefaultLanguage = currentLanguage?.IsDefault ?? true;
+        model.IsDefaultLanguage = currentLanguage.IsDefault;
     }
 
-    private async Task<IReadOnlyList<SectionMedia>> LoadBackgroundsAsync(string sectionKey) => await db.SectionMedia.AsNoTracking()
-        .Include(x => x.MediaAsset).Where(x => x.SectionKey == sectionKey && x.Role == "Background")
-        .OrderBy(x => x.SortOrder).ToListAsync();
-
-    private async Task<IReadOnlyList<SectionMedia>> LoadMediaAsync(string sectionKey, string role) => await db.SectionMedia.AsNoTracking()
-        .Include(x => x.MediaAsset).Where(x => x.SectionKey == sectionKey && x.Role == role)
-        .OrderBy(x => x.SortOrder).ToListAsync();
+    private async Task<LocalizedMediaResult> LoadLocalizedMediaAsync(string sectionKey, string role, ContentLanguage language)
+    {
+        var rows = await db.SectionMedia.AsNoTracking().Include(x => x.MediaAsset)
+            .Where(x => x.SectionKey == sectionKey && x.Role == role
+                && (x.LanguageCode == null || x.LanguageCode == language.Code))
+            .OrderBy(x => x.SortOrder).ToListAsync();
+        if (language.IsDefault) return new(rows.Where(x => x.LanguageCode == null).ToList(), false);
+        var localized = rows.Where(x => x.LanguageCode == language.Code).ToList();
+        return localized.Count > 0
+            ? new(localized, false)
+            : new(rows.Where(x => x.LanguageCode == null).ToList(), rows.Any(x => x.LanguageCode == null));
+    }
 
     private async Task<TemplateSection?> FindActiveSlotAsync(int id)
     {
@@ -562,4 +595,5 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
     private static string GetSectionItemRevisionKey(string sectionKey, long itemId) => $"{sectionKey}:{itemId}";
     private sealed record SectionContentRevisionSnapshot(string ContentJson, bool IsEnabled);
     private sealed record SectionItemRevisionSnapshot(string ContentJson, long? MediaAssetId, bool IsEnabled);
+    private sealed record LocalizedMediaResult(IReadOnlyList<SectionMedia> Items, bool UsesFallback);
 }

@@ -618,6 +618,9 @@ namespace VCMS.Landing.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<long?>("MediaAssetId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -628,6 +631,8 @@ namespace VCMS.Landing.Migrations
                     b.HasKey("SectionItemId", "LanguageCode");
 
                     b.HasIndex("LanguageCode");
+
+                    b.HasIndex("MediaAssetId");
 
                     b.ToTable("SectionItemTranslations");
                 });
@@ -650,6 +655,10 @@ namespace VCMS.Landing.Migrations
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("LanguageCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
                     b.Property<long>("MediaAssetId")
                         .HasColumnType("INTEGER");
 
@@ -670,7 +679,9 @@ namespace VCMS.Landing.Migrations
 
                     b.HasIndex("MediaAssetId");
 
-                    b.HasIndex("SectionKey", "Role", "SortOrder");
+                    b.HasIndex("LanguageCode");
+
+                    b.HasIndex("SectionKey", "LanguageCode", "Role", "SortOrder");
 
                     b.ToTable("SectionMedia");
                 });
@@ -1319,18 +1330,32 @@ namespace VCMS.Landing.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("LandingCms.Models.MediaAsset", "MediaAsset")
+                        .WithMany()
+                        .HasForeignKey("MediaAssetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Language");
+
+                    b.Navigation("MediaAsset");
 
                     b.Navigation("SectionItem");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionMedia", b =>
                 {
+                    b.HasOne("LandingCms.Models.ContentLanguage", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("LandingCms.Models.MediaAsset", "MediaAsset")
                         .WithMany("SectionUsages")
                         .HasForeignKey("MediaAssetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Language");
 
                     b.Navigation("MediaAsset");
                 });

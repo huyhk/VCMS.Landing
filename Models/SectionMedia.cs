@@ -6,6 +6,8 @@ public class SectionMedia
 {
     public long Id { get; set; }
     [Required, StringLength(80)] public string SectionKey { get; set; } = "";
+    [StringLength(10)] public string? LanguageCode { get; set; }
+    public ContentLanguage? Language { get; set; }
     public long MediaAssetId { get; set; }
     public MediaAsset MediaAsset { get; set; } = null!;
     [Required, StringLength(40)] public string Role { get; set; } = "Background";

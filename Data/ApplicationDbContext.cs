@@ -63,6 +63,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(x => x.SectionItemId).OnDelete(DeleteBehavior.Cascade);
         builder.Entity<SectionItemTranslation>().HasOne(x => x.Language).WithMany(x => x.SectionItemTranslations)
             .HasForeignKey(x => x.LanguageCode).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<SectionItemTranslation>().HasOne(x => x.MediaAsset).WithMany()
+            .HasForeignKey(x => x.MediaAssetId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<TemplateSectionTranslation>().HasKey(x => new { x.TemplateSectionId, x.LanguageCode });
         builder.Entity<TemplateSectionTranslation>().HasOne(x => x.TemplateSection).WithMany(x => x.Translations)
             .HasForeignKey(x => x.TemplateSectionId).OnDelete(DeleteBehavior.Cascade);
@@ -91,8 +93,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<TemplateSetting>().HasOne(x => x.Template).WithMany(x => x.Settings).HasForeignKey(x => x.TemplateId);
         builder.Entity<TemplateSetting>().HasOne(x => x.SettingDefinition).WithMany(x => x.Templates).HasForeignKey(x => x.SettingDefinitionId);
         builder.Entity<MediaAsset>().HasIndex(x => x.RelativeUrl).IsUnique();
-        builder.Entity<SectionMedia>().HasIndex(x => new { x.SectionKey, x.Role, x.SortOrder });
+        builder.Entity<SectionMedia>().HasIndex(x => new { x.SectionKey, x.LanguageCode, x.Role, x.SortOrder });
         builder.Entity<SectionMedia>().HasOne(x => x.MediaAsset).WithMany(x => x.SectionUsages).HasForeignKey(x => x.MediaAssetId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<SectionMedia>().HasOne(x => x.Language).WithMany().HasForeignKey(x => x.LanguageCode).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<SectionItem>().HasIndex(x => new { x.SectionKey, x.SortOrder });
         builder.Entity<SectionItem>().HasOne(x => x.MediaAsset).WithMany(x => x.SectionItemUsages)
             .HasForeignKey(x => x.MediaAssetId).OnDelete(DeleteBehavior.Restrict);

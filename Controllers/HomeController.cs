@@ -128,9 +128,16 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         var brandingMedia = brandingIds.Where(x => brandingAssets.ContainsKey(x.Value)).ToDictionary(x => x.Key, x => brandingAssets[x.Value]);
         if (brandingMedia.TryGetValue("branding.favicon", out var favicon))
             ViewData["FaviconUrl"] = favicon.RelativeUrl;
-        var sectionMediaRows = await db.SectionMedia.AsNoTracking().Include(x => x.MediaAsset)
-            .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted)
+        var sectionMediaCandidates = await db.SectionMedia.AsNoTracking().Include(x => x.MediaAsset)
+            .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted
+                && (x.LanguageCode == null || x.LanguageCode == currentLanguage.Code))
             .OrderBy(x => x.SortOrder).ToListAsync();
+        var sectionMediaRows = sectionMediaCandidates
+            .GroupBy(x => new { x.SectionKey, x.Role })
+            .SelectMany(group => !currentLanguage.IsDefault && group.Any(x => x.LanguageCode == currentLanguage.Code)
+                ? group.Where(x => x.LanguageCode == currentLanguage.Code)
+                : group.Where(x => x.LanguageCode == null))
+            .ToList();
         var sectionsWithoutMainImage = sections
             .Where(section => !sectionMediaRows.Any(media => media.SectionKey == section.SectionKey && media.Role == "MainImage")
                 && !string.IsNullOrWhiteSpace(section.ImageUrl)
@@ -162,11 +169,19 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         if (!currentLanguage.IsDefault && sectionItemRows.Count > 0)
         {
             var itemIds = sectionItemRows.Select(x => x.Id).ToArray();
-            var itemTranslations = await db.SectionItemTranslations.AsNoTracking()
+            var itemTranslations = await db.SectionItemTranslations.AsNoTracking().Include(x => x.MediaAsset)
                 .Where(x => itemIds.Contains(x.SectionItemId) && x.LanguageCode == currentLanguage.Code)
-                .ToDictionaryAsync(x => x.SectionItemId, x => x.ContentJson);
+                .ToDictionaryAsync(x => x.SectionItemId);
             foreach (var item in sectionItemRows)
-                if (itemTranslations.TryGetValue(item.Id, out var translatedJson)) item.ContentJson = translatedJson;
+                if (itemTranslations.TryGetValue(item.Id, out var translated))
+                {
+                    item.ContentJson = translated.ContentJson;
+                    if (translated.MediaAsset is not null)
+                    {
+                        item.MediaAsset = translated.MediaAsset;
+                        item.MediaAssetId = translated.MediaAssetId;
+                    }
+                }
         }
         foreach (var item in sectionItemRows)
         {
