@@ -62,6 +62,11 @@
 
 @await Html.PartialAsync("~/Views/Home/Shared/_PublicFooter.cshtml", Model)
 
+@if (ViewBag.PopupCampaign is PopupRenderViewModel popupCampaign)
+{
+    @await Html.PartialAsync("~/Views/Home/Shared/_PopupCampaign.cshtml", popupCampaign)
+}
+
 @if (!string.IsNullOrWhiteSpace(gaId))
 {
     <script async src="https://www.googletagmanager.com/gtag/js?id=@gaId"></script>
