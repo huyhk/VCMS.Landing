@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="~/css/content-packages-admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/chrome-builder-admin.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/ai-content-admin.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/popup-admin.css" asp-append-version="true">
 </head>
 <body>
 <aside>
@@ -30,6 +31,7 @@
         @if (User.IsInRole("SuperAdministrator"))
         {
             <a asp-area="Admin" asp-controller="AiContent" asp-action="Index">AI Content Studio</a>
+            <a asp-area="Admin" asp-controller="PopupCampaigns" asp-action="Index">Popup theo lịch</a>
             <a asp-area="Admin" asp-controller="SectionLibrary" asp-action="Index">Thư viện section</a>
             <a asp-area="Admin" asp-controller="Templates" asp-action="Index">Giao diện</a>
             <a asp-area="Admin" asp-controller="Chrome" asp-action="Index">Header & Footer</a>
