@@ -80,7 +80,7 @@ AI__Enabled=true
 AI__Provider=OpenAI
 AI__ApiKey=your-api-key
 AI__BaseUrl=https://api.openai.com/v1/
-AI__DefaultModel=gpt-5.6-terra
+AI__DefaultModel=gpt-5.1
 AI__TimeoutSeconds=120
 AI__DraftLifetimeMinutes=60
 ```
