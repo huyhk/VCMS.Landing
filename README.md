@@ -131,6 +131,31 @@ Developer có thể khai báo layout variant trong `SectionDefinition.SchemaJson
 
 Không lưu mật khẩu quản trị trong `appsettings.json` hoặc commit vào Git.
 
+Nếu IIS chạy sau Nginx/Nginx Proxy Manager, khai báo IP của reverse proxy để ứng dụng đọc đúng
+`X-Forwarded-For` và `X-Forwarded-Proto`. Ví dụ:
+
+```text
+ReverseProxy__KnownProxies__0=10.10.10.20
+```
+
+Không khai báo địa chỉ không tin cậy. IP sau khi xử lý forwarded headers được dùng cho rate limit
+form liên hệ và nhật ký liên hệ.
+
+## SEO và tracking
+
+Trang public tự sinh canonical URL từ canonical domain do VNS Licensing trả về, đồng thời sinh
+`hreflang`, Open Graph, Twitter Card, `robots.txt` và `sitemap.xml`. Khi đổi canonical domain
+trong Licensing, CMS không cần nhập lại domain SEO.
+
+`analytics.ga_measurement_id` bật Google Analytics và `analytics.gtm_container_id` bật Google
+Tag Manager. GTM chỉ được render khi ID có dạng `GTM-...`.
+
+## Backup nội dung
+
+Mỗi lần import hoặc khôi phục một bản cũ, hệ thống tự sao lưu nội dung hiện tại. Super
+Administrator có thể tải xuống, khôi phục hoặc xóa các bản này tại **Sao lưu & khôi phục**.
+Hệ thống giữ tối đa 20 bản gần nhất và xóa package import bị bỏ dở quá 24 giờ.
+
 ## VNS Licensing
 
 Production luôn kiểm tra license với VNS Licensing Server. Chỉ môi trường `Development` có thể bypass để developer chạy local. Cấu hình production bằng environment variables:
