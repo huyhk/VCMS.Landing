@@ -10,7 +10,13 @@ namespace LandingCms.Areas.Admin.Controllers;
 public sealed class ContentPackagesController(
     IContentPackageService packages, IWebHostEnvironment environment, ILogger<ContentPackagesController> logger) : Controller
 {
-    public IActionResult Index() => View();
+    private const int MaximumBackups = 20;
+
+    public IActionResult Index()
+    {
+        CleanupPendingImports();
+        return View(new ContentPackageAdminViewModel(LoadBackups()));
+    }
 
     [HttpGet]
     public async Task<IActionResult> Export(CancellationToken cancellationToken)
@@ -106,5 +112,88 @@ public sealed class ContentPackagesController(
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    public IActionResult DownloadBackup(string fileName)
+    {
+        var path = ResolveBackupPath(fileName);
+        return path is null || !System.IO.File.Exists(path)
+            ? NotFound()
+            : PhysicalFile(path, "application/zip", Path.GetFileName(path), true);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RestoreBackup(string fileName, CancellationToken cancellationToken)
+    {
+        var path = ResolveBackupPath(fileName);
+        if (path is null || !System.IO.File.Exists(path)) return NotFound();
+        try
+        {
+            await packages.ImportAsync(path, cancellationToken);
+            CleanupBackups();
+            TempData["Message"] = $"Đã khôi phục nội dung từ {Path.GetFileName(path)}.";
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Content backup restore failed for {FileName}", fileName);
+            TempData["Error"] = $"Không thể khôi phục backup: {ex.Message}";
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult DeleteBackup(string fileName)
+    {
+        var path = ResolveBackupPath(fileName);
+        if (path is null) return BadRequest();
+        if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+        TempData["Message"] = "Đã xóa bản sao lưu.";
+        return RedirectToAction(nameof(Index));
+    }
+
     private static string GetPendingPath(string directory, string token) => Path.Combine(directory, $"{token}.vcms.zip");
+
+    private string BackupDirectory => Path.Combine(environment.ContentRootPath, "App_Data", "content-backups");
+
+    private IReadOnlyList<ContentBackupInfo> LoadBackups()
+    {
+        Directory.CreateDirectory(BackupDirectory);
+        CleanupBackups();
+        return Directory.EnumerateFiles(BackupDirectory, "*.vcms.zip")
+            .Select(path => new FileInfo(path))
+            .OrderByDescending(file => file.CreationTimeUtc)
+            .Select(file => new ContentBackupInfo(file.Name, file.Length, file.CreationTimeUtc))
+            .ToList();
+    }
+
+    private string? ResolveBackupPath(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName) || Path.GetFileName(fileName) != fileName ||
+            !fileName.EndsWith(".vcms.zip", StringComparison.OrdinalIgnoreCase)) return null;
+        var directory = Path.GetFullPath(BackupDirectory);
+        var path = Path.GetFullPath(Path.Combine(directory, fileName));
+        return path.StartsWith(directory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ? path : null;
+    }
+
+    private void CleanupBackups()
+    {
+        Directory.CreateDirectory(BackupDirectory);
+        foreach (var file in Directory.EnumerateFiles(BackupDirectory, "*.vcms.zip")
+                     .Select(path => new FileInfo(path)).OrderByDescending(x => x.CreationTimeUtc).Skip(MaximumBackups))
+        {
+            try { file.Delete(); }
+            catch (Exception ex) { logger.LogWarning(ex, "Could not remove expired content backup {Path}", file.FullName); }
+        }
+    }
+
+    private void CleanupPendingImports()
+    {
+        var directory = Path.Combine(environment.ContentRootPath, "App_Data", "content-imports");
+        if (!Directory.Exists(directory)) return;
+        foreach (var file in Directory.EnumerateFiles(directory, "*.vcms.zip").Select(path => new FileInfo(path))
+                     .Where(x => x.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-24)))
+        {
+            try { file.Delete(); }
+            catch (Exception ex) { logger.LogWarning(ex, "Could not remove expired pending import {Path}", file.FullName); }
+        }
+    }
 }

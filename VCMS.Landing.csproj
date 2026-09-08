@@ -22,6 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Compile Remove="VCMS.Landing.Tests\**\*.cs" />
+    <None Remove="VCMS.Landing.Tests\**\*" />
   </ItemGroup>
   <ItemGroup>
     <None Update="App_Data\landing.db">

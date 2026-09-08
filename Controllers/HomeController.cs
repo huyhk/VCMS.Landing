@@ -15,7 +15,8 @@ namespace LandingCms.Controllers;
 public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger,
     IContentHtmlSanitizer htmlSanitizer, ISectionSchemaService sectionSchemas,
     ICloudflareTurnstileValidator turnstileValidator, IOptions<CloudflareTurnstileOptions> turnstileOptions,
-    IThemeCssService themeCss, IStringLocalizer<PublicResource> publicText, IChromeLayoutService chromeLayouts) : Controller
+    IThemeCssService themeCss, IStringLocalizer<PublicResource> publicText, IChromeLayoutService chromeLayouts,
+    ILicenseState licenseState) : Controller
 {
     public async Task<IActionResult> Index(string? culture)
     {
@@ -51,6 +52,12 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         ViewData["Title"] = string.IsNullOrWhiteSpace(settings.SeoTitle) ? settings.SiteName : settings.SeoTitle;
         ViewData["Description"] = settings.SeoDescription;
         ViewData["Keywords"] = settings.SeoKeywords;
+        var canonicalRoot = ResolveCanonicalRoot(licenseState.Current.CanonicalUrl);
+        ViewData["CanonicalUrl"] = BuildLanguageUrl(canonicalRoot, currentLanguage, defaultLanguage);
+        ViewData["AlternateLanguages"] = languages.ToDictionary(
+            language => language.Code,
+            language => BuildLanguageUrl(canonicalRoot, language, defaultLanguage));
+        ViewData["DefaultLanguageUrl"] = canonicalRoot;
         var activeTheme = await db.SiteThemeSettings.AsNoTracking().Include(x => x.ActiveTheme).FirstAsync();
         ViewData["ThemeCss"] = themeCss.BuildCss(activeTheme.ActiveTheme.TokensJson);
         ViewData["ThemeKey"] = activeTheme.ActiveTheme.Key;
@@ -121,6 +128,9 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             })
             .Where(x => x.Value != null && x.Value != "")
             .ToDictionaryAsync(x => x.Key, x => x.Value!);
+        if (extendedSettings.TryGetValue("analytics.gtm_container_id", out var gtmContainerId) &&
+            System.Text.RegularExpressions.Regex.IsMatch(gtmContainerId, "^GTM-[A-Z0-9]+$"))
+            ViewData["GtmContainerId"] = gtmContainerId;
         var brandingIds = extendedSettings.Where(x => x.Key.StartsWith("branding.") && long.TryParse(x.Value, out _))
             .ToDictionary(x => x.Key, x => long.Parse(x.Value));
         var brandingAssetIds = brandingIds.Values.ToArray();
@@ -128,6 +138,8 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         var brandingMedia = brandingIds.Where(x => brandingAssets.ContainsKey(x.Value)).ToDictionary(x => x.Key, x => brandingAssets[x.Value]);
         if (brandingMedia.TryGetValue("branding.favicon", out var favicon))
             ViewData["FaviconUrl"] = favicon.RelativeUrl;
+        if (brandingMedia.TryGetValue("branding.logo_primary", out var sharingImage))
+            ViewData["SharingImageUrl"] = new Uri(new Uri(canonicalRoot), sharingImage.RelativeUrl).ToString();
         var sectionMediaCandidates = await db.SectionMedia.AsNoTracking().Include(x => x.MediaAsset)
             .Where(x => keys.Contains(x.SectionKey) && x.IsEnabled && !x.MediaAsset.IsDeleted
                 && (x.LanguageCode == null || x.LanguageCode == currentLanguage.Code))
@@ -290,4 +302,14 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
         return language is null || language.IsDefault ? "/#contact" : $"/{language.Code}/#contact";
     }
     public IActionResult Error() => View();
+
+    private string ResolveCanonicalRoot(string? configured)
+    {
+        if (Uri.TryCreate(configured, UriKind.Absolute, out var canonical))
+            return canonical.GetLeftPart(UriPartial.Authority).TrimEnd('/') + "/";
+        return $"{Request.Scheme}://{Request.Host}/";
+    }
+
+    private static string BuildLanguageUrl(string root, ContentLanguage language, ContentLanguage defaultLanguage) =>
+        language.Code == defaultLanguage.Code ? root : $"{root}{language.Code}/";
 }

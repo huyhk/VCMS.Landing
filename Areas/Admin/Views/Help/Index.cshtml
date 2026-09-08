@@ -268,7 +268,7 @@
                 <li>Chỉ bấm <b>Xác nhận khôi phục</b> khi đúng package cần dùng. Toàn bộ nội dung website hiện tại sẽ bị thay thế.</li>
                 <li>Kiểm tra lại trang public, Header/Footer, media, ngôn ngữ và form liên hệ sau khi import.</li>
             </ol>
-            <p>Hệ thống tự tạo một bản sao nội dung hiện tại trong <code>App_Data/content-backups</code> trước khi import. Giới hạn package hiện tại là 512 MB.</p>
+            <p>Hệ thống tự tạo một bản sao nội dung hiện tại trước khi import. Danh sách backup nằm ngay trên trang này; có thể tải xuống, khôi phục hoặc xóa. Hệ thống giữ tối đa 20 bản gần nhất và tự dọn package chờ import quá 24 giờ. Giới hạn package hiện tại là 512 MB.</p>
             <div class="help-warning"><strong>Quan trọng:</strong> Content Package gần giống backup/restore nội dung nhưng không thay thế backup đầy đủ của database, file hệ thống và cấu hình máy chủ.</div>
         </section>
 
@@ -314,6 +314,8 @@
                 <li>Kiểm tra chuyển đổi ngôn ngữ và nội dung fallback.</li>
                 <li>Kiểm tra tài khoản đúng vai trò và đổi mật khẩu ban đầu.</li>
                 <li>Kiểm tra canonical domain và trạng thái license.</li>
+                <li>Kiểm tra <code>/robots.txt</code>, <code>/sitemap.xml</code>, canonical và hreflang trong source trang.</li>
+                <li>Nếu dùng Nginx, kiểm tra IP proxy đã được khai báo trong <code>ReverseProxy__KnownProxies</code>.</li>
             </ul>
         </section>
 

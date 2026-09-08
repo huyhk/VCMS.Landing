@@ -46,3 +46,6 @@ public sealed class ContentPackageData
 public sealed record ContentPackageInspection(
     string Token, ContentPackageManifest Manifest, int LanguageCount, int TemplateCount,
     int ThemeCount, int SectionItemCount, int PopupCount, long PackageBytes, IReadOnlyList<string> Warnings);
+
+public sealed record ContentBackupInfo(string FileName, long SizeBytes, DateTime CreatedAtUtc);
+public sealed record ContentPackageAdminViewModel(IReadOnlyList<ContentBackupInfo> Backups);

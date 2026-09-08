@@ -1,3 +1,4 @@
+@model LandingCms.Services.ContentPackageAdminViewModel
 @{
     ViewData["Title"] = "Sao lưu & khôi phục nội dung";
 }
@@ -7,6 +8,35 @@
         <p>Xuất hoặc khôi phục toàn bộ nội dung, bố cục, theme, đa ngôn ngữ và media của website.</p>
     </div>
 </div>
+
+<section class="panel package-backups">
+    <div class="package-backups-head">
+        <div><h2>Bản sao lưu trước import</h2><p>Hệ thống giữ tối đa 20 bản gần nhất. Khôi phục một bản sẽ tự tạo backup cho nội dung hiện tại.</p></div>
+        <span>@Model.Backups.Count bản</span>
+    </div>
+    @if (Model.Backups.Count == 0)
+    {
+        <p class="empty">Chưa có bản sao lưu tự động.</p>
+    }
+    else
+    {
+        <div class="table-wrap"><table><thead><tr><th>Thời điểm</th><th>Tệp</th><th>Dung lượng</th><th>Thao tác</th></tr></thead><tbody>
+        @foreach (var backup in Model.Backups)
+        {
+            <tr>
+                <td>@backup.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td><code>@backup.FileName</code></td>
+                <td>@(backup.SizeBytes >= 1048576 ? $"{backup.SizeBytes / 1048576d:N2} MB" : $"{backup.SizeBytes / 1024d:N1} KB")</td>
+                <td><div class="row-actions">
+                    <a asp-action="DownloadBackup" asp-route-fileName="@backup.FileName">Tải xuống</a>
+                    <form asp-action="RestoreBackup" method="post" onsubmit="return confirm('Khôi phục backup này và thay thế nội dung hiện tại?');"><input type="hidden" name="fileName" value="@backup.FileName"><button type="submit">Khôi phục</button></form>
+                    <form asp-action="DeleteBackup" method="post" onsubmit="return confirm('Xóa vĩnh viễn bản sao lưu này?');"><input type="hidden" name="fileName" value="@backup.FileName"><button class="danger-link" type="submit">Xóa</button></form>
+                </div></td>
+            </tr>
+        }
+        </tbody></table></div>
+    }
+</section>
 
 <div class="package-grid">
     <section class="panel package-card">

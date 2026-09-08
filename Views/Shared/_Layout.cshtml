@@ -22,6 +22,30 @@
     {
         <meta name="keywords" content="@keywords" />
     }
+    @if (ViewData["CanonicalUrl"] is string canonicalUrl)
+    {
+        <link rel="canonical" href="@canonicalUrl" />
+        <meta property="og:url" content="@canonicalUrl" />
+    }
+    @if (ViewData["AlternateLanguages"] is IReadOnlyDictionary<string, string> alternateLanguages)
+    {
+        foreach (var alternate in alternateLanguages)
+        {
+            <link rel="alternate" hreflang="@alternate.Key" href="@alternate.Value" />
+        }
+        <link rel="alternate" hreflang="x-default" href="@ViewData["DefaultLanguageUrl"]" />
+    }
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@ViewData["Title"]" />
+    @if (ViewData["Description"] is string ogDescription && !string.IsNullOrWhiteSpace(ogDescription))
+    {
+        <meta property="og:description" content="@ogDescription" />
+    }
+    @if (ViewData["SharingImageUrl"] is string sharingImageUrl)
+    {
+        <meta property="og:image" content="@sharingImageUrl" />
+    }
+    <meta name="twitter:card" content="summary_large_image" />
     @if (ViewData["FaviconUrl"] is string faviconUrl) { <link rel="icon" href="@faviconUrl" /> }
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,6 +69,19 @@
         <style data-color-theme="@themeKey">@Html.Raw(themeCss)</style>
     }
     <link rel="stylesheet" href="~/css/popup.css" asp-append-version="true" />
+    @if (ViewData["GtmContainerId"] is string gtmId)
+    {
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','@gtmId');</script>
+    }
 </head>
-<body class="@bodyClass">@RenderBody()<script src="~/js/site.js" asp-append-version="true" defer></script><script src="~/js/popup.js" asp-append-version="true" defer></script>@await RenderSectionAsync("Scripts", required: false)</body>
+<body class="@bodyClass">
+@if (ViewData["GtmContainerId"] is string bodyGtmId)
+{
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=@bodyGtmId" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+}
+@RenderBody()
+<script src="~/js/site.js" asp-append-version="true" defer></script>
+<script src="~/js/popup.js" asp-append-version="true" defer></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
 </html>
