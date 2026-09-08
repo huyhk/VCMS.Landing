@@ -5,6 +5,7 @@ using LandingCms.Models;
 using LandingCms.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -22,18 +23,15 @@ public sealed class AiContentController(
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        ViewBag.IsAvailable = ai.IsAvailable;
-        ViewBag.ModelName = ai.ModelName;
-        ViewBag.TemplateName = await GetActiveTemplateNameAsync();
-        return View(new AiLandingBrief());
+        var brief = new AiLandingBrief { LanguageCode = await GetDefaultLanguageCodeAsync() };
+        await PopulateViewDataAsync(brief.LanguageCode);
+        return View(brief);
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("ai-content")]
     public async Task<IActionResult> Generate(AiLandingBrief brief)
     {
-        ViewBag.IsAvailable = ai.IsAvailable;
-        ViewBag.ModelName = ai.ModelName;
-        ViewBag.TemplateName = await GetActiveTemplateNameAsync();
+        await PopulateViewDataAsync(brief.LanguageCode);
         if (!ai.IsAvailable)
         {
             ModelState.AddModelError("", "AI Content Studio chưa được bật hoặc thiếu API key.");
@@ -46,7 +44,13 @@ public sealed class AiContentController(
         {
             var templateSetting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
             var template = await db.PageTemplates.AsNoTracking().FirstAsync(x => x.Id == templateSetting.ActiveTemplateId);
-            var language = await db.ContentLanguages.AsNoTracking().FirstAsync(x => x.IsDefault && x.IsEnabled);
+            var language = await db.ContentLanguages.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Code == brief.LanguageCode && x.IsEnabled);
+            if (language is null)
+            {
+                ModelState.AddModelError(nameof(brief.LanguageCode), "Ngôn ngữ không tồn tại hoặc đang bị tắt.");
+                return View("Index", brief);
+            }
             var slots = await db.TemplateSections.AsNoTracking().Include(x => x.SectionDefinition)
                 .Where(x => x.TemplateId == template.Id)
                 .OrderBy(x => x.SortOrder).ToListAsync();
@@ -102,6 +106,13 @@ public sealed class AiContentController(
 
         try
         {
+            var language = await db.ContentLanguages.AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Code == draft.LanguageCode && x.IsEnabled);
+            if (language is null)
+            {
+                TempData["Error"] = "Ngôn ngữ của bản nháp đã bị tắt. Hãy tạo lại bản nháp AI.";
+                return RedirectToAction(nameof(Index));
+            }
             var slots = await db.TemplateSections.Include(x => x.SectionDefinition)
                 .Where(x => x.TemplateId == activeTemplateId && selected.Contains(x.SectionKey)).ToListAsync();
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -112,8 +123,8 @@ public sealed class AiContentController(
                 var proposed = draft.Sections.FirstOrDefault(x => x.SectionKey.Equals(slot.SectionKey, StringComparison.OrdinalIgnoreCase));
                 if (proposed is null || (proposed.Content.Count == 0 && proposed.Items.Count == 0)) continue;
                 var schema = schemas.GetSchema(slot.SectionDefinition.SchemaJson) ?? new SectionSchemaDocument();
-                await ApplyContentAsync(slot, schema, proposed, userId);
-                await ApplyItemsAsync(slot, schema, proposed, userId);
+                await ApplyContentAsync(slot, schema, proposed, language, userId);
+                await ApplyItemsAsync(slot, schema, proposed, language, userId);
                 applied++;
             }
             await db.SaveChangesAsync();
@@ -150,7 +161,8 @@ public sealed class AiContentController(
         };
     }
 
-    private async Task ApplyContentAsync(TemplateSection slot, SectionSchemaDocument schema, AiSectionDraft proposed, string? userId)
+    private async Task ApplyContentAsync(TemplateSection slot, SectionSchemaDocument schema, AiSectionDraft proposed,
+        ContentLanguage language, string? userId)
     {
         var entity = await db.SectionContents.FirstOrDefaultAsync(x => x.SectionKey == slot.SectionKey);
         if (entity is null)
@@ -158,7 +170,10 @@ public sealed class AiContentController(
             entity = new SectionContent { SectionKey = slot.SectionKey, SectionDefinitionId = slot.SectionDefinitionId };
             db.SectionContents.Add(entity);
         }
-        var values = Deserialize(entity.ContentJson);
+        if (entity.Id == 0) await db.SaveChangesAsync();
+        var translation = language.IsDefault ? null : await db.SectionContentTranslations
+            .FirstOrDefaultAsync(x => x.SectionContentId == entity.Id && x.LanguageCode == language.Code);
+        var values = Deserialize(translation?.ContentJson ?? entity.ContentJson);
         foreach (var field in proposed.Content)
         {
             var definition = FindField(schema.Fields, field.Key);
@@ -167,33 +182,55 @@ public sealed class AiContentController(
             if (value is null) continue;
             values[Pascal(field.Key)] = value;
         }
-        entity.ContentJson = JsonSerializer.Serialize(values);
-        entity.IsPublished = true;
-        entity.UpdatedAtUtc = DateTime.UtcNow;
-        entity.UpdatedById = userId;
+        var serialized = JsonSerializer.Serialize(values);
+        if (language.IsDefault)
+        {
+            entity.ContentJson = serialized;
+            entity.IsPublished = true;
+            entity.UpdatedAtUtc = DateTime.UtcNow;
+            entity.UpdatedById = userId;
+        }
+        else if (translation is null)
+        {
+            db.SectionContentTranslations.Add(new SectionContentTranslation
+            {
+                SectionContentId = entity.Id, LanguageCode = language.Code, ContentJson = serialized,
+                UpdatedAtUtc = DateTime.UtcNow, UpdatedById = userId
+            });
+        }
+        else
+        {
+            translation.ContentJson = serialized;
+            translation.UpdatedAtUtc = DateTime.UtcNow;
+            translation.UpdatedById = userId;
+        }
         db.ContentRevisions.Add(new ContentRevision
         {
             EntityType = "SectionContent", EntityKey = slot.SectionKey, Action = "AI Applied",
             DisplayName = slot.DisplayName,
-            SnapshotJson = JsonSerializer.Serialize(new { entity.ContentJson, slot.IsEnabled }),
+            SnapshotJson = JsonSerializer.Serialize(new { LanguageCode = language.Code, ContentJson = serialized, slot.IsEnabled }),
             CreatedById = userId, CreatedByName = User.Identity?.Name
         });
     }
 
-    private async Task ApplyItemsAsync(TemplateSection slot, SectionSchemaDocument schema, AiSectionDraft proposed, string? userId)
+    private async Task ApplyItemsAsync(TemplateSection slot, SectionSchemaDocument schema, AiSectionDraft proposed,
+        ContentLanguage language, string? userId)
     {
         if (schema.Items is null || proposed.Items.Count == 0) return;
         var existing = await db.SectionItems.Where(x => x.SectionKey == slot.SectionKey)
             .OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync();
         for (var index = 0; index < proposed.Items.Count; index++)
         {
+            if (!language.IsDefault && index >= existing.Count) break;
             var entity = index < existing.Count ? existing[index] : new SectionItem
             {
                 SectionKey = slot.SectionKey, SortOrder = (index + 1) * 10, IsEnabled = true
             };
             if (entity.Id == 0 && schema.Items.Fields.Values.Any(x => x.Required && x.Editor == "image"))
                 continue; // AI text mode cannot satisfy a required media field.
-            var values = Deserialize(entity.ContentJson);
+            var translation = language.IsDefault || entity.Id == 0 ? null : await db.SectionItemTranslations
+                .FirstOrDefaultAsync(x => x.SectionItemId == entity.Id && x.LanguageCode == language.Code);
+            var values = Deserialize(translation?.ContentJson ?? entity.ContentJson);
             foreach (var field in proposed.Items[index])
             {
                 var definition = FindField(schema.Items.Fields, field.Key);
@@ -202,19 +239,38 @@ public sealed class AiContentController(
                 if (value is not null) values[field.Key] = value;
             }
             if (!HasRequiredValues(values, schema.Items.Fields)) continue;
-            entity.ContentJson = JsonSerializer.Serialize(values);
-            entity.UpdatedAtUtc = DateTime.UtcNow;
-            entity.UpdatedById = userId;
+            var serialized = JsonSerializer.Serialize(values);
+            if (language.IsDefault)
+            {
+                entity.ContentJson = serialized;
+                entity.UpdatedAtUtc = DateTime.UtcNow;
+                entity.UpdatedById = userId;
+            }
             if (entity.Id == 0)
             {
                 db.SectionItems.Add(entity);
                 await db.SaveChangesAsync();
             }
+            if (!language.IsDefault)
+            {
+                if (translation is null)
+                    db.SectionItemTranslations.Add(new SectionItemTranslation
+                    {
+                        SectionItemId = entity.Id, LanguageCode = language.Code, ContentJson = serialized,
+                        UpdatedAtUtc = DateTime.UtcNow, UpdatedById = userId
+                    });
+                else
+                {
+                    translation.ContentJson = serialized;
+                    translation.UpdatedAtUtc = DateTime.UtcNow;
+                    translation.UpdatedById = userId;
+                }
+            }
             db.ContentRevisions.Add(new ContentRevision
             {
                 EntityType = "SectionItem", EntityKey = $"{slot.SectionKey}:{entity.Id}", Action = "AI Applied",
                 DisplayName = slot.DisplayName,
-                SnapshotJson = JsonSerializer.Serialize(new { entity.ContentJson, entity.MediaAssetId, entity.IsEnabled }),
+                SnapshotJson = JsonSerializer.Serialize(new { LanguageCode = language.Code, ContentJson = serialized, entity.MediaAssetId, entity.IsEnabled }),
                 CreatedById = userId, CreatedByName = User.Identity?.Name
             });
         }
@@ -257,5 +313,18 @@ public sealed class AiContentController(
     {
         var id = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
         return await db.PageTemplates.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstAsync();
+    }
+
+    private async Task<string> GetDefaultLanguageCodeAsync() => await db.ContentLanguages.AsNoTracking()
+        .Where(x => x.IsDefault && x.IsEnabled).Select(x => x.Code).FirstAsync();
+
+    private async Task PopulateViewDataAsync(string? selectedLanguage)
+    {
+        ViewBag.IsAvailable = ai.IsAvailable;
+        ViewBag.ModelName = ai.ModelName;
+        ViewBag.TemplateName = await GetActiveTemplateNameAsync();
+        var languages = await db.ContentLanguages.AsNoTracking().Where(x => x.IsEnabled)
+            .OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ToListAsync();
+        ViewBag.Languages = new SelectList(languages, "Code", "Name", selectedLanguage);
     }
 }
