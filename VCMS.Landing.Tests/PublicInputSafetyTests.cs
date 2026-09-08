@@ -25,8 +25,8 @@ public sealed class PublicInputSafetyTests
         var sanitizer = new ContentHtmlSanitizer();
         var result = sanitizer.Sanitize("<p onclick=\"bad()\">Safe</p><script>alert(1)</script>", "RichContent");
         Assert.Contains("<p>Safe</p>", result);
-        Assert.DoesNotContain("onclick", result, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("<script", result, StringComparison.OrdinalIgnoreCase);
+        Assert.False(result.Contains("onclick", StringComparison.OrdinalIgnoreCase));
+        Assert.False(result.Contains("<script", StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
