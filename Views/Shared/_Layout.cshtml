@@ -44,6 +44,7 @@
     {
         <style data-color-theme="@themeKey">@Html.Raw(themeCss)</style>
     }
+    <link rel="stylesheet" href="~/css/popup.css" asp-append-version="true" />
 </head>
-<body class="@bodyClass">@RenderBody()<script src="~/js/site.js" asp-append-version="true" defer></script>@await RenderSectionAsync("Scripts", required: false)</body>
+<body class="@bodyClass">@RenderBody()<script src="~/js/site.js" asp-append-version="true" defer></script><script src="~/js/popup.js" asp-append-version="true" defer></script>@await RenderSectionAsync("Scripts", required: false)</body>
 </html>
