@@ -428,6 +428,42 @@ namespace VCMS.Landing.Migrations
                     b.ToTable("PageTemplates");
                 });
 
+            modelBuilder.Entity("LandingCms.Models.PopupCampaign", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("INTEGER");
+                    b.Property<DateTime>("CreatedAtUtc").HasColumnType("TEXT");
+                    b.Property<DateTime?>("EndAtUtc").HasColumnType("TEXT");
+                    b.Property<string>("Frequency").IsRequired().HasMaxLength(20).HasColumnType("TEXT");
+                    b.Property<string>("InternalName").IsRequired().HasMaxLength(160).HasColumnType("TEXT");
+                    b.Property<bool>("IsDismissible").HasColumnType("INTEGER");
+                    b.Property<bool>("IsEnabled").HasColumnType("INTEGER");
+                    b.Property<int>("Priority").HasColumnType("INTEGER");
+                    b.Property<DateTime?>("StartAtUtc").HasColumnType("TEXT");
+                    b.Property<int>("TriggerDelaySeconds").HasColumnType("INTEGER");
+                    b.Property<DateTime>("UpdatedAtUtc").HasColumnType("TEXT");
+                    b.Property<int>("Version").HasColumnType("INTEGER");
+                    b.HasKey("Id");
+                    b.HasIndex("IsEnabled", "Priority", "StartAtUtc", "EndAtUtc");
+                    b.ToTable("PopupCampaigns");
+                });
+
+            modelBuilder.Entity("LandingCms.Models.PopupCampaignTranslation", b =>
+                {
+                    b.Property<int>("PopupCampaignId").HasColumnType("INTEGER");
+                    b.Property<string>("LanguageCode").IsRequired().HasMaxLength(10).HasColumnType("TEXT");
+                    b.Property<string>("ButtonText").HasMaxLength(80).HasColumnType("TEXT");
+                    b.Property<string>("ButtonUrl").HasMaxLength(500).HasColumnType("TEXT");
+                    b.Property<string>("ContentHtml").HasColumnType("TEXT");
+                    b.Property<long?>("DesktopMediaId").HasColumnType("INTEGER");
+                    b.Property<long?>("MobileMediaId").HasColumnType("INTEGER");
+                    b.Property<string>("Title").HasMaxLength(200).HasColumnType("TEXT");
+                    b.HasKey("PopupCampaignId", "LanguageCode");
+                    b.HasIndex("DesktopMediaId");
+                    b.HasIndex("LanguageCode");
+                    b.HasIndex("MobileMediaId");
+                    b.ToTable("PopupCampaignTranslations");
+                });
+
             modelBuilder.Entity("LandingCms.Models.SectionContent", b =>
                 {
                     b.Property<int>("Id")
@@ -1213,6 +1249,22 @@ namespace VCMS.Landing.Migrations
                     b.Navigation("SectionDefinition");
                 });
 
+            modelBuilder.Entity("LandingCms.Models.PopupCampaignTranslation", b =>
+                {
+                    b.HasOne("LandingCms.Models.MediaAsset", "DesktopMedia")
+                        .WithMany().HasForeignKey("DesktopMediaId").OnDelete(DeleteBehavior.Restrict);
+                    b.HasOne("LandingCms.Models.ContentLanguage", "Language")
+                        .WithMany().HasForeignKey("LanguageCode").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                    b.HasOne("LandingCms.Models.MediaAsset", "MobileMedia")
+                        .WithMany().HasForeignKey("MobileMediaId").OnDelete(DeleteBehavior.Restrict);
+                    b.HasOne("LandingCms.Models.PopupCampaign", "PopupCampaign")
+                        .WithMany("Translations").HasForeignKey("PopupCampaignId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.Navigation("DesktopMedia");
+                    b.Navigation("Language");
+                    b.Navigation("MobileMedia");
+                    b.Navigation("PopupCampaign");
+                });
+
             modelBuilder.Entity("LandingCms.Models.SectionContent", b =>
                 {
                     b.HasOne("LandingCms.Models.SectionDefinition", "SectionDefinition")
@@ -1495,6 +1547,11 @@ namespace VCMS.Landing.Migrations
                     b.Navigation("Sections");
 
                     b.Navigation("Settings");
+                });
+
+            modelBuilder.Entity("LandingCms.Models.PopupCampaign", b =>
+                {
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("LandingCms.Models.SectionContent", b =>
