@@ -1,0 +1,34 @@
+@model IReadOnlyList<PopupCampaign>
+@{
+    ViewData["Title"] = "Popup theo lịch";
+    var now = DateTime.UtcNow;
+}
+<div class="page-title">
+    <div><h1>Popup theo lịch</h1><p>Quản lý thông báo, chương trình theo mùa và media riêng theo ngôn ngữ.</p></div>
+    <a class="button" asp-action="Create">Tạo popup</a>
+</div>
+<div class="panel table-wrap">
+    <table>
+        <thead><tr><th>Popup</th><th>Lịch chạy</th><th>Ưu tiên</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+        <tbody>
+        @foreach (var campaign in Model)
+        {
+            var scheduled = !campaign.StartAtUtc.HasValue || campaign.StartAtUtc <= now;
+            var unexpired = !campaign.EndAtUtc.HasValue || campaign.EndAtUtc > now;
+            var status = !campaign.IsEnabled ? "Tạm dừng" : !scheduled ? "Sắp diễn ra" : !unexpired ? "Đã kết thúc" : "Đang chạy";
+            <tr>
+                <td><strong>@campaign.InternalName</strong><small>@campaign.Translations.Count bản ngôn ngữ · phiên bản @campaign.Version</small></td>
+                <td><span>@(campaign.StartAtUtc?.AddHours(7).ToString("dd/MM/yyyy HH:mm") ?? "Ngay khi bật")</span><small>đến @(campaign.EndAtUtc?.AddHours(7).ToString("dd/MM/yyyy HH:mm") ?? "không giới hạn")</small></td>
+                <td>@campaign.Priority</td>
+                <td><span class="status @(campaign.IsEnabled && scheduled && unexpired ? "on" : "off")">@status</span></td>
+                <td class="popup-actions">
+                    <a asp-action="Edit" asp-route-id="@campaign.Id">Chỉnh sửa</a>
+                    <form asp-action="Toggle" asp-route-id="@campaign.Id" method="post"><button class="link-action" type="submit">@(campaign.IsEnabled ? "Tắt" : "Bật")</button></form>
+                    <form asp-action="Delete" asp-route-id="@campaign.Id" method="post" onsubmit="return confirm('Xóa popup này?');"><button class="link-action danger" type="submit">Xóa</button></form>
+                </td>
+            </tr>
+        }
+        @if (Model.Count == 0) { <tr><td colspan="5" class="empty">Chưa có popup nào.</td></tr> }
+        </tbody>
+    </table>
+</div>
