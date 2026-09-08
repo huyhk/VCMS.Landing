@@ -1,0 +1,22 @@
+@model PopupRenderViewModel
+<div class="vcms-popup" data-popup-id="@Model.Id" data-popup-version="@Model.Version" data-popup-delay="@Model.TriggerDelaySeconds" data-popup-frequency="@Model.Frequency" data-popup-dismissible="@Model.IsDismissible.ToString().ToLowerInvariant()" hidden>
+    <div class="vcms-popup-backdrop" data-popup-close></div>
+    <section class="vcms-popup-dialog" role="dialog" aria-modal="true" aria-labelledby="popup-title-@Model.Id">
+        @if (Model.IsDismissible) { <button class="vcms-popup-close" type="button" data-popup-close aria-label="Đóng thông báo">×</button> }
+        @if (Model.DesktopMedia is not null)
+        {
+            <picture class="vcms-popup-media">
+                @if (Model.MobileMedia is not null) { <source media="(max-width: 640px)" srcset="@Model.MobileMedia.RelativeUrl"> }
+                <img src="@Model.DesktopMedia.RelativeUrl" alt="" loading="eager">
+            </picture>
+        }
+        <div class="vcms-popup-content">
+            @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2 id="popup-title-@Model.Id">@Model.Title</h2> }
+            @if (!string.IsNullOrWhiteSpace(Model.ContentHtml)) { <div class="vcms-popup-copy">@Html.Raw(Model.ContentHtml)</div> }
+            @if (!string.IsNullOrWhiteSpace(Model.ButtonText) && !string.IsNullOrWhiteSpace(Model.ButtonUrl))
+            {
+                <a class="vcms-popup-cta" href="@Model.ButtonUrl">@Model.ButtonText</a>
+            }
+        </div>
+    </section>
+</div>
