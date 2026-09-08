@@ -30,6 +30,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<SectionItemTranslation> SectionItemTranslations => Set<SectionItemTranslation>();
     public DbSet<TemplateSectionTranslation> TemplateSectionTranslations => Set<TemplateSectionTranslation>();
     public DbSet<SiteSettingTranslation> SiteSettingTranslations => Set<SiteSettingTranslation>();
+    public DbSet<PopupCampaign> PopupCampaigns => Set<PopupCampaign>();
+    public DbSet<PopupCampaignTranslation> PopupCampaignTranslations => Set<PopupCampaignTranslation>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -71,6 +73,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(x => x.SiteSettingId).OnDelete(DeleteBehavior.Cascade);
         builder.Entity<SiteSettingTranslation>().HasOne(x => x.Language).WithMany(x => x.SiteSettingTranslations)
             .HasForeignKey(x => x.LanguageCode).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<PopupCampaign>().HasIndex(x => new { x.IsEnabled, x.Priority, x.StartAtUtc, x.EndAtUtc });
+        builder.Entity<PopupCampaignTranslation>().HasKey(x => new { x.PopupCampaignId, x.LanguageCode });
+        builder.Entity<PopupCampaignTranslation>().HasOne(x => x.PopupCampaign).WithMany(x => x.Translations)
+            .HasForeignKey(x => x.PopupCampaignId).OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<PopupCampaignTranslation>().HasOne(x => x.Language).WithMany()
+            .HasForeignKey(x => x.LanguageCode).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<PopupCampaignTranslation>().HasOne(x => x.DesktopMedia).WithMany()
+            .HasForeignKey(x => x.DesktopMediaId).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<PopupCampaignTranslation>().HasOne(x => x.MobileMedia).WithMany()
+            .HasForeignKey(x => x.MobileMediaId).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<SettingDefinition>().HasIndex(x => x.Key).IsUnique();
         builder.Entity<SettingValue>().HasIndex(x => x.SettingDefinitionId).IsUnique();
         builder.Entity<SettingDefinition>().HasOne(x => x.Value).WithOne(x => x.SettingDefinition)
