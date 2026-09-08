@@ -92,7 +92,7 @@ public sealed class ContentPackageService(
         if (missingFiles > 0) warnings.Add($"Có {missingFiles} media không còn file vật lý trong package.");
         if (data.ContentLanguages.All(x => !x.IsDefault)) warnings.Add("Package không xác định ngôn ngữ mặc định.");
         return new ContentPackageInspection(token, manifest, data.ContentLanguages.Count, data.PageTemplates.Count,
-            data.ThemeDefinitions.Count, data.SectionItems.Count, fileInfo.Length, warnings);
+            data.ThemeDefinitions.Count, data.SectionItems.Count, data.PopupCampaigns.Count, fileInfo.Length, warnings);
     }
 
     public async Task<string> ImportAsync(string packagePath, CancellationToken cancellationToken = default)
@@ -164,11 +164,15 @@ public sealed class ContentPackageService(
         TemplateSettings = await db.TemplateSettings.AsNoTracking().ToListAsync(ct),
         MediaAssets = await db.MediaAssets.AsNoTracking().ToListAsync(ct),
         SectionMedia = await db.SectionMedia.AsNoTracking().ToListAsync(ct),
-        ContentLanguages = await db.ContentLanguages.AsNoTracking().ToListAsync(ct)
+        ContentLanguages = await db.ContentLanguages.AsNoTracking().ToListAsync(ct),
+        PopupCampaigns = await db.PopupCampaigns.AsNoTracking().ToListAsync(ct),
+        PopupCampaignTranslations = await db.PopupCampaignTranslations.AsNoTracking().ToListAsync(ct)
     };
 
     private async Task ClearContentAsync(CancellationToken ct)
     {
+        await db.PopupCampaignTranslations.ExecuteDeleteAsync(ct);
+        await db.PopupCampaigns.ExecuteDeleteAsync(ct);
         await db.TemplateSectionTranslations.ExecuteDeleteAsync(ct);
         await db.SectionItemTranslations.ExecuteDeleteAsync(ct);
         await db.SectionContentTranslations.ExecuteDeleteAsync(ct);
@@ -215,6 +219,8 @@ public sealed class ContentPackageService(
         db.SectionContentTranslations.AddRange(data.SectionContentTranslations);
         db.SectionItemTranslations.AddRange(data.SectionItemTranslations);
         db.TemplateSectionTranslations.AddRange(data.TemplateSectionTranslations);
+        db.PopupCampaigns.AddRange(data.PopupCampaigns);
+        db.PopupCampaignTranslations.AddRange(data.PopupCampaignTranslations);
         db.LandingSections.AddRange(data.LandingSections);
     }
 
@@ -295,7 +301,7 @@ public sealed class ContentPackageService(
     private static void ValidateManifest(ContentPackageManifest manifest)
     {
         if (manifest.Format != "VCMS.ContentPackage") throw new InvalidOperationException("Đây không phải VCMS Content Package.");
-        if (manifest.SchemaVersion != ContentPackageManifest.CurrentSchemaVersion)
+        if (manifest.SchemaVersion is < 1 or > ContentPackageManifest.CurrentSchemaVersion)
             throw new InvalidOperationException($"Schema package {manifest.SchemaVersion} chưa được hỗ trợ.");
     }
 
