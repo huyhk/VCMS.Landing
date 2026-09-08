@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using LandingCms.Data;
 using LandingCms.Models;
 using LandingCms.Services;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LandingCms.Areas.Admin.Controllers;
 
 [Area("Admin"), Authorize(Roles = DbInitializer.SuperAdministrator)]
-public sealed class PopupCampaignsController(ApplicationDbContext db, IContentHtmlSanitizer htmlSanitizer) : Controller
+public sealed class PopupCampaignsController(ApplicationDbContext db, IContentHtmlSanitizer htmlSanitizer, IMediaStorageService mediaStorage) : Controller
 {
     public async Task<IActionResult> Index(CancellationToken ct)
     {
@@ -55,6 +56,18 @@ public sealed class PopupCampaignsController(ApplicationDbContext db, IContentHt
         var language = await db.ContentLanguages.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Code == model.LanguageCode && x.IsEnabled, ct);
         if (language is null) ModelState.AddModelError(nameof(model.LanguageCode), "Ngôn ngữ không hợp lệ.");
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (model.DesktopMediaFile is { Length: > 0 })
+                model.DesktopMediaId = (await mediaStorage.SaveImageAsync(model.DesktopMediaFile, userId, ImageUploadProfile.General, ct)).Id;
+            if (model.MobileMediaFile is { Length: > 0 })
+                model.MobileMediaId = (await mediaStorage.SaveImageAsync(model.MobileMediaFile, userId, ImageUploadProfile.General, ct)).Id;
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+        }
         if (model.EndAtLocal.HasValue && model.StartAtLocal.HasValue && model.EndAtLocal <= model.StartAtLocal)
             ModelState.AddModelError(nameof(model.EndAtLocal), "Thời điểm kết thúc phải sau thời điểm bắt đầu.");
         if (model.IsEnabled && language?.IsDefault == true && string.IsNullOrWhiteSpace(model.Title) && !model.DesktopMediaId.HasValue)

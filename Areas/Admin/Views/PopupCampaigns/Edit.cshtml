@@ -15,7 +15,7 @@
         @if (!Model.HasTranslation) { <span class="status off">Chưa có bản dịch</span> }
     </div>
 }
-<form asp-action="Save" method="post" class="panel form-panel popup-form">
+<form asp-action="Save" method="post" enctype="multipart/form-data" class="panel form-panel popup-form">
     <input asp-for="Id" type="hidden"><input asp-for="LanguageCode" type="hidden">
     <div asp-validation-summary="ModelOnly" class="validation"></div>
     <div class="form-grid">
@@ -46,8 +46,24 @@
         </div>
         <div><label asp-for="ButtonText">Nhãn nút</label><input asp-for="ButtonText"></div>
         <div><label asp-for="ButtonUrl">URL nút</label><input asp-for="ButtonUrl" placeholder="#contact"><span asp-validation-for="ButtonUrl"></span></div>
-        <div><label asp-for="DesktopMediaId">Hình desktop</label><select asp-for="DesktopMediaId"><option value="">— Không dùng —</option>@foreach (var media in Model.Media) { <option value="@media.Id">@media.OriginalFileName</option> }</select></div>
-        <div><label asp-for="MobileMediaId">Hình mobile</label><select asp-for="MobileMediaId"><option value="">— Dùng hình desktop —</option>@foreach (var media in Model.Media) { <option value="@media.Id">@media.OriginalFileName</option> }</select></div>
+        <div class="popup-media-field">
+            <label asp-for="DesktopMediaId">Hình desktop</label>
+            @{ var desktopMedia = Model.Media.FirstOrDefault(x => x.Id == Model.DesktopMediaId); }
+            <div id="popup-desktop-preview" class="popup-media-preview">@if(desktopMedia is not null){<img src="@Url.Action("Thumbnail", "Media", new { area = "", id = desktopMedia.Id })" alt="Xem trước hình desktop"><span>@desktopMedia.OriginalFileName</span>}</div>
+            <select asp-for="DesktopMediaId" data-media-preview="popup-desktop-preview"><option value="">— Không dùng —</option>@foreach (var media in Model.Media) { <option value="@media.Id" data-preview-url="@Url.Action("Thumbnail", "Media", new { area = "", id = media.Id })">@media.OriginalFileName</option> }</select>
+            <label class="popup-upload-label" asp-for="DesktopMediaFile">Hoặc upload hình desktop mới</label>
+            <input asp-for="DesktopMediaFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="popup-desktop-preview">
+            <span asp-validation-for="DesktopMediaFile"></span><small>Ảnh mới được lưu vào Media Library và tự động gắn với ngôn ngữ đang chỉnh.</small>
+        </div>
+        <div class="popup-media-field">
+            <label asp-for="MobileMediaId">Hình mobile</label>
+            @{ var mobileMedia = Model.Media.FirstOrDefault(x => x.Id == Model.MobileMediaId); }
+            <div id="popup-mobile-preview" class="popup-media-preview">@if(mobileMedia is not null){<img src="@Url.Action("Thumbnail", "Media", new { area = "", id = mobileMedia.Id })" alt="Xem trước hình mobile"><span>@mobileMedia.OriginalFileName</span>}</div>
+            <select asp-for="MobileMediaId" data-media-preview="popup-mobile-preview"><option value="">— Dùng hình desktop —</option>@foreach (var media in Model.Media) { <option value="@media.Id" data-preview-url="@Url.Action("Thumbnail", "Media", new { area = "", id = media.Id })">@media.OriginalFileName</option> }</select>
+            <label class="popup-upload-label" asp-for="MobileMediaFile">Hoặc upload hình mobile mới</label>
+            <input asp-for="MobileMediaFile" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="popup-mobile-preview">
+            <span asp-validation-for="MobileMediaFile"></span><small>Để trống nếu muốn mobile sử dụng hình desktop.</small>
+        </div>
     </div>
     <div class="form-actions"><button class="button" type="submit">Lưu popup</button><span>Thay đổi lịch hoặc trạng thái sẽ tăng phiên bản hiển thị.</span></div>
 </form>

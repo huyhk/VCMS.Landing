@@ -20,6 +20,13 @@ document.querySelectorAll('input[type="file"][data-images-preview]').forEach(inp
         target.append(article);
     });
 }));
+document.querySelectorAll('select[data-media-preview]').forEach(select=>select.addEventListener('change',()=>{
+    const target=document.getElementById(select.dataset.mediaPreview),option=select.selectedOptions[0];
+    if(!target)return;
+    target.replaceChildren();
+    if(!option?.value||!option.dataset.previewUrl)return;
+    target.append(Object.assign(document.createElement('img'),{src:option.dataset.previewUrl,alt:'Ảnh đã chọn'}),Object.assign(document.createElement('span'),{textContent:option.textContent.trim()}));
+}));
 window.addEventListener('pagehide',()=>previewUrls.forEach((_,input)=>clearPreviewUrls(input)));
 
 document.querySelectorAll('[data-html-editor]').forEach(editor=>{

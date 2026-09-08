@@ -21,6 +21,8 @@ public sealed class PopupCampaignEditViewModel
     [StringLength(500)] public string? ButtonUrl { get; set; }
     public long? DesktopMediaId { get; set; }
     public long? MobileMediaId { get; set; }
+    public IFormFile? DesktopMediaFile { get; set; }
+    public IFormFile? MobileMediaFile { get; set; }
     public IReadOnlyList<ContentLanguage> Languages { get; set; } = [];
     public IReadOnlyList<MediaAsset> Media { get; set; } = [];
     public bool HasTranslation { get; set; }
