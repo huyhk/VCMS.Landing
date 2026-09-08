@@ -1,0 +1,53 @@
+@model PopupCampaignEditViewModel
+@{ ViewData["Title"] = Model.Id == 0 ? "Tạo popup" : "Chỉnh sửa popup"; }
+<div class="page-title">
+    <div><h1>@ViewData["Title"]</h1><p>Thời gian được nhập theo múi giờ Việt Nam (UTC+7).</p></div>
+    <a class="button button-secondary" asp-action="Index">Quay lại</a>
+</div>
+@if (Model.Id != 0)
+{
+    <div class="panel language-content-bar">
+        <strong>Nội dung đang chỉnh sửa:</strong>
+        @foreach (var language in Model.Languages)
+        {
+            <a class="button @(language.Code == Model.LanguageCode ? "" : "button-secondary")" asp-action="Edit" asp-route-id="@Model.Id" asp-route-language="@language.Code">@language.Name</a>
+        }
+        @if (!Model.HasTranslation) { <span class="status off">Chưa có bản dịch</span> }
+    </div>
+}
+<form asp-action="Save" method="post" class="panel form-panel popup-form">
+    <input asp-for="Id" type="hidden"><input asp-for="LanguageCode" type="hidden">
+    <div asp-validation-summary="ModelOnly" class="validation"></div>
+    <div class="form-grid">
+        <div class="full popup-form-section"><h2>Cấu hình chiến dịch</h2><small>Dùng chung cho tất cả ngôn ngữ.</small></div>
+        <div class="full"><label asp-for="InternalName">Tên quản lý *</label><input asp-for="InternalName" placeholder="Thông báo nghỉ Tết 2027"><span asp-validation-for="InternalName"></span></div>
+        <div><label asp-for="StartAtLocal">Bắt đầu</label><input asp-for="StartAtLocal" type="datetime-local"></div>
+        <div><label asp-for="EndAtLocal">Kết thúc</label><input asp-for="EndAtLocal" type="datetime-local"><span asp-validation-for="EndAtLocal"></span></div>
+        <div><label asp-for="Priority">Độ ưu tiên</label><input asp-for="Priority" type="number"><small>Số lớn hơn được ưu tiên khi nhiều popup cùng chạy.</small></div>
+        <div><label asp-for="TriggerDelaySeconds">Hiển thị sau (giây)</label><input asp-for="TriggerDelaySeconds" type="number" min="0" max="60"></div>
+        <div><label asp-for="Frequency">Tần suất</label><select asp-for="Frequency"><option value="always">Mỗi lần mở trang</option><option value="session">Một lần trong phiên</option><option value="daily">Một lần mỗi ngày</option><option value="once">Một lần duy nhất</option></select></div>
+        <div class="popup-checks"><label><input asp-for="IsEnabled"> Bật popup</label><label><input asp-for="IsDismissible"> Cho phép đóng</label></div>
+
+        <div class="full popup-form-section"><h2>Nội dung @Model.Languages.FirstOrDefault(x => x.Code == Model.LanguageCode)?.Name</h2><small>Text, liên kết và hình ảnh có thể khác nhau theo ngôn ngữ.</small></div>
+        <div class="full"><label asp-for="Title">Tiêu đề</label><input asp-for="Title"><span asp-validation-for="Title"></span></div>
+        <div class="full">
+            <label asp-for="ContentHtml">Nội dung</label>
+            <div class="html-editor" data-html-editor>
+                <div class="html-editor-toolbar" role="toolbar" aria-label="Định dạng nội dung">
+                    <button type="button" data-command="bold"><strong>B</strong></button>
+                    <button type="button" data-command="italic"><em>I</em></button>
+                    <button type="button" data-command="insertUnorderedList">• List</button>
+                    <button type="button" data-link>Link</button>
+                    <button type="button" data-command="removeFormat">Xóa định dạng</button>
+                </div>
+                <div class="html-editor-content" contenteditable="true">@Html.Raw(Model.ContentHtml)</div>
+                <textarea asp-for="ContentHtml" hidden data-html-editor-value></textarea>
+            </div>
+        </div>
+        <div><label asp-for="ButtonText">Nhãn nút</label><input asp-for="ButtonText"></div>
+        <div><label asp-for="ButtonUrl">URL nút</label><input asp-for="ButtonUrl" placeholder="#contact"><span asp-validation-for="ButtonUrl"></span></div>
+        <div><label asp-for="DesktopMediaId">Hình desktop</label><select asp-for="DesktopMediaId"><option value="">— Không dùng —</option>@foreach (var media in Model.Media) { <option value="@media.Id">@media.OriginalFileName</option> }</select></div>
+        <div><label asp-for="MobileMediaId">Hình mobile</label><select asp-for="MobileMediaId"><option value="">— Dùng hình desktop —</option>@foreach (var media in Model.Media) { <option value="@media.Id">@media.OriginalFileName</option> }</select></div>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">Lưu popup</button><span>Thay đổi lịch hoặc trạng thái sẽ tăng phiên bản hiển thị.</span></div>
+</form>
