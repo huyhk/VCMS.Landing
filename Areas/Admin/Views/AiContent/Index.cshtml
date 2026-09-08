@@ -23,6 +23,12 @@
     <div asp-validation-summary="ModelOnly" class="validation"></div>
     <div class="form-grid">
         <div class="full">
+            <label asp-for="LanguageCode">Ngôn ngữ nội dung *</label>
+            <select asp-for="LanguageCode" asp-items="ViewBag.Languages"></select>
+            <span asp-validation-for="LanguageCode"></span>
+            <small>AI chỉ cập nhật nội dung của ngôn ngữ đã chọn; dữ liệu và media dùng chung được giữ nguyên.</small>
+        </div>
+        <div class="full">
             <label asp-for="Topic">Chủ đề website *</label>
             <input asp-for="Topic" placeholder="Ví dụ: Phân phối dây cáp và phụ kiện cho công trình">
             <span asp-validation-for="Topic"></span>
