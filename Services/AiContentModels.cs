@@ -4,6 +4,7 @@ namespace LandingCms.Services;
 
 public sealed class AiLandingBrief
 {
+    [Required, StringLength(10)] public string LanguageCode { get; set; } = "vi";
     [Required, StringLength(200)] public string Topic { get; set; } = "";
     [StringLength(160)] public string? BrandName { get; set; }
     [StringLength(3000)] public string? ProductOrService { get; set; }
