@@ -191,10 +191,39 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
             .Where(x => x.HasValue).Select(x => x!.Value).Distinct().ToArray();
         var chromeMedia = await db.MediaAssets.AsNoTracking()
             .Where(x => chromeMediaIds.Contains(x.Id) && !x.IsDeleted).ToDictionaryAsync(x => x.Id);
+        ViewBag.PopupCampaign = await GetActivePopupAsync(currentLanguage, defaultLanguage);
         var turnstileSiteKey = turnstileOptions.Value.IsEnabled ? turnstileOptions.Value.SiteKey : null;
         return View(viewPath, new HomeViewModel(settings, sections, navigationItems, turnstileSiteKey, extendedSettings,
             brandingMedia, sectionMedia, sectionItems, languages, currentLanguage,
             headerLayout, footerLayout, chromeMedia));
+    }
+
+    private async Task<PopupRenderViewModel?> GetActivePopupAsync(ContentLanguage currentLanguage, ContentLanguage defaultLanguage)
+    {
+        var now = DateTime.UtcNow;
+        var campaign = await db.PopupCampaigns.AsNoTracking()
+            .Where(x => x.IsEnabled && (!x.StartAtUtc.HasValue || x.StartAtUtc <= now)
+                && (!x.EndAtUtc.HasValue || x.EndAtUtc > now))
+            .OrderByDescending(x => x.Priority).ThenByDescending(x => x.UpdatedAtUtc)
+            .Include(x => x.Translations).ThenInclude(x => x.DesktopMedia)
+            .Include(x => x.Translations).ThenInclude(x => x.MobileMedia)
+            .FirstOrDefaultAsync();
+        if (campaign is null) return null;
+        var selected = campaign.Translations.FirstOrDefault(x => x.LanguageCode == currentLanguage.Code);
+        var fallback = campaign.Translations.FirstOrDefault(x => x.LanguageCode == defaultLanguage.Code);
+        if (selected is null && fallback is null) return null;
+        var title = selected?.Title ?? fallback?.Title;
+        var content = htmlSanitizer.Sanitize(selected?.ContentHtml ?? fallback?.ContentHtml, "BasicContent");
+        var buttonText = selected?.ButtonText ?? fallback?.ButtonText;
+        var rawUrl = selected?.ButtonUrl ?? fallback?.ButtonUrl;
+        var url = string.IsNullOrWhiteSpace(rawUrl) ? null : PublicLinkUrl.Normalize(rawUrl);
+        var desktopMedia = selected?.DesktopMedia ?? fallback?.DesktopMedia;
+        var mobileMedia = selected?.MobileMedia ?? fallback?.MobileMedia;
+        return new PopupRenderViewModel(campaign.Id, campaign.Version, currentLanguage.Code,
+            title, content, buttonText, url,
+            desktopMedia is { IsDeleted: false } ? desktopMedia : null,
+            mobileMedia is { IsDeleted: false } ? mobileMedia : null,
+            campaign.TriggerDelaySeconds, campaign.Frequency, campaign.IsDismissible);
     }
 
     [HttpPost, ValidateAntiForgeryToken, EnableRateLimiting("contact")]
