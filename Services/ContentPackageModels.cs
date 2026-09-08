@@ -4,7 +4,7 @@ namespace LandingCms.Services;
 
 public sealed class ContentPackageManifest
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
     public string Format { get; set; } = "VCMS.ContentPackage";
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public DateTime ExportedAtUtc { get; set; } = DateTime.UtcNow;
@@ -39,8 +39,10 @@ public sealed class ContentPackageData
     public List<MediaAsset> MediaAssets { get; set; } = [];
     public List<SectionMedia> SectionMedia { get; set; } = [];
     public List<ContentLanguage> ContentLanguages { get; set; } = [];
+    public List<PopupCampaign> PopupCampaigns { get; set; } = [];
+    public List<PopupCampaignTranslation> PopupCampaignTranslations { get; set; } = [];
 }
 
 public sealed record ContentPackageInspection(
     string Token, ContentPackageManifest Manifest, int LanguageCount, int TemplateCount,
-    int ThemeCount, int SectionItemCount, long PackageBytes, IReadOnlyList<string> Warnings);
+    int ThemeCount, int SectionItemCount, int PopupCount, long PackageBytes, IReadOnlyList<string> Warnings);
