@@ -24,20 +24,18 @@ public sealed class MigrationSmokeTests
     }
 
     [Fact]
-    public async Task Legacy_database_without_migration_history_is_safely_baselined()
+    public async Task Database_at_104_schema_upgrades_without_rebuilding_existing_tables()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
         var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(connection).Options;
 
-        await using (var legacy = new ApplicationDbContext(options))
+        await using (var oldVersion = new ApplicationDbContext(options))
         {
-            await legacy.Database.EnsureCreatedAsync();
-            legacy.SiteSettings.Add(new LandingCms.Models.SiteSetting { SiteName = "Existing site" });
-            await legacy.SaveChangesAsync();
+            await oldVersion.Database.MigrateAsync("20260906090000_AddTemplateChromeLayouts");
+            oldVersion.SiteSettings.Add(new LandingCms.Models.SiteSetting { SiteName = "Existing site" });
+            await oldVersion.SaveChangesAsync();
         }
-
-        Assert.False(await TableExistsAsync(connection, "__EFMigrationsHistory"));
 
         await using (var upgraded = new ApplicationDbContext(options))
         {
@@ -47,7 +45,23 @@ public sealed class MigrationSmokeTests
             Assert.Empty(await upgraded.Database.GetPendingMigrationsAsync());
         }
 
-        Assert.True(await TableExistsAsync(connection, "__EFMigrationsHistory"));
+        Assert.True(await TableExistsAsync(connection, "PopupCampaigns"));
+        Assert.True(await ColumnExistsAsync(connection, "SectionMedia", "LanguageCode"));
+        Assert.True(await ColumnExistsAsync(connection, "SectionItemTranslations", "MediaAssetId"));
+    }
+
+    private static async Task<bool> ColumnExistsAsync(
+        SqliteConnection connection,
+        string table,
+        string column)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA table_info(\"{table}\")";
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+            if (string.Equals(reader.GetString(1), column, StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
     }
 
     private static async Task<bool> TableExistsAsync(SqliteConnection connection, string table)
