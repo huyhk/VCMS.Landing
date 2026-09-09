@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Localization;
 using LandingCms;
 using System.Globalization;
+using VNS.Licensing.Client.AspNetCore;
 
 namespace LandingCms.Controllers;
 public class HomeController(ApplicationDbContext db, IContactEmailSender emailSender, ILogger<HomeController> logger,
