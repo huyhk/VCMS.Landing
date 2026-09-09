@@ -146,6 +146,11 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 app.UseRouting();
+app.Map("/health", healthApp => healthApp.Run(async context =>
+{
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync("""{"status":"Healthy"}""");
+}));
 app.UseRequestLocalization();
 app.UseVnsLicensing();
 app.UseRateLimiter();
