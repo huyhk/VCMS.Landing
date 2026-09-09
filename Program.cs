@@ -20,8 +20,9 @@ builder.Services.Configure<Microsoft.AspNetCore.Builder.IISServerOptions>(option
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
     options.MultipartBodyLengthLimit = ContentPackageService.MaximumPackageBytes);
 
-var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
+var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(configuredConnectionString))
+    configuredConnectionString = "Data Source=App_Data/landing.db";
 var sqliteConnection = new SqliteConnectionStringBuilder(configuredConnectionString);
 if (!Path.IsPathRooted(sqliteConnection.DataSource))
     sqliteConnection.DataSource = Path.GetFullPath(sqliteConnection.DataSource, builder.Environment.ContentRootPath);
