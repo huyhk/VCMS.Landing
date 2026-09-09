@@ -36,3 +36,22 @@ aside nav::-webkit-scrollbar-thumb {
 aside nav::-webkit-scrollbar-thumb:hover {
     background: #64748b;
 }
+
+
+.admin-version {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 14px 8px 0 0;
+    padding: 12px 13px;
+    color: #94a3b8;
+    background: rgba(15, 23, 42, .42);
+    border: 1px solid #334155;
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+.admin-version strong {
+    color: #e2e8f0;
+}
