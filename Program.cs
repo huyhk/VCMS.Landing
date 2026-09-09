@@ -2,6 +2,7 @@ using LandingCms.Data;
 using LandingCms.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using LandingCms.Services;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
@@ -19,8 +20,16 @@ builder.Services.Configure<Microsoft.AspNetCore.Builder.IISServerOptions>(option
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
     options.MultipartBodyLengthLimit = ContentPackageService.MaximumPackageBytes);
 
+var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is required.");
+var sqliteConnection = new SqliteConnectionStringBuilder(configuredConnectionString);
+if (!Path.IsPathRooted(sqliteConnection.DataSource))
+    sqliteConnection.DataSource = Path.GetFullPath(sqliteConnection.DataSource, builder.Environment.ContentRootPath);
+var databaseDirectory = Path.GetDirectoryName(sqliteConnection.DataSource);
+if (!string.IsNullOrWhiteSpace(databaseDirectory))
+    Directory.CreateDirectory(databaseDirectory);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite(sqliteConnection.ConnectionString));
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 10;
@@ -162,5 +171,6 @@ app.MapControllerRoute(name: "localized-home", pattern: "{culture}",
     constraints: new { culture = "^[a-z]{2}(-[A-Z]{2})?$" });
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
+app.Logger.LogInformation("Using SQLite database at {DatabasePath}.", sqliteConnection.DataSource);
 await DbInitializer.InitializeAsync(app.Services, app.Configuration);
 app.Run();
