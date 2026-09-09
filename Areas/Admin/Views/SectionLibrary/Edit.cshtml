@@ -15,11 +15,11 @@
         </div>
         <div>
             <label>Loại section</label>
-            <input value="@Model.SectionDefinitionName — @Model.SectionType" readonly>
+            <input value="@Model.SectionDefinitionName — @Model.SectionType" disabled aria-disabled="true">
         </div>
         <div>
             <label>Section key</label>
-            <input value="@Model.SectionKey" readonly>
+            <input value="@Model.SectionKey" disabled aria-disabled="true">
         </div>
         @if(Model.IsArchived)
         {
