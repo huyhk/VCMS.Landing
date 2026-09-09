@@ -143,7 +143,7 @@ public static class DbInitializer
             }
 
             var productVersion = typeof(DbContext).Assembly.GetName().Version?.ToString(3) ?? "8.0.0";
-            foreach (var migration in await db.Database.GetMigrationsAsync())
+            foreach (var migration in db.Database.GetMigrations())
             {
                 await using var insert = connection.CreateCommand();
                 insert.Transaction = transaction;
