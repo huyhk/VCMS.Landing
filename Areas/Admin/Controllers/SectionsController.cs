@@ -85,7 +85,12 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (currentLanguage is null) return NotFound();
         model.LanguageCode = currentLanguage.Code; model.Languages = languages;
         model.IsDefaultLanguage = currentLanguage.IsDefault;
-        model.ShowInNavigation = slot.ShowInNavigation;
+        var navigationAllowed = sectionSchemas.GetNavigation(slot.SectionDefinition.SchemaJson).Allowed;
+        var canManageNavigation = currentLanguage.IsDefault
+            && User.IsInRole(DbInitializer.SuperAdministrator)
+            && navigationAllowed;
+        if (!canManageNavigation)
+            model.ShowInNavigation = slot.ShowInNavigation;
         var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
         model.ContentEditor = contentField.Editor; model.ContentHtmlPolicy = contentField.HtmlPolicy;
         model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
@@ -162,6 +167,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             content.ContentJson = translatedContentJson;
             slot.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel) ? slot.DisplayName : model.NavigationLabel.Trim();
             if (canManageVisibility) slot.IsEnabled = model.IsEnabled;
+            if (canManageNavigation) slot.ShowInNavigation = model.ShowInNavigation;
             content.UpdatedAtUtc = DateTime.UtcNow;
             content.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
             AddSectionContentRevision(content, slot, contentIsNew ? "Created" : "Saved");

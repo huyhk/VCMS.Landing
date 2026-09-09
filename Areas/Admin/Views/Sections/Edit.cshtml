@@ -67,6 +67,7 @@
         @if(Model.IsDefaultLanguage && User.IsInRole("SuperAdministrator"))
         {
             <div class="check-row"><label><input asp-for="IsEnabled"> Hiển thị section trong template đang sử dụng</label><span asp-validation-for="IsEnabled"></span></div>
+            <div class="check-row"><label><input asp-for="ShowInNavigation"> Hiển thị trên menu</label></div>
         }
         else
         {
