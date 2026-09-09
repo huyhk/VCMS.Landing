@@ -15,4 +15,7 @@
   <data name="Header.Contact" xml:space="preserve"><value>Discuss your project</value></data>
   <data name="Footer.Contact" xml:space="preserve"><value>Contact</value></data>
   <data name="Language.Navigation" xml:space="preserve"><value>Content language</value></data>
+  <data name="Section.PricingRecommended" xml:space="preserve"><value>Recommended</value></data>
+  <data name="Section.GalleryZoom" xml:space="preserve"><value>Enlarge image</value></data>
+  <data name="Section.PlayVideo" xml:space="preserve"><value>Play video</value></data>
 </root>

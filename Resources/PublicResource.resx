@@ -15,4 +15,7 @@
   <data name="Header.Contact" xml:space="preserve"><value>Trao đổi dự án</value></data>
   <data name="Footer.Contact" xml:space="preserve"><value>Liên hệ</value></data>
   <data name="Language.Navigation" xml:space="preserve"><value>Ngôn ngữ nội dung</value></data>
+  <data name="Section.PricingRecommended" xml:space="preserve"><value>Đề xuất</value></data>
+  <data name="Section.GalleryZoom" xml:space="preserve"><value>Phóng to hình ảnh</value></data>
+  <data name="Section.PlayVideo" xml:space="preserve"><value>Phát video</value></data>
 </root>

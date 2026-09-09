@@ -1,5 +1,7 @@
 @model SectionRenderViewModel
 @using LandingCms.Services
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<LandingCms.PublicResource> PublicText
 @{
     var contentSection = Model.Section;
     Model.Page.SectionMedia.TryGetValue(contentSection.SectionKey, out var sectionMedia);
@@ -18,7 +20,7 @@
                        class="gallery-item"
                        data-gallery-item
                        data-gallery-group="@contentSection.SectionKey"
-                       aria-label="Phóng to hình ảnh">
+                       aria-label="@PublicText["Section.GalleryZoom"]">
                         <img src="@imageSource.Src" srcset="@imageSource.SrcSet"
                              sizes="(max-width: 800px) 100vw, (max-width: 1200px) 50vw, 33vw"
                              width="@image.MediaAsset.Width" height="@image.MediaAsset.Height"

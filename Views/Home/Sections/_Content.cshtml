@@ -23,11 +23,11 @@
             {
                 <img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="lazy" decoding="async">
             }
-            @if (!string.IsNullOrWhiteSpace(Model.Content.BadgeValue) || !string.IsNullOrWhiteSpace(Model.Content.BadgeLabel))
+            @if (!string.IsNullOrWhiteSpace(contentSection.BadgeValue) || !string.IsNullOrWhiteSpace(contentSection.BadgeLabel))
             {
                 <div class="image-badge">
-                    @if (!string.IsNullOrWhiteSpace(Model.Content.BadgeValue)){<strong>@Model.Content.BadgeValue</strong>}
-                    @if (!string.IsNullOrWhiteSpace(Model.Content.BadgeLabel)){<span>@Model.Content.BadgeLabel</span>}
+                    @if (!string.IsNullOrWhiteSpace(contentSection.BadgeValue)){<strong>@contentSection.BadgeValue</strong>}
+                    @if (!string.IsNullOrWhiteSpace(contentSection.BadgeLabel)){<span>@contentSection.BadgeLabel</span>}
                 </div>
             }
         </div>

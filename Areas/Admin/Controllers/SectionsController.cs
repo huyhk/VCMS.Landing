@@ -54,7 +54,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             ContentEditor = contentField.Editor, ContentHtmlPolicy = contentField.HtmlPolicy,
             AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy),
             Eyebrow = payload.Eyebrow, Title = payload.Title, Subtitle = payload.Subtitle, Content = payload.Content,
-            BadgeValue = payload.BadgeValue, BadgeLabel = payload.BadgeLabel,
+            BadgeValue = payload.BadgeValue, BadgeLabel = payload.BadgeLabel, HighlightLabel = payload.HighlightLabel,
             ImageUrl = payload.ImageUrl, PrimaryButtonText = payload.PrimaryButtonText, PrimaryButtonUrl = payload.PrimaryButtonUrl,
             SecondaryButtonText = payload.SecondaryButtonText, SecondaryButtonUrl = payload.SecondaryButtonUrl,
             IsEnabled = slot.IsEnabled,
@@ -155,7 +155,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         var translatedContentJson = JsonSerializer.Serialize(new SectionContentPayload
         {
             Eyebrow = model.Eyebrow, Title = model.Title, Subtitle = model.Subtitle, Content = model.Content,
-            BadgeValue = model.BadgeValue, BadgeLabel = model.BadgeLabel,
+            BadgeValue = model.BadgeValue, BadgeLabel = model.BadgeLabel, HighlightLabel = model.HighlightLabel,
             ImageUrl = model.ImageUrl, PrimaryButtonText = model.PrimaryButtonText, PrimaryButtonUrl = model.PrimaryButtonUrl,
             SecondaryButtonText = model.SecondaryButtonText, SecondaryButtonUrl = model.SecondaryButtonUrl
         });

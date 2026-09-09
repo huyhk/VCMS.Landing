@@ -1,6 +1,8 @@
 @model SectionRenderViewModel
 @using System.Text.Json
 @using LandingCms.Services
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<LandingCms.PublicResource> PublicText
 @{
     var contentSection = Model.Section;
     Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
@@ -36,7 +38,7 @@
                 var safeButtonUrl = PublicLinkUrl.Normalize(buttonUrl);
 
                 <article class="pricing-card @(emphasis == "featured" ? "featured" : "")">
-                    @if (emphasis == "featured") { <span class="pricing-badge">Đề xuất</span> }
+                    @if (emphasis == "featured") { <span class="pricing-badge">@PublicText["Section.PricingRecommended"]</span> }
                     <h3>@name</h3>
                     @if (!string.IsNullOrWhiteSpace(description)) { <p class="pricing-description">@description</p> }
                     <div class="pricing-price"><strong>@price</strong><span>@period</span></div>

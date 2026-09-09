@@ -1,6 +1,8 @@
 @model SectionRenderViewModel
 @using System.Text.Json
 @using LandingCms.Services
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<LandingCms.PublicResource> PublicText
 @{
     var contentSection = Model.Section;
     Model.Page.SectionItems.TryGetValue(contentSection.SectionKey, out var items);
@@ -31,7 +33,7 @@
                 if (!MediaEmbedUrl.TryResolve(mediaUrl, out var embedUrl)) continue;
 
                 <article class="media-card">
-                    <button class="media-player" type="button" data-media-player data-embed-url="@embedUrl" aria-label="Phát video: @title">
+                    <button class="media-player" type="button" data-media-player data-embed-url="@embedUrl" aria-label="@($"{PublicText["Section.PlayVideo"]}: {title}")">
                         @if (item.MediaAsset is not null)
                         {
                             var imageSource = ResponsiveImageSources.Build(Url, item.MediaAsset, "thumbnail", 800);

@@ -381,7 +381,7 @@ public static class DbInitializer
     }
 
     private const string TextContentSchema = """
-        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"navigation":{"allowed":false,"defaultVisible":false}}
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"textarea"},"imageUrl":{"editor":"image"},"badgeLabel":{"editor":"text"},"badgeValue":{"editor":"text"},"highlightLabel":{"editor":"text"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"navigation":{"allowed":false,"defaultVisible":false}}
         """;
 
     private const string HeroContentSchema = """

@@ -68,6 +68,12 @@
             <div><label asp-for="BadgeLabel">Nhãn số liệu</label><input asp-for="BadgeLabel" maxlength="100" placeholder="Ví dụ: năm kinh nghiệm"><span asp-validation-for="BadgeLabel"></span></div>
             <div class="full"><small>Để trống cả hai trường nếu không muốn hiển thị badge.</small></div>
         }
+        @if(Model.SectionType == "Hero")
+        {
+            <div><label asp-for="BadgeLabel">Nhãn số liệu Hero</label><input asp-for="BadgeLabel" maxlength="100" placeholder="Ví dụ: Tăng trưởng bền vững"><span asp-validation-for="BadgeLabel"></span></div>
+            <div><label asp-for="BadgeValue">Giá trị số liệu Hero</label><input asp-for="BadgeValue" maxlength="30" placeholder="Ví dụ: +42%"><span asp-validation-for="BadgeValue"></span></div>
+            <div class="full"><label asp-for="HighlightLabel">Nhãn nổi bật Hero</label><input asp-for="HighlightLabel" maxlength="100" placeholder="Ví dụ: Thiết kế có mục tiêu"><span asp-validation-for="HighlightLabel"></span><small>Để trống cả ba trường nếu không muốn hiển thị khối minh họa số liệu.</small></div>
+        }
         <div><label asp-for="PrimaryButtonText">Nút chính</label><input asp-for="PrimaryButtonText"></div><div><label asp-for="PrimaryButtonUrl">Liên kết nút chính</label><input asp-for="PrimaryButtonUrl"></div>
         <div><label asp-for="SecondaryButtonText">Nút phụ</label><input asp-for="SecondaryButtonText"></div><div><label asp-for="SecondaryButtonUrl">Liên kết nút phụ</label><input asp-for="SecondaryButtonUrl"></div>
         @if(Model.IsDefaultLanguage && User.IsInRole("SuperAdministrator"))

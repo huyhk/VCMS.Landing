@@ -56,15 +56,18 @@
         {
             <div class="hero-visual"><img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="eager" fetchpriority="high"></div>
         }
-        else if (contentSection.LayoutVariant != "text-center" && contentSection.LayoutVariant != "text-right")
+        else if (contentSection.LayoutVariant != "text-center" && contentSection.LayoutVariant != "text-right"
+            && (!string.IsNullOrWhiteSpace(contentSection.BadgeLabel)
+                || !string.IsNullOrWhiteSpace(contentSection.BadgeValue)
+                || !string.IsNullOrWhiteSpace(contentSection.HighlightLabel)))
         {
         <div class="hero-art">
             <div class="art-card">
-                <span class="art-label">Tăng trưởng bền vững</span>
-                <strong>+42%</strong>
+                @if (!string.IsNullOrWhiteSpace(contentSection.BadgeLabel)){<span class="art-label">@contentSection.BadgeLabel</span>}
+                @if (!string.IsNullOrWhiteSpace(contentSection.BadgeValue)){<strong>@contentSection.BadgeValue</strong>}
                 <div class="chart"><i></i><i></i><i></i><i></i><i></i><i></i></div>
             </div>
-            <div class="mini-card">✦ <span>Thiết kế có mục tiêu</span></div>
+            @if (!string.IsNullOrWhiteSpace(contentSection.HighlightLabel)){<div class="mini-card">✦ <span>@contentSection.HighlightLabel</span></div>}
         </div>
         }
     </div>

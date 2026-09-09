@@ -93,6 +93,7 @@ public class HomeController(ApplicationDbContext db, IContactEmailSender emailSe
                 SectionKey = slot.SectionKey, SectionType = slot.SectionDefinition.SectionType,
                 Eyebrow = payload.Eyebrow, Title = payload.Title, Subtitle = payload.Subtitle,
                 Content = payload.Content, ContentIsHtml = contentIsHtml, ImageUrl = payload.ImageUrl,
+                BadgeValue = payload.BadgeValue, BadgeLabel = payload.BadgeLabel, HighlightLabel = payload.HighlightLabel,
                 LayoutVariant = sectionSchemas.ResolveSetting(slot.SectionDefinition.SchemaJson, slot.SettingsJson, "layout")
                     ?? (slot.SectionDefinition.SectionType == "Content" ? "image-left"
                         : slot.SectionDefinition.SectionType == "Cards" ? "text-cards" : "default"),

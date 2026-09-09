@@ -15,4 +15,7 @@
   <data name="Header.Contact" xml:space="preserve"><value>洽谈项目</value></data>
   <data name="Footer.Contact" xml:space="preserve"><value>联系我们</value></data>
   <data name="Language.Navigation" xml:space="preserve"><value>内容语言</value></data>
+  <data name="Section.PricingRecommended" xml:space="preserve"><value>推荐</value></data>
+  <data name="Section.GalleryZoom" xml:space="preserve"><value>放大图片</value></data>
+  <data name="Section.PlayVideo" xml:space="preserve"><value>播放视频</value></data>
 </root>

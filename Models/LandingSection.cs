@@ -15,6 +15,9 @@ public class LandingSection
     [NotMapped] public bool ContentIsHtml { get; set; }
     [NotMapped] public string LayoutVariant { get; set; } = "image-left";
     [StringLength(200)] public string? ImageUrl { get; set; }
+    [NotMapped] public string? BadgeValue { get; set; }
+    [NotMapped] public string? BadgeLabel { get; set; }
+    [NotMapped] public string? HighlightLabel { get; set; }
     [StringLength(80)] public string? PrimaryButtonText { get; set; }
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }
     [StringLength(80)] public string? SecondaryButtonText { get; set; }
