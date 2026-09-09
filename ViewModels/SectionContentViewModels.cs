@@ -33,6 +33,8 @@ public class SectionContentEditViewModel
     public List<IFormFile> GalleryFiles { get; set; } = new();
     public IReadOnlyList<SectionMedia> GalleryImages { get; set; } = Array.Empty<SectionMedia>();
     public bool UsesFallbackMedia { get; set; }
+    [StringLength(30)] public string? BadgeValue { get; set; }
+    [StringLength(100)] public string? BadgeLabel { get; set; }
     [StringLength(80)] public string? PrimaryButtonText { get; set; }
     [StringLength(300)] public string? PrimaryButtonUrl { get; set; }
     [StringLength(80)] public string? SecondaryButtonText { get; set; }
@@ -80,6 +82,8 @@ public class SectionContentPayload
     public string? Subtitle { get; set; }
     public string? Content { get; set; }
     public string? ImageUrl { get; set; }
+    public string? BadgeValue { get; set; }
+    public string? BadgeLabel { get; set; }
     public string? PrimaryButtonText { get; set; }
     public string? PrimaryButtonUrl { get; set; }
     public string? SecondaryButtonText { get; set; }

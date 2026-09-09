@@ -433,7 +433,7 @@ public static class DbInitializer
         """;
 
     private const string RichContentSchema = """
-        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"html","htmlPolicy":"RichContent"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"image-left","options":[{"value":"image-left","label":"Hình bên trái"},{"value":"image-right","label":"Hình bên phải"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
+        {"fields":{"eyebrow":{"editor":"text"},"title":{"editor":"text"},"subtitle":{"editor":"textarea"},"content":{"editor":"html","htmlPolicy":"RichContent"},"badgeValue":{"editor":"text"},"badgeLabel":{"editor":"text"},"imageUrl":{"editor":"image"},"primaryButtonText":{"editor":"text"},"primaryButtonUrl":{"editor":"text"},"secondaryButtonText":{"editor":"text"},"secondaryButtonUrl":{"editor":"text"}},"settings":{"layout":{"editor":"select","default":"image-left","options":[{"value":"image-left","label":"Hình bên trái"},{"value":"image-right","label":"Hình bên phải"}]}},"navigation":{"allowed":true,"defaultVisible":false}}
         """;
 
     private static string GetDefaultDisplayName(string sectionKey, string fallback) => sectionKey switch

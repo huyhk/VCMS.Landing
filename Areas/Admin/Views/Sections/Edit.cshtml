@@ -62,6 +62,12 @@
                 <div class="full media-thumbs">@foreach(var media in Model.GalleryImages){<article><img src="@media.MediaAsset.RelativeUrl" alt=""><span>Thứ tự @media.SortOrder</span>@if(Model.IsDefaultLanguage || media.LanguageCode == Model.LanguageCode){<button class="danger-link" type="submit" formaction="@Url.Action("DeleteGalleryImage",new{id=media.Id})" onclick="return confirm('Gỡ ảnh này khỏi thư viện?')">Gỡ ảnh</button>}else{<small>Ảnh từ ngôn ngữ mặc định</small>}</article>}</div>
             }
         }
+        @if(Model.SectionType == "Content")
+        {
+            <div><label asp-for="BadgeValue">Số liệu nổi bật</label><input asp-for="BadgeValue" maxlength="30" placeholder="Ví dụ: 8+"><span asp-validation-for="BadgeValue"></span></div>
+            <div><label asp-for="BadgeLabel">Nhãn số liệu</label><input asp-for="BadgeLabel" maxlength="100" placeholder="Ví dụ: năm kinh nghiệm"><span asp-validation-for="BadgeLabel"></span></div>
+            <div class="full"><small>Để trống cả hai trường nếu không muốn hiển thị badge.</small></div>
+        }
         <div><label asp-for="PrimaryButtonText">Nút chính</label><input asp-for="PrimaryButtonText"></div><div><label asp-for="PrimaryButtonUrl">Liên kết nút chính</label><input asp-for="PrimaryButtonUrl"></div>
         <div><label asp-for="SecondaryButtonText">Nút phụ</label><input asp-for="SecondaryButtonText"></div><div><label asp-for="SecondaryButtonUrl">Liên kết nút phụ</label><input asp-for="SecondaryButtonUrl"></div>
         @if(Model.IsDefaultLanguage && User.IsInRole("SuperAdministrator"))

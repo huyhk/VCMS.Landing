@@ -23,7 +23,13 @@
             {
                 <img src="@contentSection.ImageUrl" alt="@contentSection.Title" loading="lazy" decoding="async">
             }
-            <div class="image-badge"><strong>8+</strong><span>năm kinh nghiệm</span></div>
+            @if (!string.IsNullOrWhiteSpace(Model.Content.BadgeValue) || !string.IsNullOrWhiteSpace(Model.Content.BadgeLabel))
+            {
+                <div class="image-badge">
+                    @if (!string.IsNullOrWhiteSpace(Model.Content.BadgeValue)){<strong>@Model.Content.BadgeValue</strong>}
+                    @if (!string.IsNullOrWhiteSpace(Model.Content.BadgeLabel)){<span>@Model.Content.BadgeLabel</span>}
+                </div>
+            }
         </div>
         <div class="content-wrap">
             <p class="eyebrow">@contentSection.Eyebrow</p>
