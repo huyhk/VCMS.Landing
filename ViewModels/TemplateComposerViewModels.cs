@@ -10,7 +10,7 @@ public class TemplateSectionComposerViewModel
 {
     public int? Id { get; set; }
     public int TemplateId { get; set; }
-    [Required] public int? PageSectionId { get; set; }
+    public int? PageSectionId { get; set; }
     [Required] public int SectionDefinitionId { get; set; }
     [Required, StringLength(150)] public string DisplayName { get; set; } = "";
     public string? Layout { get; set; }
