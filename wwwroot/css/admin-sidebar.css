@@ -41,8 +41,7 @@ aside nav::-webkit-scrollbar-thumb:hover {
 .admin-version {
     flex: 0 0 auto;
     display: flex;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: center;
     margin: 14px 8px 0 0;
     padding: 12px 13px;
     color: #94a3b8;

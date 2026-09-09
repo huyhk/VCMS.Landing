@@ -54,7 +54,6 @@
     @if (User.IsInRole("SuperAdministrator"))
     {
         <div class="admin-version" title="@(DeploymentVersion.Current.IsManaged ? "Phiên bản package do VNS Deployment cài đặt" : "Phiên bản assembly")">
-            <span>VCMS Landing</span>
             <strong>v@(DeploymentVersion.Current.Version)</strong>
         </div>
     }
