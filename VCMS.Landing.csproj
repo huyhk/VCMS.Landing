@@ -22,7 +22,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Compile Remove="VCMS.Landing.Tests\**\*.cs" />
+    <Compile Remove="VCMS.Landing.Tests\**\*" />
+    <Content Remove="VCMS.Landing.Tests\**\*" />
+    <EmbeddedResource Remove="VCMS.Landing.Tests\**\*" />
     <None Remove="VCMS.Landing.Tests\**\*" />
   </ItemGroup>
   <ItemGroup>
