@@ -1,0 +1,30 @@
+@model PageSectionEditViewModel
+@{ ViewData["Title"] = "Sửa section"; }
+<div class="page-title">
+    <div><h1>Sửa section</h1><p>Thay đổi tên quản trị của section trong thư viện.</p></div>
+    <a class="button button-secondary" asp-action="Index">Quay lại</a>
+</div>
+<form asp-action="Edit" method="post" class="panel form-panel composer-form">
+    <div asp-validation-summary="All" class="validation"></div>
+    <input asp-for="Id" type="hidden">
+    <div class="form-grid">
+        <div class="full">
+            <label asp-for="DisplayName">Tên quản trị</label>
+            <input asp-for="DisplayName">
+            <span asp-validation-for="DisplayName"></span>
+        </div>
+        <div>
+            <label>Loại section</label>
+            <input value="@Model.SectionDefinitionName — @Model.SectionType" readonly>
+        </div>
+        <div>
+            <label>Section key</label>
+            <input value="@Model.SectionKey" readonly>
+        </div>
+        @if(Model.IsArchived)
+        {
+            <div class="full"><span class="status off">Section đang được lưu trữ.</span></div>
+        }
+    </div>
+    <div class="form-actions"><button class="button" type="submit">Lưu thay đổi</button></div>
+</form>

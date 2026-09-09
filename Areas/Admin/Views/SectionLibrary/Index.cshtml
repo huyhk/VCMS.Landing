@@ -17,13 +17,14 @@
                 <td>@item.TemplateCount</td>
                 <td><span class="status @(!item.Section.IsArchived ? "on" : "off")">@(!item.Section.IsArchived ? "Sẵn sàng" : "Đã lưu trữ")</span></td>
                 <td><div class="row-actions">
+                    <a asp-action="Edit" asp-route-id="@item.Section.Id">Sửa</a>
                     @if (item.Section.IsArchived)
                     {
                         <form asp-action="Restore" method="post"><input type="hidden" name="id" value="@item.Section.Id"><button type="submit">Khôi phục</button></form>
                     }
                     else
                     {
-                        <form asp-action="Archive" method="post" onsubmit="return confirm('Lưu trữ section này?')"><input type="hidden" name="id" value="@item.Section.Id"><button class="danger-link" type="submit">Lưu trữ</button></form>
+                        <form asp-action="Archive" method="post" onsubmit="return confirm('Xóa section này khỏi thư viện?')"><input type="hidden" name="id" value="@item.Section.Id"><button class="danger-link" type="submit">Xóa khỏi thư viện</button></form>
                     }
                 </div></td>
             </tr>

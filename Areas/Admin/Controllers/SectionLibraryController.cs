@@ -71,6 +71,47 @@ public class SectionLibraryController(ApplicationDbContext db) : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var section = await db.PageSections.AsNoTracking()
+            .Include(x => x.SectionDefinition)
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (section is null) return NotFound();
+
+        return View(new PageSectionEditViewModel
+        {
+            Id = section.Id,
+            SectionKey = section.SectionKey,
+            SectionDefinitionName = section.SectionDefinition.Name,
+            SectionType = section.SectionDefinition.SectionType,
+            DisplayName = section.DisplayName,
+            IsArchived = section.IsArchived
+        });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(PageSectionEditViewModel model)
+    {
+        var section = await db.PageSections.Include(x => x.SectionDefinition)
+            .FirstOrDefaultAsync(x => x.Id == model.Id);
+        if (section is null) return NotFound();
+
+        if (!ModelState.IsValid)
+        {
+            model.SectionKey = section.SectionKey;
+            model.SectionDefinitionName = section.SectionDefinition.Name;
+            model.SectionType = section.SectionDefinition.SectionType;
+            model.IsArchived = section.IsArchived;
+            return View(model);
+        }
+
+        section.DisplayName = model.DisplayName.Trim();
+        await db.SaveChangesAsync();
+        TempData["Message"] = $"Đã cập nhật section {section.DisplayName}.";
+        return RedirectToAction(nameof(Index));
+    }
+
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Archive(int id)
     {
