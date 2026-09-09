@@ -48,6 +48,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             LanguageCode = currentLanguage.Code, Languages = languages, IsDefaultLanguage = currentLanguage.IsDefault,
             HasTranslation = currentLanguage.IsDefault || contentTranslation is not null,
             ShowInNavigation = slot.ShowInNavigation,
+            NavigationAllowed = sectionSchemas.GetNavigation(slot.SectionDefinition.SchemaJson).Allowed,
             NavigationLabel = navigationTranslation?.NavigationLabel ?? slot.NavigationLabel,
             TemplateSectionId = slot.Id, ContentId = content?.Id, SectionKey = slot.SectionKey,
             SectionType = slot.SectionDefinition.SectionType, DisplayName = slot.DisplayName,
@@ -522,6 +523,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         model.UsesFallbackMedia = backgrounds.UsesFallback || gallery.UsesFallback;
         model.HasItems = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is not null;
         model.ShowInNavigation = slot.ShowInNavigation;
+        model.NavigationAllowed = sectionSchemas.GetNavigation(slot.SectionDefinition.SchemaJson).Allowed;
         model.IsDefaultLanguage = currentLanguage.IsDefault;
     }
 
