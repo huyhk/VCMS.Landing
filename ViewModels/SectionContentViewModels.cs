@@ -13,7 +13,6 @@ public class SectionContentEditViewModel
     public bool IsDefaultLanguage { get; set; } = true;
     public bool HasTranslation { get; set; }
     public bool ShowInNavigation { get; set; }
-    public bool NavigationAllowed { get; set; }
     [StringLength(50)] public string? NavigationLabel { get; set; }
     public int TemplateSectionId { get; set; }
     public int? ContentId { get; set; }

@@ -48,7 +48,6 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             LanguageCode = currentLanguage.Code, Languages = languages, IsDefaultLanguage = currentLanguage.IsDefault,
             HasTranslation = currentLanguage.IsDefault || contentTranslation is not null,
             ShowInNavigation = slot.ShowInNavigation,
-            NavigationAllowed = sectionSchemas.GetNavigation(slot.SectionDefinition.SchemaJson).Allowed,
             NavigationLabel = navigationTranslation?.NavigationLabel ?? slot.NavigationLabel,
             TemplateSectionId = slot.Id, ContentId = content?.Id, SectionKey = slot.SectionKey,
             SectionType = slot.SectionDefinition.SectionType, DisplayName = slot.DisplayName,
@@ -86,12 +85,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         if (currentLanguage is null) return NotFound();
         model.LanguageCode = currentLanguage.Code; model.Languages = languages;
         model.IsDefaultLanguage = currentLanguage.IsDefault;
-        var navigationAllowed = sectionSchemas.GetNavigation(slot.SectionDefinition.SchemaJson).Allowed;
-        var canManageNavigation = currentLanguage.IsDefault
-            && User.IsInRole(DbInitializer.SuperAdministrator)
-            && navigationAllowed;
-        if (!canManageNavigation)
-            model.ShowInNavigation = slot.ShowInNavigation;
+        model.ShowInNavigation = slot.ShowInNavigation;
         var contentField = sectionSchemas.GetField(slot.SectionDefinition.SchemaJson, "content");
         model.ContentEditor = contentField.Editor; model.ContentHtmlPolicy = contentField.HtmlPolicy;
         model.AllowedHtmlTags = htmlSanitizer.GetAllowedTags(contentField.HtmlPolicy);
@@ -168,7 +162,6 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
             content.ContentJson = translatedContentJson;
             slot.NavigationLabel = string.IsNullOrWhiteSpace(model.NavigationLabel) ? slot.DisplayName : model.NavigationLabel.Trim();
             if (canManageVisibility) slot.IsEnabled = model.IsEnabled;
-            if (canManageNavigation) slot.ShowInNavigation = model.ShowInNavigation;
             content.UpdatedAtUtc = DateTime.UtcNow;
             content.UpdatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
             AddSectionContentRevision(content, slot, contentIsNew ? "Created" : "Saved");
@@ -523,7 +516,6 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
         model.UsesFallbackMedia = backgrounds.UsesFallback || gallery.UsesFallback;
         model.HasItems = sectionSchemas.GetItems(slot.SectionDefinition.SchemaJson) is not null;
         model.ShowInNavigation = slot.ShowInNavigation;
-        model.NavigationAllowed = sectionSchemas.GetNavigation(slot.SectionDefinition.SchemaJson).Allowed;
         model.IsDefaultLanguage = currentLanguage.IsDefault;
     }
 
