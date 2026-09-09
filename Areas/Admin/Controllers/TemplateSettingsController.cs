@@ -18,7 +18,7 @@ public partial class TemplateSettingsController(ApplicationDbContext db, IMediaS
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(Dictionary<int, string?> values)
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var definitions = await db.TemplateSettings.Include(x => x.SettingDefinition)
             .Where(x => x.TemplateId == setting.ActiveTemplateId).Select(x => x.SettingDefinition).ToListAsync();
         foreach (var definition in definitions)

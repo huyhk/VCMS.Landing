@@ -19,7 +19,7 @@ public sealed class ChromeController(ApplicationDbContext db, IChromeLayoutServi
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(ChromeBuilderViewModel model)
     {
-        var setting = await db.SiteTemplateSettings.FirstAsync();
+        var setting = await db.SiteTemplateSettings.OrderBy(x => x.Id).FirstAsync();
         var template = await db.PageTemplates.FirstAsync(x => x.Id == setting.ActiveTemplateId);
         try { template.HeaderLayoutJson = layouts.NormalizeHeader(model.HeaderJson); template.FooterLayoutJson = layouts.NormalizeFooter(model.FooterJson); }
         catch (InvalidOperationException ex) { ModelState.AddModelError("", ex.Message); return View("Index", await BuildModelAsync(template.Name, model.HeaderJson, model.FooterJson)); }

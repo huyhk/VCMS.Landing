@@ -10,7 +10,7 @@ public class DashboardController(ApplicationDbContext db) : Controller
 {
     public async Task<IActionResult> Index()
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var slots = await db.TemplateSections.AsNoTracking().Include(x => x.Template).Include(x => x.SectionDefinition)
             .Where(x => x.TemplateId == setting.ActiveTemplateId).OrderBy(x => x.SortOrder).ToListAsync();
         var keys = slots.Select(x => x.SectionKey).ToArray();

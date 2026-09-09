@@ -14,7 +14,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
 {
     public async Task<IActionResult> Index()
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var installed = await db.PageTemplates.AsNoTracking().Where(x => x.IsEnabled)
             .Include(x => x.Sections).OrderBy(x => x.Name).ToListAsync();
         var templates = installed.Select(x => new TemplateListItemViewModel(
@@ -27,7 +27,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
     {
         var template = await db.PageTemplates.FirstOrDefaultAsync(x => x.Id == id && x.IsEnabled);
         if (template is null) return NotFound();
-        var setting = await db.SiteTemplateSettings.FirstAsync();
+        var setting = await db.SiteTemplateSettings.OrderBy(x => x.Id).FirstAsync();
         setting.ActiveTemplateId = template.Id; setting.DraftTemplateId = null; setting.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã áp dụng template {template.Name}.";
@@ -38,7 +38,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
     {
         var template = await db.PageTemplates.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.IsEnabled);
         if (template is null) return NotFound();
-        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
+        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync()).ActiveTemplateId;
         var sections = await db.TemplateSections.AsNoTracking().Include(x => x.SectionDefinition)
             .Where(x => x.TemplateId == id).OrderBy(x => x.SortOrder).ToListAsync();
         return View(new TemplateComposerViewModel(template, sections, id == activeTemplateId));

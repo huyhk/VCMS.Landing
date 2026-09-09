@@ -15,7 +15,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
 {
     public async Task<IActionResult> Index()
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var slots = await db.TemplateSections.AsNoTracking().Include(x => x.Template).Include(x => x.SectionDefinition)
             .Where(x => x.TemplateId == setting.ActiveTemplateId).OrderBy(x => x.SortOrder).ToListAsync();
         var keys = slots.Select(x => x.SectionKey).ToArray();
@@ -26,7 +26,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
 
     public async Task<IActionResult> Edit(int id, string? language)
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var slot = await db.TemplateSections.AsNoTracking().Include(x => x.SectionDefinition)
             .FirstOrDefaultAsync(x => x.Id == id && x.TemplateId == setting.ActiveTemplateId);
         if (slot is null) return NotFound();
@@ -77,7 +77,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Save(SectionContentEditViewModel model)
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var slot = await db.TemplateSections.Include(x => x.SectionDefinition)
             .FirstOrDefaultAsync(x => x.Id == model.TemplateSectionId && x.TemplateId == setting.ActiveTemplateId);
         if (slot is null) return NotFound();
@@ -206,7 +206,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteBackground(long id)
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var media = await db.SectionMedia.FirstOrDefaultAsync(x => x.Id == id && x.Role == "Background");
         if (media is null) return NotFound();
         var slot = await db.TemplateSections.AsNoTracking().FirstOrDefaultAsync(x => x.TemplateId == setting.ActiveTemplateId && x.SectionKey == media.SectionKey);
@@ -219,7 +219,7 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteGalleryImage(long id)
     {
-        var setting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var media = await db.SectionMedia.FirstOrDefaultAsync(x => x.Id == id && x.Role == "Gallery");
         if (media is null) return NotFound();
         var slot = await db.TemplateSections.AsNoTracking().FirstOrDefaultAsync(x => x.TemplateId == setting.ActiveTemplateId && x.SectionKey == media.SectionKey);
@@ -542,14 +542,14 @@ public class SectionsController(ApplicationDbContext db, IMediaStorageService me
 
     private async Task<TemplateSection?> FindActiveSlotAsync(int id)
     {
-        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
+        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync()).ActiveTemplateId;
         return await db.TemplateSections.Include(x => x.SectionDefinition)
             .FirstOrDefaultAsync(x => x.Id == id && x.TemplateId == activeTemplateId);
     }
 
     private async Task<TemplateSection?> FindActiveSlotByKeyAsync(string sectionKey)
     {
-        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
+        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync()).ActiveTemplateId;
         return await db.TemplateSections.Include(x => x.SectionDefinition)
             .FirstOrDefaultAsync(x => x.SectionKey == sectionKey && x.TemplateId == activeTemplateId);
     }

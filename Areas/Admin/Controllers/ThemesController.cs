@@ -14,7 +14,7 @@ public class ThemesController(ApplicationDbContext db, IThemeCssService themeCss
 {
     public async Task<IActionResult> Index()
     {
-        var activeThemeId = (await db.SiteThemeSettings.AsNoTracking().FirstAsync()).ActiveThemeId;
+        var activeThemeId = (await db.SiteThemeSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync()).ActiveThemeId;
         var themes = await db.ThemeDefinitions.AsNoTracking().Where(x => x.IsEnabled)
             .OrderBy(x => x.SortOrder).ThenBy(x => x.Name).ToListAsync();
         return View(themes.Select(x => new ThemeListItemViewModel(
@@ -65,7 +65,7 @@ public class ThemesController(ApplicationDbContext db, IThemeCssService themeCss
         theme.UpdatedAtUtc = DateTime.UtcNow;
         if (activate)
         {
-            var setting = await db.SiteThemeSettings.FirstAsync();
+            var setting = await db.SiteThemeSettings.OrderBy(x => x.Id).FirstAsync();
             setting.ActiveThemeId = theme.Id;
             setting.UpdatedAtUtc = DateTime.UtcNow;
         }
@@ -81,7 +81,7 @@ public class ThemesController(ApplicationDbContext db, IThemeCssService themeCss
     {
         var theme = await db.ThemeDefinitions.FirstOrDefaultAsync(x => x.Id == id && x.IsEnabled);
         if (theme is null) return NotFound();
-        var setting = await db.SiteThemeSettings.FirstAsync();
+        var setting = await db.SiteThemeSettings.OrderBy(x => x.Id).FirstAsync();
         setting.ActiveThemeId = theme.Id;
         setting.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync();
@@ -95,7 +95,7 @@ public class ThemesController(ApplicationDbContext db, IThemeCssService themeCss
         var theme = await db.ThemeDefinitions.FirstOrDefaultAsync(x => x.Id == id && x.IsEnabled);
         if (theme is null) return NotFound();
         if (theme.IsReadOnly) return Forbid();
-        var setting = await db.SiteThemeSettings.AsNoTracking().FirstAsync();
+        var setting = await db.SiteThemeSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         if (setting.ActiveThemeId == theme.Id)
         {
             TempData["Error"] = "Không thể xóa theme đang được áp dụng.";

@@ -42,7 +42,7 @@ public sealed class AiContentController(
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         try
         {
-            var templateSetting = await db.SiteTemplateSettings.AsNoTracking().FirstAsync();
+            var templateSetting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
             var template = await db.PageTemplates.AsNoTracking().FirstAsync(x => x.Id == templateSetting.ActiveTemplateId);
             var language = await db.ContentLanguages.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Code == brief.LanguageCode && x.IsEnabled);
@@ -97,7 +97,7 @@ public sealed class AiContentController(
             return RedirectToAction(nameof(Preview), new { token });
         }
 
-        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
+        var activeTemplateId = (await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync()).ActiveTemplateId;
         if (activeTemplateId != draft.TemplateId)
         {
             TempData["Error"] = "Template đang dùng đã thay đổi. Hãy tạo lại bản nháp AI.";
@@ -311,7 +311,7 @@ public sealed class AiContentController(
     private IActionResult DraftExpired() { TempData["Error"] = "Bản nháp AI không còn tồn tại hoặc đã hết hạn."; return RedirectToAction(nameof(Index)); }
     private async Task<string> GetActiveTemplateNameAsync()
     {
-        var id = (await db.SiteTemplateSettings.AsNoTracking().FirstAsync()).ActiveTemplateId;
+        var id = (await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync()).ActiveTemplateId;
         return await db.PageTemplates.AsNoTracking().Where(x => x.Id == id).Select(x => x.Name).FirstAsync();
     }
 
