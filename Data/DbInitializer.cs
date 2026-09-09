@@ -3,6 +3,8 @@ using LandingCms.Services;
 using LandingCms.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using System.Data;
 using System.Text.Json;
 
 namespace LandingCms.Data;
@@ -19,7 +21,7 @@ public static class DbInitializer
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var environment = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
         Directory.CreateDirectory(Path.Combine(environment.ContentRootPath, "App_Data"));
-        await db.Database.MigrateAsync();
+        await MigrateDatabaseAsync(db);
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         foreach (var role in new[] { SuperAdministrator, Administrator, Editor })
@@ -77,6 +79,120 @@ public static class DbInitializer
                     throw new InvalidOperationException("Không thể gán quyền SuperAdmin: " + string.Join("; ", roleResult.Errors.Select(x => x.Description)));
             }
         }
+    }
+
+    public static async Task MigrateDatabaseAsync(ApplicationDbContext db)
+    {
+        if (db.Database.IsSqlite())
+            await BaselineLegacyDatabaseAsync(db);
+
+        await db.Database.MigrateAsync();
+    }
+
+    private static async Task BaselineLegacyDatabaseAsync(ApplicationDbContext db)
+    {
+        var connection = db.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+        if (shouldClose)
+            await connection.OpenAsync();
+
+        try
+        {
+            if (await TableExistsAsync(connection, "__EFMigrationsHistory") ||
+                !await TableExistsAsync(connection, "AspNetUsers"))
+                return;
+
+            var missingSchema = new List<string>();
+            foreach (var entityType in db.Model.GetEntityTypes())
+            {
+                var table = StoreObjectIdentifier.Create(entityType, StoreObjectType.Table);
+                if (table is null)
+                    continue;
+
+                var columns = await GetColumnsAsync(connection, table.Value.Name);
+                if (columns.Count == 0)
+                {
+                    missingSchema.Add(table.Value.Name);
+                    continue;
+                }
+
+                foreach (var property in entityType.GetProperties())
+                {
+                    var column = property.GetColumnName(table.Value);
+                    if (!string.IsNullOrWhiteSpace(column) && !columns.Contains(column))
+                        missingSchema.Add($"{table.Value.Name}.{column}");
+                }
+            }
+
+            if (missingSchema.Count > 0)
+                throw new InvalidOperationException(
+                    "Legacy database does not match the current VCMS schema. Missing: " +
+                    string.Join(", ", missingSchema.Distinct(StringComparer.OrdinalIgnoreCase)));
+
+            await using var transaction = await connection.BeginTransactionAsync();
+            await using (var create = connection.CreateCommand())
+            {
+                create.Transaction = transaction;
+                create.CommandText = """
+                    CREATE TABLE "__EFMigrationsHistory" (
+                        "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+                        "ProductVersion" TEXT NOT NULL
+                    );
+                    """;
+                await create.ExecuteNonQueryAsync();
+            }
+
+            var productVersion = typeof(DbContext).Assembly.GetName().Version?.ToString(3) ?? "8.0.0";
+            foreach (var migration in await db.Database.GetMigrationsAsync())
+            {
+                await using var insert = connection.CreateCommand();
+                insert.Transaction = transaction;
+                insert.CommandText = """
+                    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                    VALUES ($migrationId, $productVersion);
+                    """;
+                var migrationParameter = insert.CreateParameter();
+                migrationParameter.ParameterName = "$migrationId";
+                migrationParameter.Value = migration;
+                insert.Parameters.Add(migrationParameter);
+                var versionParameter = insert.CreateParameter();
+                versionParameter.ParameterName = "$productVersion";
+                versionParameter.Value = productVersion;
+                insert.Parameters.Add(versionParameter);
+                await insert.ExecuteNonQueryAsync();
+            }
+
+            await transaction.CommitAsync();
+        }
+        finally
+        {
+            if (shouldClose)
+                await connection.CloseAsync();
+        }
+    }
+
+    private static async Task<bool> TableExistsAsync(System.Data.Common.DbConnection connection, string tableName)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "$name";
+        parameter.Value = tableName;
+        command.Parameters.Add(parameter);
+        return Convert.ToInt64(await command.ExecuteScalarAsync()) == 1;
+    }
+
+    private static async Task<HashSet<string>> GetColumnsAsync(
+        System.Data.Common.DbConnection connection,
+        string tableName)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA table_info(\"{tableName.Replace("\"", "\"\"")}\")";
+        await using var reader = await command.ExecuteReaderAsync();
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        while (await reader.ReadAsync())
+            columns.Add(reader.GetString(1));
+        return columns;
     }
 
     private static async Task SeedTemplateEngineAsync(ApplicationDbContext db)

@@ -23,6 +23,33 @@ public sealed class MigrationSmokeTests
         Assert.True(await TableExistsAsync(connection, "SectionMedia"));
     }
 
+    [Fact]
+    public async Task Legacy_database_without_migration_history_is_safely_baselined()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(connection).Options;
+
+        await using (var legacy = new ApplicationDbContext(options))
+        {
+            await legacy.Database.EnsureCreatedAsync();
+            legacy.SiteSettings.Add(new LandingCms.Models.SiteSetting { SiteName = "Existing site" });
+            await legacy.SaveChangesAsync();
+        }
+
+        Assert.False(await TableExistsAsync(connection, "__EFMigrationsHistory"));
+
+        await using (var upgraded = new ApplicationDbContext(options))
+        {
+            await DbInitializer.MigrateDatabaseAsync(upgraded);
+
+            Assert.True(await upgraded.SiteSettings.AnyAsync(x => x.SiteName == "Existing site"));
+            Assert.Empty(await upgraded.Database.GetPendingMigrationsAsync());
+        }
+
+        Assert.True(await TableExistsAsync(connection, "__EFMigrationsHistory"));
+    }
+
     private static async Task<bool> TableExistsAsync(SqliteConnection connection, string table)
     {
         await using var command = connection.CreateCommand();
