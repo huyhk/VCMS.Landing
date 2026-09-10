@@ -8,6 +8,12 @@
     viewModel.ExtendedSettings.TryGetValue("social.zalo_url", out var zaloUrl);
     var navigationIdAssigned = false;
     var hasHeaderNavigation = Model.Region == "header" && Model.Layout.Rows.SelectMany(x => x.Columns).SelectMany(x => x.Components).Any(x => x.Type == "navigation");
+    var mobilePrimaryRow = Model.Region == "header"
+        ? Model.Layout.Rows.FirstOrDefault(x => !x.HideOnMobile && x.Columns.SelectMany(c => c.Components).Any(c => c.Type == "logo"))
+            ?? Model.Layout.Rows.FirstOrDefault(x => !x.HideOnMobile && x.Columns.SelectMany(c => c.Components).Any(c => c.Type == "navigation"))
+            ?? Model.Layout.Rows.FirstOrDefault(x => !x.HideOnMobile)
+            ?? Model.Layout.Rows.LastOrDefault()
+        : null;
     var defaultLanguageCode = viewModel.Languages.FirstOrDefault(x => x.IsDefault)?.Code;
     string? ComponentText(ChromeComponent component)
     {
@@ -19,6 +25,9 @@
 @foreach (var row in Model.Layout.Rows)
 {
     var rowStyles = new List<string>();
+    var rowComponents = row.Columns.SelectMany(x => x.Components).ToList();
+    var hasRowNavigation = rowComponents.Any(x => x.Type == "navigation");
+    var hasRowLogo = rowComponents.Any(x => x.Type == "logo");
     var hasBackgroundImage = false;
     if (row.Background == "image" && row.BackgroundMediaId.HasValue && viewModel.ChromeMedia.TryGetValue(row.BackgroundMediaId.Value, out var desktopBackground))
     {
@@ -34,7 +43,7 @@
         rowStyles.Add($"--chrome-overlay-color:{row.OverlayColor}");
         rowStyles.Add($"--chrome-overlay-opacity:{row.OverlayOpacity}%");
     }
-    <div class="chrome-row chrome-row-@row.Key chrome-bg-@row.Background @(hasBackgroundImage ? "chrome-has-background-image" : null) chrome-height-@row.Height @(row.HideOnMobile ? "chrome-mobile-hidden" : null)" style="@string.Join(";", rowStyles)">
+    <div class="chrome-row chrome-row-@row.Key @(hasRowNavigation ? "chrome-row-has-navigation" : null) @(hasRowLogo ? "chrome-row-has-logo" : null) @(ReferenceEquals(row, mobilePrimaryRow) ? "chrome-mobile-primary-row" : null) chrome-bg-@row.Background @(hasBackgroundImage ? "chrome-has-background-image" : null) chrome-height-@row.Height @(row.HideOnMobile ? "chrome-mobile-hidden" : null)" style="@string.Join(";", rowStyles)">
         <div class="@(row.Container == "full" ? "chrome-container-full" : "container") chrome-columns">
             @foreach (var column in row.Columns)
             {
