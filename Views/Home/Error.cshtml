@@ -1,2 +1,12 @@
 @{ ViewData["Title"] = "Có lỗi xảy ra"; }
-<main class="auth-page"><div class="auth-card"><h1>Có lỗi xảy ra</h1><p>Vui lòng thử lại sau.</p><a class="btn" href="/">Về trang chủ</a></div></main>
+<main class="auth-page">
+    <div class="auth-card">
+        <h1>Có lỗi xảy ra</h1>
+        <p>Vui lòng thử lại sau.</p>
+        @if (ViewData["TraceIdentifier"] is string traceIdentifier)
+        {
+            <p><small>Mã tra cứu: <code>@traceIdentifier</code></small></p>
+        }
+        <a class="btn" href="/">Về trang chủ</a>
+    </div>
+</main>
