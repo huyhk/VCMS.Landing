@@ -55,14 +55,23 @@ function render(region){
      if(!languages.length)item.append(inputField('Nội dung tùy chỉnh',component.text,'Để trống để dùng nội dung mặc định','text'));
     }
     if(component.type==='button')item.append(inputField('Liên kết',component.url,'Ví dụ: #contact hoặc /bao-gia','url'));
-    const formatting=document.createElement('div');formatting.className='chrome-formatting-grid';
-    formatting.append(
-     selectField('Kiểu chữ',choices.fontWeight,component.fontWeight||'default','fontWeight',{default:'Theo giao diện',normal:'Thường',bold:'Đậm'}),
+    const formatting=document.createElement('div');formatting.className='chrome-formatting';
+    const typography=document.createElement('section');typography.className='chrome-format-group';
+    const typographyTitle=document.createElement('strong');typographyTitle.textContent='Kiểu chữ';
+    const typographyFields=document.createElement('div');typographyFields.className='chrome-format-grid chrome-format-grid-typography';
+    typographyFields.append(
+     selectField('Độ đậm',choices.fontWeight,component.fontWeight||'default','fontWeight',{default:'Theo giao diện',normal:'Thường',bold:'Đậm'}),
      selectField('Cỡ chữ',choices.fontSize,component.fontSize||'default','fontSize',{default:'Mặc định',small:'Nhỏ',large:'Lớn'}),
+     checkbox('In nghiêng',component.italic,'italic'),colorField(component.textColor));
+    typography.append(typographyTitle,typographyFields);
+    const alignment=document.createElement('section');alignment.className='chrome-format-group';
+    const alignmentTitle=document.createElement('strong');alignmentTitle.textContent='Căn chỉnh & khoảng cách';
+    const alignmentFields=document.createElement('div');alignmentFields.className='chrome-format-grid chrome-format-grid-spacing';
+    alignmentFields.append(
      selectField('Căn chữ',choices.textAlign,component.textAlign||'default','textAlign',{default:'Theo cột',left:'Trái',center:'Giữa',right:'Phải'}),
      selectField('Khoảng cách trên',choices.spacing,component.spacingTop||'none','spacingTop',{none:'Không',small:'Nhỏ',medium:'Vừa',large:'Lớn'}),
-     selectField('Khoảng cách dưới',choices.spacing,component.spacingBottom||'none','spacingBottom',{none:'Không',small:'Nhỏ',medium:'Vừa',large:'Lớn'}),
-     colorField(component.textColor),checkbox('In nghiêng',component.italic,'italic'));
+     selectField('Khoảng cách dưới',choices.spacing,component.spacingBottom||'none','spacingBottom',{none:'Không',small:'Nhỏ',medium:'Vừa',large:'Lớn'}));
+    alignment.append(alignmentTitle,alignmentFields);formatting.append(typography,alignment);
     item.append(formatting);
     item.append(checkbox('Ẩn thành phần này trên mobile',component.hideOnMobile,'hideOnMobile'));col.append(item);
    });
