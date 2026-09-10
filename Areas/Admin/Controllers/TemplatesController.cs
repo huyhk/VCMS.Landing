@@ -84,7 +84,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
             SectionDefinitionId = definition.Id, SectionKey = pageSection.SectionKey,
             DisplayName = model.DisplayName.Trim(), SortOrder = nextOrder, IsEnabled = model.IsEnabled,
             IsEnabledByDefault = true, ShowInNavigation = model.ShowInNavigation,
-            NavigationLabel = NormalizeNavigationLabel(model), SettingsJson = SerializeSettings(model.Layout)
+            NavigationLabel = model.ShowInNavigation ? model.DisplayName.Trim() : null, SettingsJson = SerializeSettings(model.Layout)
         });
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã thêm section {model.DisplayName}.";
@@ -100,7 +100,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         {
             Id = section.Id, TemplateId = section.TemplateId, SectionDefinitionId = section.SectionDefinitionId,
             DisplayName = section.DisplayName, IsEnabled = section.IsEnabled,
-            ShowInNavigation = section.ShowInNavigation, NavigationLabel = section.NavigationLabel,
+            ShowInNavigation = section.ShowInNavigation,
             Layout = sectionSchemas.ResolveSetting(section.SectionDefinition.SchemaJson, section.SettingsJson, "layout")
         }));
     }
@@ -116,7 +116,6 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         if (!ModelState.IsValid) return View(await PrepareComposerModelAsync(model));
         section.DisplayName = model.DisplayName.Trim(); section.IsEnabled = model.IsEnabled;
         section.ShowInNavigation = model.ShowInNavigation;
-        section.NavigationLabel = NormalizeNavigationLabel(model);
         section.SettingsJson = SerializeSettings(model.Layout);
         await db.SaveChangesAsync();
         TempData["Message"] = $"Đã cập nhật section {section.DisplayName}.";
@@ -197,12 +196,7 @@ public class TemplatesController(ApplicationDbContext db, ISectionSchemaService 
         model.NavigationAllowed = sectionSchemas.GetNavigation(definition.SchemaJson).Allowed;
         if (model.NavigationAllowed) return;
         model.ShowInNavigation = false;
-        model.NavigationLabel = null;
-        ModelState.Remove(nameof(model.NavigationLabel));
     }
-
-    private static string? NormalizeNavigationLabel(TemplateSectionComposerViewModel model) =>
-        model.ShowInNavigation ? (string.IsNullOrWhiteSpace(model.NavigationLabel) ? model.DisplayName.Trim() : model.NavigationLabel.Trim()) : null;
 
     private void ValidateLayout(SectionDefinition definition, TemplateSectionComposerViewModel model)
     {

@@ -16,7 +16,6 @@ public class TemplateSectionComposerViewModel
     public string? Layout { get; set; }
     public bool IsEnabled { get; set; } = true;
     public bool ShowInNavigation { get; set; }
-    [StringLength(50)] public string? NavigationLabel { get; set; }
     public bool NavigationAllowed { get; set; }
     public string DefinitionName { get; set; } = "";
     public IReadOnlyList<SectionDefinition> Definitions { get; set; } = Array.Empty<SectionDefinition>();
