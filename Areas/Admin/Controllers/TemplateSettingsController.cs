@@ -13,6 +13,8 @@ namespace LandingCms.Areas.Admin.Controllers;
 [Area("Admin"), Authorize(Roles = "SuperAdministrator,Administrator")]
 public partial class TemplateSettingsController(ApplicationDbContext db, IMediaStorageService mediaStorage) : Controller
 {
+    private static readonly string[] BrandingKeys = ["branding.logo_primary", "branding.logo_light", "branding.favicon"];
+
     public async Task<IActionResult> Index() => View(await LoadModelAsync());
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -20,7 +22,7 @@ public partial class TemplateSettingsController(ApplicationDbContext db, IMediaS
     {
         var setting = await db.SiteTemplateSettings.AsNoTracking().OrderBy(x => x.Id).FirstAsync();
         var definitions = await db.TemplateSettings.Include(x => x.SettingDefinition)
-            .Where(x => x.TemplateId == setting.ActiveTemplateId).Select(x => x.SettingDefinition).ToListAsync();
+            .Where(x => x.TemplateId == setting.ActiveTemplateId && !BrandingKeys.Contains(x.SettingDefinition.Key)).Select(x => x.SettingDefinition).ToListAsync();
         foreach (var definition in definitions)
         {
             values.TryGetValue(definition.Id, out var value); value = value?.Trim();
@@ -66,7 +68,7 @@ public partial class TemplateSettingsController(ApplicationDbContext db, IMediaS
     {
         var setting = await db.SiteTemplateSettings.AsNoTracking().Include(x => x.ActiveTemplate).FirstAsync();
         var links = await db.TemplateSettings.AsNoTracking().Include(x => x.SettingDefinition).ThenInclude(x => x.Value)
-            .Where(x => x.TemplateId == setting.ActiveTemplateId && x.SettingDefinition.IsEnabled).OrderBy(x => x.SortOrder).ToListAsync();
+            .Where(x => x.TemplateId == setting.ActiveTemplateId && x.SettingDefinition.IsEnabled && !BrandingKeys.Contains(x.SettingDefinition.Key)).OrderBy(x => x.SortOrder).ToListAsync();
         var mediaIds = links.Where(x => x.SettingDefinition.ValueType == "Image")
             .Select(x => long.TryParse(x.SettingDefinition.Value?.Value, out var id) ? id : 0).Where(x => x > 0).ToArray();
         var media = await db.MediaAssets.AsNoTracking().Where(x => mediaIds.Contains(x.Id) && !x.IsDeleted).ToDictionaryAsync(x => x.Id);

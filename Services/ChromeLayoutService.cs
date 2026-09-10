@@ -37,6 +37,13 @@ public sealed class ChromeComponent
     public string? Variant { get; set; }
     public string? Text { get; set; }
     public string? Url { get; set; }
+    public string FontWeight { get; set; } = "default";
+    public bool Italic { get; set; }
+    public string FontSize { get; set; } = "default";
+    public string? TextColor { get; set; }
+    public string TextAlign { get; set; } = "default";
+    public string SpacingTop { get; set; } = "none";
+    public string SpacingBottom { get; set; } = "none";
     public Dictionary<string, string> Translations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public bool HideOnMobile { get; set; }
 }
@@ -60,6 +67,10 @@ public sealed class ChromeLayoutService : IChromeLayoutService
     private static readonly HashSet<string> Heights = new(StringComparer.Ordinal) { "compact", "standard", "large" };
     private static readonly HashSet<string> Widths = new(StringComparer.Ordinal) { "auto", "fill", "1", "2", "3", "4" };
     private static readonly HashSet<string> Alignments = new(StringComparer.Ordinal) { "left", "center", "right" };
+    private static readonly HashSet<string> FontWeights = new(StringComparer.Ordinal) { "default", "normal", "bold" };
+    private static readonly HashSet<string> FontSizes = new(StringComparer.Ordinal) { "default", "small", "large" };
+    private static readonly HashSet<string> TextAlignments = new(StringComparer.Ordinal) { "default", "left", "center", "right" };
+    private static readonly HashSet<string> Spacings = new(StringComparer.Ordinal) { "none", "small", "medium", "large" };
 
     public ChromeLayout ParseHeader(string? json) => Parse(json, Header("standard"));
     public ChromeLayout ParseFooter(string? json) => Parse(json, Footer("corporate"));
@@ -109,6 +120,12 @@ public sealed class ChromeLayoutService : IChromeLayoutService
                     if (!ComponentTypes.Contains(component.Type)) throw new InvalidOperationException($"Thành phần '{component.Type}' không được hỗ trợ.");
                     component.Variant = Slug(component.Variant, "default");
                     component.Text = Trim(component.Text, 200); component.Url = SafeUrl(component.Url);
+                    component.FontWeight = FontWeights.Contains(component.FontWeight) ? component.FontWeight : "default";
+                    component.FontSize = FontSizes.Contains(component.FontSize) ? component.FontSize : "default";
+                    component.TextColor = IsHexColor(component.TextColor) ? component.TextColor!.ToLowerInvariant() : null;
+                    component.TextAlign = TextAlignments.Contains(component.TextAlign) ? component.TextAlign : "default";
+                    component.SpacingTop = Spacings.Contains(component.SpacingTop) ? component.SpacingTop : "none";
+                    component.SpacingBottom = Spacings.Contains(component.SpacingBottom) ? component.SpacingBottom : "none";
                     component.Translations ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     if (component.Translations.Count > 20) throw new InvalidOperationException("Mỗi thành phần tối đa 20 bản dịch.");
                     var translations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

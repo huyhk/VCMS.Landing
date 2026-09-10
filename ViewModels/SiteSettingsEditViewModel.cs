@@ -10,6 +10,7 @@ public class SiteSettingsEditViewModel
     public IReadOnlyList<ContentLanguage> Languages { get; set; } = Array.Empty<ContentLanguage>();
     public bool IsDefaultLanguage { get; set; } = true;
     public bool HasTranslation { get; set; }
+    public IReadOnlyList<BrandingImageEditViewModel> BrandingImages { get; set; } = Array.Empty<BrandingImageEditViewModel>();
     [Required, StringLength(100)] public string SiteName { get; set; } = "";
     [StringLength(200)] public string? CompanyName { get; set; }
     [StringLength(200)] public string? LogoText { get; set; }
@@ -21,3 +22,6 @@ public class SiteSettingsEditViewModel
     [StringLength(300)] public string? Address { get; set; }
     [StringLength(500)] public string? FooterText { get; set; }
 }
+
+public sealed record BrandingImageEditViewModel(
+    int DefinitionId, string Key, string Name, string? Description, string? MediaUrl);

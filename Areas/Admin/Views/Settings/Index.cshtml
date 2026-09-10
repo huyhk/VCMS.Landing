@@ -2,7 +2,7 @@
 @{ ViewData["Title"] = "Cấu hình website"; }
 <div class="page-title"><div><h1>Cấu hình website</h1><p>Thông tin chung, SEO và nhận diện thương hiệu.</p></div></div>
 <div class="panel language-content-bar"><strong>Nội dung đang chỉnh sửa:</strong>@foreach(var language in Model.Languages){<a class="button @(language.Code == Model.LanguageCode ? "" : "button-secondary")" asp-action="Index" asp-route-language="@language.Code">@language.Name</a>}@if(!Model.IsDefaultLanguage && !Model.HasTranslation){<span class="status off">Đang hiển thị tiếng Việt để làm mẫu</span>}</div>
-<form asp-action="Save" method="post" class="panel form-panel">
+<form asp-action="Save" method="post" enctype="multipart/form-data" class="panel form-panel">
     <input asp-for="Id" type="hidden"><input asp-for="LanguageCode" type="hidden">
     <div class="form-grid">
         <div><label asp-for="SiteName">Tên website</label><input asp-for="SiteName"><span asp-validation-for="SiteName"></span></div>
@@ -23,5 +23,27 @@
         <div class="full"><label asp-for="Address">Địa chỉ</label><input asp-for="Address"></div>
         <div class="full"><label asp-for="FooterText">Nội dung chân trang</label><input asp-for="FooterText"></div>
     </div>
+    @if(Model.IsDefaultLanguage && Model.BrandingImages.Count > 0)
+    {
+        <section class="site-branding-settings">
+            <h2>Nhận diện thương hiệu</h2>
+            <p>Logo và favicon dùng chung cho tất cả ngôn ngữ.</p>
+            <div class="form-grid">
+                @foreach(var image in Model.BrandingImages)
+                {
+                    <div class="full">
+                        <label for="branding-image-@image.DefinitionId">@image.Name</label>
+                        @if(!string.IsNullOrWhiteSpace(image.Description)){<small>@image.Description</small>}
+                        <div id="branding-preview-@image.DefinitionId" class="single-image-preview">
+                            @if(!string.IsNullOrWhiteSpace(image.MediaUrl)){<img src="@image.MediaUrl" alt="@image.Name"><span>Ảnh hiện tại</span>}
+                        </div>
+                        <input id="branding-image-@image.DefinitionId" name="brandingImages[@image.DefinitionId]" type="file" accept="image/png,image/jpeg,image/webp" data-image-preview="branding-preview-@image.DefinitionId">
+                        <small>Ảnh được tự resize và tối ưu khi lưu; file PNG giữ nền trong suốt.</small>
+                        <span class="field-validation-error">@Html.ValidationMessage("brandingImages[" + image.DefinitionId + "]")</span>
+                    </div>
+                }
+            </div>
+        </section>
+    }
     <div class="form-actions"><button class="button" type="submit">Lưu cấu hình</button></div>
 </form>

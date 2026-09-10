@@ -41,7 +41,8 @@
                 <div class="chrome-column chrome-width-@column.Width chrome-align-@column.Align">
                     @foreach (var component in column.Components)
                     {
-                        <div class="chrome-component chrome-component-@component.Type chrome-variant-@component.Variant @(component.HideOnMobile ? "chrome-mobile-hidden" : null)">
+                        var componentStyle = component.TextColor is not null ? $"--chrome-component-color:{component.TextColor}" : null;
+                        <div class="chrome-component chrome-component-@component.Type chrome-variant-@component.Variant chrome-font-weight-@component.FontWeight @(component.Italic ? "chrome-font-italic" : null) chrome-font-size-@component.FontSize @(component.TextColor is not null ? "chrome-text-color-custom" : null) chrome-text-align-@component.TextAlign chrome-spacing-top-@component.SpacingTop chrome-spacing-bottom-@component.SpacingBottom @(component.HideOnMobile ? "chrome-mobile-hidden" : null)" style="@componentStyle">
                         @switch (component.Type)
                         {
                             case "logo":
