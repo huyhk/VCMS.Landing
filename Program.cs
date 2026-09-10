@@ -72,6 +72,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     ];
 });
 builder.Services.AddControllersWithViews();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
